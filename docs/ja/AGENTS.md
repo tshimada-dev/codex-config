@@ -1,6 +1,6 @@
 ---
 source: AGENTS.md
-source_commit: dd1c94c
+source_commit: 19ab3a7426b4bb9f249cf144f0a2269670de5277
 canonical: false
 ---
 
@@ -10,18 +10,18 @@ canonical: false
 
 ## 長時間作業
 
-- 30分以上かかりそうな作業、複数サブシステムにまたがる作業、CI 修正、中断される可能性がある作業では、変更前に `C:\Users\shimada\.codex\rules\long-running-workflow.md` を読む。
+- 30分以上かかりそうな作業、複数サブシステムにまたがる作業、CI 修正、中断される可能性がある作業では、変更前に `$HOME\.codex\rules\long-running-workflow.md` を読む。
 - 調査、実装、検証は別フェーズとして扱う。前提が変わった場合は記録せずに探索メモとコード変更を混ぜない。
 - subagents が使える場合は、context-heavy research、広い planning、独立した implementation slice、review、verification に優先して使い、parent session は意思決定、統合、最終検証に集中させる。
-- 長時間作業では、`C:\Users\shimada\.codex\templates\agent-run.md` を使って active run note を維持する。
+- 長時間作業では、`$HOME\.codex\templates\agent-run.md` を使って active run note を維持する。
 - 実装作業を終える前に、リポジトリの実際の検証コマンドを `AGENTS.md`、README、Makefile、package files、pyproject、scripts などから確認する。
 - 破壊的なローカルコマンド、リモート変更、公開、デプロイ、本番 migration、secret の取り扱いは、明示的なユーザー承認なしに実行しない。
 
 ## 個人用リファレンス
 
-- 長時間作業: `C:\Users\shimada\.codex\rules\long-running-workflow.md`
-- 調査チェックリスト: `C:\Users\shimada\.codex\rules\checklists\research.md`
-- 実装チェックリスト: `C:\Users\shimada\.codex\rules\checklists\implementation.md`
-- CI 修正チェックリスト: `C:\Users\shimada\.codex\rules\checklists\ci-fix.md`
-- active run note テンプレート: `C:\Users\shimada\.codex\templates\agent-run.md`
-- repository AGENTS テンプレート: `C:\Users\shimada\.codex\templates\repo-agents.md`
+- 長時間作業: `$HOME\.codex\rules\long-running-workflow.md`
+- 調査チェックリスト: `$HOME\.codex\rules\checklists\research.md`
+- 実装チェックリスト: `$HOME\.codex\rules\checklists\implementation.md`
+- CI 修正チェックリスト: `$HOME\.codex\rules\checklists\ci-fix.md`
+- active run note テンプレート: `$HOME\.codex\templates\agent-run.md`
+- repository AGENTS テンプレート: `$HOME\.codex\templates\repo-agents.md`

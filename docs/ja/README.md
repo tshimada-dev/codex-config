@@ -33,3 +33,9 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - 日本語版には実行上の新ルールを追加しない。
 - 実行時に Codex に効かせたい変更は、必ず英語版の canonical ファイルに入れる。
 - 各ファイル冒頭の `source` と `source_commit` を確認し、どの英語版に対応する訳か分かるようにする。
+- `source_commit` の確認と更新には `scripts/check-ja-source-commits.ps1` を使う。
+
+```powershell
+.\scripts\check-ja-source-commits.ps1
+.\scripts\check-ja-source-commits.ps1 -Update
+```

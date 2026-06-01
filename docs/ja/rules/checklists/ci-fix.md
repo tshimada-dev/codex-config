@@ -1,6 +1,6 @@
 ---
 source: rules/checklists/ci-fix.md
-source_commit: dd1c94c
+source_commit: b2aabbecfae880f70afb36475f707708f79e1075
 canonical: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 source: skills/codex-ui-quality-gate/SKILL.md
-source_commit: dd1c94c
+source_commit: 48eb930dceb63657f8f66ca4238e48954f48ef80
 canonical: false
 ---
 
