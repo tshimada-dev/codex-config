@@ -14,7 +14,8 @@ canonical: false
 
 - ゴール、現在の状態、次の手順、検証状況を書き残す。
 - 調査、実装、検証を分ける。同じ Codex セッションで行う場合でも分離して扱う。
-- 親セッションを意思決定、統合、最終検証に集中させるため、境界の明確な context-heavy research や独立した implementation slice は subagents に任せる。
+- subagents が使える場合は、context-heavy research、広い planning、独立した implementation slice、review、verification で subagent-first を基本にする。
+- 親セッションは意思決定、統合、conflict resolution、最終検証、user report に集中させる。
 - 小さく review しやすい変更と、リポジトリローカルの慣習を優先する。
 - ユーザーの変更を保持する。明示依頼なしに uncommitted work を破棄しない。
 - 破壊的なローカル操作、リモート変更、公開、デプロイ、本番データ変更、migration、secret への接触は、事前に確認する。
@@ -26,6 +27,7 @@ canonical: false
 - 編集前に repository instructions を読む。
 - `rg` や `rg --files` など高速な検索で関連ファイルを探す。
 - 発見事項と未解決の前提を active run note に記録する。
+- repository convention がない場合、active run note は `docs/codex/runs/` に作る。
 
 ## 実装
 

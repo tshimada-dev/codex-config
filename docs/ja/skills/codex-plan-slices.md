@@ -32,7 +32,7 @@ canonical: false
 
 ## Subagent Use
 
-subagents を使う場合:
+subagents が使える場合は、広い作業、複数ファイル、不慣れな repo、risk のある作業、並列化できる作業で基本的に使う。小さな単一ファイル変更、一本道の緊急修正、tooling が使えない場合、user が使わないよう求めた場合は使わない。
 
 - each worker に bounded task を渡す。
 - worker には実装または調査だけを任せる。

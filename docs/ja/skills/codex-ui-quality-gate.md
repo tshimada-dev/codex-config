@@ -21,6 +21,8 @@ frontend、CSS、layout、responsive behavior、canvas/WebGL、images、animatio
 5. 変更した UI state、empty/loading/error state、主要 interaction を確認する。
 6. 見つけた問題は、可能なら修正して再確認する。
 
+subagents が使える場合は、changed route と expected states が明確になってから focused UI verification を worker に任せる。
+
 ## Browser Probes
 
 必要に応じて以下を確認する。

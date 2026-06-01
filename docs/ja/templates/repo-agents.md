@@ -20,7 +20,9 @@ canonical: false
 - 無関係なユーザー変更を保持する。
 - 変更は依頼された挙動に絞る。
 - repository-local の helper や convention を優先する。
-- 中断や再開の可能性がある長時間作業は `docs/agent-runs/` に記録する。
+- subagents が使える場合は、context-heavy research、広い planning、独立した implementation slice、review、verification に優先して使う。
+- 中断や再開の可能性がある長時間作業は `docs/codex/runs/` に記録する。
+- handoff は active run note がある場合はそこに追記し、単体の handoff が必要な場合だけ `docs/codex/handoffs/` を使う。
 
 ## Verification
 

@@ -31,7 +31,7 @@ canonical: false
 - planning 依頼では、planning artifact が成果物でない限り project files を編集しない。
 - current facts、prices、laws、schedules、third-party docs、remote state を含む場合は、適切な source で確認する。
 - `automation` では automation workflow を使い、不足している schedule、timezone、target action、notification details だけ質問する。
-- subagents/delegation が明示された場合は planning/delegation skill に渡す。
+- subagents が有効な作業では、task が小さい場合や user が使わないよう求めた場合を除き、planning/delegation skill に渡す。
 - debugging が主なら `codex-debug-discipline` に渡す。
 - broad engineering work は `codex-plan-slices` に渡す。
 - disposable/simulated/rehearsal repo では workspace boundary を先に確定し、範囲外編集を out of scope とする。

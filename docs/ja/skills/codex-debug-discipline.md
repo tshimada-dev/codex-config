@@ -17,6 +17,7 @@ bug、failing tests、flaky behavior、performance regression、wrong output、c
 - まず症状を再現または観察する。
 - 失敗している command、route、input、state、expected/actual を切り分ける。
 - static inspection だけで飛びつかず、可能な限り runnable reproduction を作る。
+- subagents が使える場合は、異なる仮説や独立した証拠収集を並列 probe として任せる。
 - 必要なら最小限の instrumentation を入れ、最後に削除する。
 - root cause が見えたら `codex-implementation-loop` で patch する。
 - UI behavior の defect では fix 後に `codex-ui-quality-gate` を使う。

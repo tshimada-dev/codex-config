@@ -13,7 +13,7 @@ Use after `codex-repo-scout` for unfamiliar code. For bugs, use after `codex-deb
 
 ## Subagent Implementation
 
-When subagents are allowed, use worker agents for bounded implementation slices that do not block the parent's next step:
+When subagents are available, prefer worker agents for bounded implementation slices that do not block the parent's next step:
 
 - Give each worker an exact write scope, dependencies, acceptance criteria, and tests/checks.
 - Tell workers they are not alone in the codebase and must not revert or overwrite others' edits.

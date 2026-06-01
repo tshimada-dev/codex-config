@@ -29,6 +29,8 @@ canonical: false
 
 verification を skip した場合は、理由、実行すべきだった command、残る risk を明示する。
 
+subagents が使える場合は、stage/commit 前の focused pre-PR review を reviewer agent に任せる。
+
 ## Commit Discipline
 
 - user が依頼したときだけ commit する。

@@ -20,7 +20,7 @@ canonical: false
 
 ## Subagent Implementation
 
-subagents が使える場合は、parent の次 step を妨げない bounded slices に worker agents を使う。
+subagents が使える場合は、parent の次 step を妨げない bounded slices に worker agents を優先して使う。
 
 - exact write scope、dependencies、acceptance criteria、tests/checks を渡す。
 - worker に、他の編集があること、revert/overwrite してはいけないことを伝える。

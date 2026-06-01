@@ -26,7 +26,7 @@ Use this skill to turn an unclear request into an executable path with the fewes
 - If the user asks for planning, do not edit project files unless planning artifacts are the deliverable.
 - If the request involves current facts, prices, laws, schedules, third-party docs, or remote state, verify with the appropriate source.
 - If the mode is `automation`, use the available automation workflow; ask only for missing schedule, timezone, target action, or notification details.
-- If the user explicitly asks for subagents or delegation, hand off to a planning/delegation skill after intake.
+- If the task would benefit from subagents, hand off to a planning/delegation skill after intake unless the task is tiny or the user asks not to use them.
 - If the task is mainly debugging, hand off to `codex-debug-discipline`.
 - If the task is broad engineering work, hand off to `codex-plan-slices`.
 - If the user asks for a disposable, simulated, or rehearsal repo, establish the workspace boundary first and treat edits outside that boundary as out of scope.

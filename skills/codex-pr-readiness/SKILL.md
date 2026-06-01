@@ -9,7 +9,7 @@ Use this skill to turn finished work into a reviewable change.
 
 ## Subagent Review
 
-When subagents are allowed, use a reviewer agent for a focused pre-PR pass before staging or committing:
+When subagents are available, prefer a reviewer agent for a focused pre-PR pass before staging or committing:
 
 - Ask it to inspect the diff for bugs, missing tests, unrelated changes, risky generated files, and PR summary gaps.
 - Require findings with file paths and severity, plus a concise verification recommendation.

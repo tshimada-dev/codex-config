@@ -30,9 +30,11 @@ Use after `codex-task-intake` and usually after `codex-repo-scout`. Hand off to 
 
 ## Subagent Rules
 
-Use subagents only when the user explicitly asked for agents, delegation, workers, or parallel work.
+Default to using subagents when available for broad, multi-file, unfamiliar, risky, or parallelizable work so the parent context stays small and decision-focused.
 
-When the user allows subagents and the task is broad, prefer subagent-first execution to preserve parent context:
+Skip subagents for tiny edits, single-file linear changes, urgent blocking work, unavailable tooling, or when the user asks not to use them.
+
+When using subagents, prefer subagent-first execution to preserve parent context:
 
 - Parent keeps only the objective, slice list, ownership map, dependency graph, final verification plan, and unresolved risks.
 - Delegate repo scouting by subsystem to explorer agents instead of reading large file sets in the parent.

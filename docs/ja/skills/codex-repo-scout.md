@@ -14,7 +14,7 @@ canonical: false
 
 ## Subagent Scouting
 
-subagents が使えて repo が大きい、または不慣れな場合は、context-heavy scouting を explorer subagents に任せる。
+subagents が使えて repo が大きい、または不慣れな場合は、context-heavy scouting を基本的に explorer subagents に任せる。
 
 - explorer ごとに subsystem、feature path、question を1つ割り当てる。
 - pasted file contents ではなく、file paths、symbols、commands、confidence 付きの evidence を求める。

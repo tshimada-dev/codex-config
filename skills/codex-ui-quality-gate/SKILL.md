@@ -9,7 +9,7 @@ Use this skill after frontend changes and before the final report.
 
 ## Subagent UI Checks
 
-When subagents are allowed, delegate focused UI verification to a worker only after the changed route and expected states are clear:
+When subagents are available, prefer delegating focused UI verification to a worker after the changed route and expected states are clear:
 
 - Give the worker the URL, viewport targets, changed surfaces, interactions to exercise, and artifact rules.
 - Ask for concise evidence: route, viewport, overflow status, console status, interactions tested, and screenshots path only if kept intentionally.

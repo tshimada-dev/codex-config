@@ -13,7 +13,7 @@ This skill owns reproduction, root cause analysis, probes, and regression shape.
 
 ## Subagent Debugging
 
-When subagents are allowed, delegate parallel debug probes only if they test distinct hypotheses or gather independent evidence:
+When subagents are available, prefer delegating parallel debug probes if they test distinct hypotheses or gather independent evidence:
 
 - Good: one explorer traces logs, one builds a minimal repro, one inspects recent diffs or dependency changes.
 - Bad: several agents editing the same suspected files or applying competing fixes.

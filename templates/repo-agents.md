@@ -12,7 +12,9 @@
 - Preserve unrelated user changes.
 - Keep changes scoped to the requested behavior.
 - Prefer repository-local helpers and conventions.
-- Record long-running work under `docs/agent-runs/` when the task may be interrupted or resumed.
+- Prefer subagents for context-heavy research, broad planning, independent implementation slices, review, and verification when they are available.
+- Record long-running work under `docs/codex/runs/` when the task may be interrupted or resumed.
+- Add handoff notes to the active run note when one exists; use `docs/codex/handoffs/` only for standalone handoffs.
 
 ## Verification
 

@@ -9,7 +9,7 @@ Use this skill to learn just enough of the repository to act without wandering.
 
 ## Subagent Scouting
 
-When subagents are allowed and the repo is large or unfamiliar, prefer explorer subagents for context-heavy scouting:
+When subagents are available and the repo is large or unfamiliar, default to explorer subagents for context-heavy scouting:
 
 - Assign each explorer one subsystem, feature path, or question.
 - Ask for evidence with file paths, symbols, commands, and confidence, not pasted file contents.

@@ -22,6 +22,13 @@ canonical: false
 - next step
 - tool gaps や verification fallbacks
 
+## どこに残すか
+
+- 既存の repo convention、run note、planning location がある場合はそれを優先する。
+- active run note がある場合は、そこに `## Handoff` として簡潔に追記する。
+- convention がなく長時間作業として run note が必要な場合は `docs/codex/runs/` を使う。
+- 単体 handoff file が必要な場合だけ `docs/codex/handoffs/` を使う。
+
 ## 良い handoff
 
 - 次の agent が repo を最初から読み直さなくても動ける。
