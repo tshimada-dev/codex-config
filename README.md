@@ -13,6 +13,7 @@
 - `templates/`: run note や repository instruction のテンプレート
 - `skills/codex-*`: 汎用的な Codex ワークフロースキル
 - `scripts/install.ps1`: 管理対象ファイルを `$HOME\.codex` にコピーする導入スクリプト
+- `docs/ja/`: 人間が読むための日本語参考訳
 
 ## インストール
 
@@ -36,3 +37,11 @@
 - シークレット、トークン、`.env`、プラグインキャッシュ、automation の状態はコミットしない。
 - 端末固有の上書き設定は、git 管理外の local ファイルに置く。
 - 危険なコマンドは broad allow にせず、prompt または forbidden のルールに入れる。
+- Codex が実行時に読む canonical な定義は英語版のままにし、日本語訳は `docs/ja/` に置く。
+
+## 日本語参考訳
+
+英語の canonical ドキュメントを読みやすくするため、日本語の参考訳を
+[docs/ja/README.md](docs/ja/README.md) にまとめています。
+
+内容が英語版と食い違う場合は、英語版を優先します。
