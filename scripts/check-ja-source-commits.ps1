@@ -1,9 +1,15 @@
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
-    [switch]$Update
+    [switch]$Update,
+
+    [switch]$AllowMetadataOnlyUpdate
 )
 
 $ErrorActionPreference = "Stop"
+
+if ($AllowMetadataOnlyUpdate -and -not $Update) {
+    throw "-AllowMetadataOnlyUpdate can only be used with -Update."
+}
 
 $ScriptDir = Split-Path -Parent $PSCommandPath
 $RepoRoot = Split-Path -Parent $ScriptDir
@@ -81,6 +87,29 @@ function Test-GitPathAtCommit {
     return $LASTEXITCODE -eq 0
 }
 
+function Test-HasNonSourceCommitDiff {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $diffs = @(
+        Invoke-Git -Arguments @("diff", "--unified=0", "--", $Path)
+        Invoke-Git -Arguments @("diff", "--cached", "--unified=0", "--", $Path)
+    )
+
+    foreach ($line in $diffs) {
+        if ($line -match "^[+-]" -and
+            $line -notmatch "^\+\+\+ " -and
+            $line -notmatch "^--- " -and
+            $line -notmatch "^[+-]source_commit:\s*") {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 $docsRoot = Join-Path $RepoRoot "docs\ja"
 $docs = Get-ChildItem -LiteralPath $docsRoot -Filter "*.md" -Recurse
 $errors = New-Object System.Collections.Generic.List[string]
@@ -128,12 +157,21 @@ foreach ($doc in $docs) {
 
     $dirtySource = [bool](Invoke-Git -Arguments @("status", "--porcelain", "--", $sourcePath))
 
+    $dirtyTranslation = [bool](Invoke-Git -Arguments @("status", "--porcelain", "--", $relativeDoc))
+    $translationHasContentChanges = Test-HasNonSourceCommitDiff -Path $relativeDoc
+
     if ($Update -and $sourceCommit -ne $latestCommit) {
+        if (-not $translationHasContentChanges -and -not $AllowMetadataOnlyUpdate) {
+            $errors.Add("${relativeDoc}: refusing to update source_commit without Japanese content changes. Update the Japanese reference text first, or re-run with -AllowMetadataOnlyUpdate when a metadata-only refresh is intentional.")
+            continue
+        }
+
         $newContent = $content -replace "(?m)^source_commit:\s*.+$", "source_commit: $latestCommit"
         if ($PSCmdlet.ShouldProcess($relativeDoc, "Update source_commit to $latestCommit")) {
             Set-Content -LiteralPath $doc.FullName -Value $newContent -NoNewline
             $updated++
             $sourceCommit = $latestCommit
+            $dirtyTranslation = $true
         }
     }
 
@@ -155,7 +193,7 @@ foreach ($doc in $docs) {
         $warnings.Add("${relativeDoc}: source has uncommitted changes; refresh source_commit after committing $sourcePath")
     }
 
-    if (Invoke-Git -Arguments @("status", "--porcelain", "--", $relativeDoc)) {
+    if ($dirtyTranslation) {
         $warnings.Add("${relativeDoc}: translation file has uncommitted changes")
     }
 }

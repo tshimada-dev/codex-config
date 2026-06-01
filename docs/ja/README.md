@@ -34,8 +34,11 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - 実行時に Codex に効かせたい変更は、必ず英語版の canonical ファイルに入れる。
 - 各ファイル冒頭の `source` と `source_commit` を確認し、どの英語版に対応する訳か分かるようにする。
 - `source_commit` の確認と更新には `scripts/check-ja-source-commits.ps1` を使う。
+- `-Update` は、訳文ファイルに未コミットの本文変更がある場合だけ `source_commit` を更新する。
+- 訳文の変更が不要だと確認済みの場合だけ、`-Update -AllowMetadataOnlyUpdate` で metadata だけを同期する。
 
 ```powershell
 .\scripts\check-ja-source-commits.ps1
 .\scripts\check-ja-source-commits.ps1 -Update
+.\scripts\check-ja-source-commits.ps1 -Update -AllowMetadataOnlyUpdate
 ```

@@ -63,7 +63,8 @@ tracked されている管理対象ファイルだけをコピーします。
 - 端末固有の上書き設定は、git 管理外の local ファイルに置く。
 - 危険なコマンドは broad allow にせず、prompt または forbidden のルールに入れる。
 - Codex が実行時に読む canonical な定義は英語版のままにし、日本語訳は `docs/ja/` に置く。
-- 英語版を変更したら日本語参考訳を更新し、`.\scripts\check-ja-source-commits.ps1 -Update` で `source_commit` を同期する。
+- 英語版を変更したら日本語参考訳を更新し、訳文ファイルに未コミットの本文変更がある状態で `.\scripts\check-ja-source-commits.ps1 -Update` を実行して `source_commit` を同期する。
+- 訳文の変更が不要だと確認済みの場合だけ、`.\scripts\check-ja-source-commits.ps1 -Update -AllowMetadataOnlyUpdate` で metadata だけを同期する。
 
 ## 日本語参考訳
 
