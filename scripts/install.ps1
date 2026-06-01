@@ -21,6 +21,28 @@ function Copy-ManagedItem {
         throw "Missing source: $Source"
     }
 
+    $sourceItem = Get-Item -LiteralPath $Source
+
+    if ($sourceItem.PSIsContainer) {
+        if (Test-Path -LiteralPath $Destination) {
+            $destinationItem = Get-Item -LiteralPath $Destination
+            if (-not $destinationItem.PSIsContainer) {
+                throw "Destination exists and is not a directory: $Destination"
+            }
+        }
+        elseif ($PSCmdlet.ShouldProcess($Destination, "Create directory")) {
+            New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+        }
+
+        if ($PSCmdlet.ShouldProcess($Destination, "Copy contents from $Source")) {
+            Get-ChildItem -LiteralPath $Source -Force | ForEach-Object {
+                Copy-Item -LiteralPath $_.FullName -Destination $Destination -Recurse -Force
+            }
+        }
+
+        return
+    }
+
     $destinationParent = Split-Path -Parent $Destination
     if ($destinationParent -and -not (Test-Path -LiteralPath $destinationParent)) {
         if ($PSCmdlet.ShouldProcess($destinationParent, "Create directory")) {
