@@ -1,38 +1,38 @@
 # Codex Config
 
-Portable personal Codex configuration.
+個人用の Codex 設定を、複数端末で使い回すためのリポジトリです。
 
-This repository tracks only reusable Codex working rules, templates, and the
-generic `codex-*` skills. It intentionally does not track plugin caches,
-automations, secrets, runtime logs, or machine-specific local files.
+このリポジトリでは、再利用しやすい Codex の作業ルール、テンプレート、汎用的な
+`codex-*` スキルだけを管理します。プラグインのキャッシュ、automation の状態、
+シークレット、実行ログ、端末固有のローカルファイルは管理しません。
 
-## Contents
+## 内容
 
-- `AGENTS.md`: global Codex working rules
-- `rules/`: shared command policy and long-running workflow docs
-- `templates/`: reusable run-note and repository instruction templates
-- `skills/codex-*`: generic Codex workflow skills
-- `scripts/install.ps1`: copies the tracked files into `$HOME\.codex`
+- `AGENTS.md`: グローバルな Codex 作業ルール
+- `rules/`: 共通のコマンドポリシーと長時間作業用の手順
+- `templates/`: run note や repository instruction のテンプレート
+- `skills/codex-*`: 汎用的な Codex ワークフロースキル
+- `scripts/install.ps1`: 管理対象ファイルを `$HOME\.codex` にコピーする導入スクリプト
 
-## Install
+## インストール
 
-From this repository:
+このリポジトリのルートで実行します。
 
 ```powershell
 .\scripts\install.ps1
 ```
 
-To preview the copy operations:
+コピー内容を事前確認する場合:
 
 ```powershell
 .\scripts\install.ps1 -WhatIf
 ```
 
-## Policy
+## 運用方針
 
-Keep this repo conservative:
+このリポジトリは保守的に管理します。
 
-- Track reusable skills and docs only.
-- Do not commit secrets, tokens, `.env` files, plugin caches, or automation state.
-- Keep machine-specific overrides in local files ignored by git.
-- Put risky commands behind prompt/forbidden rules instead of broad allow rules.
+- 再利用できるスキルとドキュメントだけを管理する。
+- シークレット、トークン、`.env`、プラグインキャッシュ、automation の状態はコミットしない。
+- 端末固有の上書き設定は、git 管理外の local ファイルに置く。
+- 危険なコマンドは broad allow にせず、prompt または forbidden のルールに入れる。
