@@ -24,11 +24,35 @@
 .\scripts\install.ps1
 ```
 
+前提: PowerShell 7+ と Git が利用できる環境で、git clone した作業ツリーから実行します。
+
+デフォルトでは追加のみを行います。既存の `$HOME\.codex` に同名ファイルがあり、
+内容が異なる場合は上書きせずに停止します。既存ファイルと同じ内容の場合は
+`Unchanged` として skip します。
+
 コピー内容を事前確認する場合:
 
 ```powershell
 .\scripts\install.ps1 -WhatIf
 ```
+
+既存の管理対象ファイルを明示的に置き換える場合:
+
+```powershell
+.\scripts\install.ps1 -Overwrite
+```
+
+置き換え前のファイルをバックアップする場合:
+
+```powershell
+.\scripts\install.ps1 -Overwrite -Backup
+```
+
+`-Backup` は、上書きされる既存ファイルを `$HOME\.codex.backup-YYYYMMDD-HHMMSS`
+に退避します。`-Backup` は `-Overwrite` と一緒に指定します。
+
+untracked / ignored / hidden ファイルを意図せず配布しないよう、installer は git で
+tracked されている管理対象ファイルだけをコピーします。
 
 ## 運用方針
 
