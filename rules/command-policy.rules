@@ -15,8 +15,8 @@ prefix_rule(pattern=["uv", "run", "mypy"], decision="allow")
 
 prefix_rule(
     pattern=["git", "push"],
-    decision="forbidden",
-    justification="Remote-changing operations require explicit user control."
+    decision="prompt",
+    justification="Pushing changes remote repository state and requires explicit user confirmation."
 )
 prefix_rule(
     pattern=["git", "reset", "--hard"],
