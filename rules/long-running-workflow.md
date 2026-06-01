@@ -6,6 +6,7 @@ Use this workflow when a task is likely to take more than 30 minutes, crosses mu
 
 - Keep the goal, current state, next step, and verification status written down.
 - Separate research, implementation, and verification, even when one Codex session performs all three.
+- Use subagents for bounded, context-heavy research or independent implementation slices so the parent session stays clean, focused on decisions, integration, and final verification.
 - Prefer small, reviewable changes and repository-local conventions.
 - Preserve user changes. Never discard uncommitted work unless the user explicitly asks for it.
 - Stop and ask before destructive local operations, remote mutations, publishing, deployments, production data changes, migrations, or touching secrets.

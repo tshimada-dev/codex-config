@@ -14,6 +14,7 @@ canonical: false
 
 - ゴール、現在の状態、次の手順、検証状況を書き残す。
 - 調査、実装、検証を分ける。同じ Codex セッションで行う場合でも分離して扱う。
+- 親セッションを意思決定、統合、最終検証に集中させるため、境界の明確な context-heavy research や独立した implementation slice は subagents に任せる。
 - 小さく review しやすい変更と、リポジトリローカルの慣習を優先する。
 - ユーザーの変更を保持する。明示依頼なしに uncommitted work を破棄しない。
 - 破壊的なローカル操作、リモート変更、公開、デプロイ、本番データ変更、migration、secret への接触は、事前に確認する。
