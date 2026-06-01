@@ -1,6 +1,6 @@
 ---
 source: rules/long-running-workflow.md
-source_commit: 48eb930dceb63657f8f66ca4238e48954f48ef80
+source_commit: f8d0d23ee012b798f90bd35eb0456e14cd45f616
 canonical: false
 ---
 

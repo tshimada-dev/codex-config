@@ -1,6 +1,6 @@
 ---
 source: AGENTS.md
-source_commit: 19ab3a7426b4bb9f249cf144f0a2269670de5277
+source_commit: f8d0d23ee012b798f90bd35eb0456e14cd45f616
 canonical: false
 ---
 
