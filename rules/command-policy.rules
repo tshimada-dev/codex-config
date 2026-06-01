@@ -12,6 +12,9 @@ prefix_rule(pattern=["npm", "test"], decision="allow")
 prefix_rule(pattern=["uv", "run", "pytest"], decision="allow")
 prefix_rule(pattern=["uv", "run", "ruff", "check"], decision="allow")
 prefix_rule(pattern=["uv", "run", "mypy"], decision="allow")
+prefix_rule(pattern=["git", "clean", "-n"], decision="allow")
+prefix_rule(pattern=["git", "clean", "--dry-run"], decision="allow")
+prefix_rule(pattern=["git", "restore", "--staged"], decision="allow")
 
 prefix_rule(
     pattern=["git", "push"],
@@ -20,38 +23,78 @@ prefix_rule(
 )
 prefix_rule(
     pattern=["git", "reset", "--hard"],
-    decision="forbidden",
-    justification="This discards local work."
+    decision="prompt",
+    justification="Hard reset discards local work and requires explicit user confirmation."
 )
 prefix_rule(
     pattern=["git", "clean"],
-    decision="forbidden",
-    justification="This removes untracked files."
+    decision="prompt",
+    justification="Cleaning can remove untracked files and requires explicit user confirmation."
 )
 prefix_rule(
     pattern=["git", "checkout", "--"],
-    decision="forbidden",
-    justification="This can discard file edits."
+    decision="prompt",
+    justification="Checking out paths can discard file edits and requires explicit user confirmation."
 )
 prefix_rule(
     pattern=["git", "restore"],
-    decision="forbidden",
-    justification="This can discard file edits."
+    decision="prompt",
+    justification="Restoring files can discard edits and requires explicit user confirmation."
 )
 prefix_rule(
     pattern=["rm", "-rf"],
-    decision="forbidden",
-    justification="Recursive deletion requires explicit user control."
+    decision="prompt",
+    justification="Recursive deletion requires explicit user confirmation."
+)
+prefix_rule(
+    pattern=["Remove-Item"],
+    decision="prompt",
+    justification="PowerShell deletion can remove local files and requires explicit user confirmation."
+)
+prefix_rule(
+    pattern=["rm"],
+    decision="prompt",
+    justification="PowerShell deletion aliases can remove local files and require explicit user confirmation."
+)
+prefix_rule(
+    pattern=["del"],
+    decision="prompt",
+    justification="Windows deletion commands can remove local files and require explicit user confirmation."
+)
+prefix_rule(
+    pattern=["erase"],
+    decision="prompt",
+    justification="Windows deletion commands can remove local files and require explicit user confirmation."
+)
+prefix_rule(
+    pattern=["rmdir"],
+    decision="prompt",
+    justification="Windows directory deletion can remove local files and requires explicit user confirmation."
+)
+prefix_rule(
+    pattern=["rd"],
+    decision="prompt",
+    justification="Windows directory deletion can remove local files and requires explicit user confirmation."
+)
+prefix_rule(
+    pattern=["cmd", "/c", "del"],
+    decision="prompt",
+    justification="cmd deletion commands can remove local files and require explicit user confirmation."
+)
+prefix_rule(
+    pattern=["cmd", "/c", "rmdir"],
+    decision="prompt",
+    justification="cmd directory deletion can remove local files and requires explicit user confirmation."
 )
 prefix_rule(
     pattern=["gh", "release"],
-    decision="forbidden",
-    justification="Release operations mutate remote project state."
+    decision="prompt",
+    justification="Release operations mutate remote project state and require explicit user confirmation."
 )
 prefix_rule(
     pattern=["npm", "publish"],
-    decision="forbidden",
-    justification="Publishing changes external package state."
+    decision="prompt",
+    justification="Publishing changes external package state and requires explicit user confirmation."
 )
 
 prefix_rule(
