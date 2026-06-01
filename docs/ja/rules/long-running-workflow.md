@@ -20,6 +20,15 @@ canonical: false
 - ユーザーの変更を保持する。明示依頼なしに uncommitted work を破棄しない。
 - 破壊的なローカル操作、リモート変更、公開、デプロイ、本番データ変更、migration、secret への接触は、事前に確認する。
 
+## Run Note
+
+- 長時間タスクごとに active run note は1つだけ使う。
+- リポジトリに run note の慣習がある場合はそれを優先する。ない場合は `docs/codex/runs/` に作る。
+- 新しい run note はローカル時刻と短い lowercase slug を使い、`YYYYMMDD-HHMM-<short-task>.md` という名前にする。例: `20260601-1430-fix-ci-login.md`。
+- `$HOME\.codex\templates\agent-run.md` を初期構造としてコピーする。
+- phase boundary、前提や scope の変更、意味のある実装 slice の後、検証 command の後、pause 前、handoff 前に note を更新する。
+- 記録は短く、意思決定中心にする。大きな log や diff は貼らず、file や command をリンクまたは名前で示す。
+
 ## 調査
 
 - 依頼を一文で言い直す。
@@ -27,7 +36,7 @@ canonical: false
 - 編集前に repository instructions を読む。
 - `rg` や `rg --files` など高速な検索で関連ファイルを探す。
 - 発見事項と未解決の前提を active run note に記録する。
-- repository convention がない場合、active run note は `docs/codex/runs/` に作る。
+- active run note がまだない場合は、コード変更前に作る。
 
 ## 実装
 

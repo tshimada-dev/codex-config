@@ -12,6 +12,15 @@ Use this workflow when a task is likely to take more than 30 minutes, crosses mu
 - Preserve user changes. Never discard uncommitted work unless the user explicitly asks for it.
 - Stop and ask before destructive local operations, remote mutations, publishing, deployments, production data changes, migrations, or touching secrets.
 
+## Run Note
+
+- Use a single active run note for each long-running task.
+- Prefer the repository's documented run-note convention. If none exists, create it under `docs/codex/runs/`.
+- Name new run notes `YYYYMMDD-HHMM-<short-task>.md` using local time and a short lowercase slug, for example `20260601-1430-fix-ci-login.md`.
+- Copy `$HOME\.codex\templates\agent-run.md` as the starting structure.
+- Update the note at phase boundaries, when assumptions or scope change, after each meaningful implementation slice, after verification commands, before pausing, and before handing off.
+- Keep entries brief and decision-focused. Link or name files and commands instead of pasting large logs or diffs.
+
 ## Research
 
 - Restate the request in one sentence.
@@ -19,7 +28,7 @@ Use this workflow when a task is likely to take more than 30 minutes, crosses mu
 - Read repository instructions before editing.
 - Find relevant files with fast search tools such as `rg` or `rg --files`.
 - Record findings and unresolved assumptions in the active run note.
-- If no repository convention exists, create active run notes under `docs/codex/runs/`.
+- If no active run note exists yet, create it before making code changes.
 
 ## Implementation
 
