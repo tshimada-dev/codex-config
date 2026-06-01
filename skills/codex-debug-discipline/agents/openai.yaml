@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Debug Discipline"
+  short_description: "Debug with repro loops and hypotheses."
+  default_prompt: "Use this skill to diagnose failing, flaky, slow, or incorrect behavior."

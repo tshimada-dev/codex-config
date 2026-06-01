@@ -1,0 +1,9 @@
+# Default personal policy should stay conservative and generic.
+# Task-specific, mutating, cloud, package-install, and publishing commands belong
+# in command-policy.rules with prompt/forbidden decisions, not as broad allow rules.
+
+prefix_rule(pattern=["git", "status"], decision="allow")
+prefix_rule(pattern=["git", "diff"], decision="allow")
+prefix_rule(pattern=["git", "log"], decision="allow")
+prefix_rule(pattern=["git", "show"], decision="allow")
+prefix_rule(pattern=["rg"], decision="allow")

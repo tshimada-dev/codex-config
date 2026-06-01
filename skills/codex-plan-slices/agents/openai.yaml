@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Plan Slices"
+  short_description: "Split broad work into safe implementation slices."
+  default_prompt: "Use this skill to turn broad engineering work into ordered, testable implementation slices."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Implementation Loop"
+  short_description: "Implement changes with scope, tests, and safety."
+  default_prompt: "Use this skill to make code changes while preserving local work and matching repo patterns."

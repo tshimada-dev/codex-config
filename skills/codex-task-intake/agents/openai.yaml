@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Task Intake"
+  short_description: "Clarify ambiguous Codex work before execution."
+  default_prompt: "Use this skill to clarify scope, risks, and execution mode for ambiguous Codex tasks."

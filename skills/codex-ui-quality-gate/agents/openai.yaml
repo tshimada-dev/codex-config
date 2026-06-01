@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex UI Quality Gate"
+  short_description: "Verify frontend work with browser checks."
+  default_prompt: "Use this skill to validate frontend changes in a browser before final delivery."

@@ -1,0 +1,16 @@
+.env
+*.secret.*
+*.local.*
+*.log
+
+# Codex runtime/cache state should not be carried between machines.
+automations/
+plugins/
+logs/
+tmp/
+
+# OS/editor noise.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

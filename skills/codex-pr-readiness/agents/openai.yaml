@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex PR Readiness"
+  short_description: "Prepare diffs, commits, PRs, and CI follow-up."
+  default_prompt: "Use this skill to package finished local changes for review or pull request."

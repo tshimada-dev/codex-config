@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Repo Scout"
+  short_description: "Gather repository context before code changes."
+  default_prompt: "Use this skill to inspect repository structure, conventions, and evidence before editing."
