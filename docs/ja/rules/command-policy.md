@@ -1,6 +1,6 @@
 ---
 source: rules/command-policy.rules
-source_commit: 182e1ade1bd02579c5d9f841b58077c90543f650
+source_commit: 747e954d067ae3c02d63e4b611dcce9da8ed39c8
 canonical: false
 ---
 

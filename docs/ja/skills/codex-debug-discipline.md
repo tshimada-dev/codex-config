@@ -1,6 +1,6 @@
 ---
 source: skills/codex-debug-discipline/SKILL.md
-source_commit: 48eb930dceb63657f8f66ca4238e48954f48ef80
+source_commit: 747e954d067ae3c02d63e4b611dcce9da8ed39c8
 canonical: false
 ---
 
