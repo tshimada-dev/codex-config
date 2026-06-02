@@ -18,9 +18,11 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [rules/checklists/ci-fix.md](rules/checklists/ci-fix.md): CI 修正チェックリスト
 - [templates/agent-run.md](templates/agent-run.md): run note テンプレート
 - [templates/repo-agents.md](templates/repo-agents.md): repository AGENTS テンプレート
-- `config/config.base.toml`: 共有可能な config baseline
-- `config/profiles/*.config.toml`: profile file
-- `config/README.md`: config baseline の管理範囲
+- [config/config.base.toml](../../config/config.base.toml): 共有可能な config baseline
+- [config/profiles/local-check.config.toml](../../config/profiles/local-check.config.toml): local-check profile
+- [config/profiles/safe.config.toml](../../config/profiles/safe.config.toml): safe profile
+- [config/profiles/workspace.config.toml](../../config/profiles/workspace.config.toml): workspace profile
+- [config/README.md](../../config/README.md): config baseline の管理範囲
 - [skills/codex-task-intake.md](skills/codex-task-intake.md): タスク受け入れ
 - [skills/codex-repo-scout.md](skills/codex-repo-scout.md): リポジトリ調査
 - [skills/codex-implementation-loop.md](skills/codex-implementation-loop.md): 実装ループ
