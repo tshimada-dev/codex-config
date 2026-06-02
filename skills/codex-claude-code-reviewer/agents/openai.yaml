@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Claude Code Reviewer"
+  short_description: "Review Codex work with Claude Code."
+  default_prompt: "Use $codex-claude-code-reviewer to have Claude Code review the current Codex changes."
