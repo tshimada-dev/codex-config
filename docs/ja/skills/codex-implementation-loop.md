@@ -1,6 +1,6 @@
 ---
 source: skills/codex-implementation-loop/SKILL.md
-source_commit: 48eb930dceb63657f8f66ca4238e48954f48ef80
+source_commit: 57ddfaa985504316cec17de4a85517d222f670fd
 canonical: false
 ---
 
@@ -38,6 +38,16 @@ subagents が使える場合は、parent の次 step を妨げない bounded sli
 6. 最小の意味ある check から実行する。
 7. shared contracts、state、CLI behavior、UI flows、public APIs に触れたら broader checks を実行する。
 8. changed files、checks、residual risk をまとめる。
+
+## Loopback Conditions
+
+以下の場合は、前の step に戻る。
+
+- 新しい情報で target behavior が変わった場合: step 1 に戻り、target behavior と files を再確認する。
+- file が変わった、または関連箇所が dirty になった場合: step 2 に戻り、編集前に current file を読む。
+- diff が requested scope を超えて大きくなった場合: step 3 に戻り、最小の変更を選び直す。
+- 自分の変更が原因で check が失敗した場合: 原因を修正し、step 6 に戻って最小の意味ある check を実行する。
+- broader check で shared-contract issue が見つかった場合: expected behavior が変わったかどうかに応じて、step 1 または step 3 に戻る。
 
 ## Change Discipline
 
