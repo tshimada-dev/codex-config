@@ -36,6 +36,7 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - 日本語版には実行上の新ルールを追加しない。
 - 実行時に Codex に効かせたい変更は、必ず英語版の canonical ファイルに入れる。
 - live `config.toml` は丸ごと同期せず、共有可能な baseline だけを明示 merge する。
+- 通常開発は生産性のため network access を許可し、初見・未信頼 repo では `safe` profile を使う。
 - 各ファイル冒頭の `source` と `source_commit` を確認し、どの英語版に対応する訳か分かるようにする。
 - `source_commit` の確認と更新には `scripts/check-ja-source-commits.ps1` を使う。
 - `-Update` は、訳文ファイルに未コミットの本文変更がある場合だけ `source_commit` を更新する。

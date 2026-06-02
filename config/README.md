@@ -35,3 +35,7 @@ Use a profile explicitly:
 codex --profile safe
 codex --profile workspace
 ```
+
+`config.base.toml` and the `workspace` profile prioritize day-to-day productivity:
+workspace-write sandbox with network access enabled. Use `safe` for first-time,
+untrusted, review-only, or no-network work.

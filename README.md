@@ -106,6 +106,15 @@ merge 前の live config をバックアップする場合:
 `config/profiles/*.config.toml` は `$CODEX_HOME/<profile>.config.toml` にコピーされます。
 たとえば `config/profiles/safe.config.toml` は `codex --profile safe` で利用できます。
 
+通常開発では、検証や依存解決の生産性を優先し、`config/config.base.toml` と
+`workspace` profile は workspace-write sandbox で network access を許可します。
+初見・未信頼リポジトリの調査、レビュー専用、または外向き通信を避けたい作業では
+`safe` profile を使います。
+
+`workspace` では network access を許可しますが、remote mutation、package install、
+publish、migration、破壊的な local command は `rules/command-policy.rules` で
+確認を挟む方針です。
+
 `config/config.base.toml` と profile files には、`[projects.*]`、secrets、MCP server の
 private token/path、plugin runtime state、automation state、端末固有の絶対パスを入れません。
 
@@ -131,6 +140,7 @@ gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scop
 - シークレット、トークン、`.env`、プラグインキャッシュ、automation の状態はコミットしない。
 - 端末固有の上書き設定は、git 管理外の local ファイルに置く。
 - live `config.toml` は丸ごと同期せず、共有可能な baseline だけを明示 merge する。
+- 通常開発は生産性のため network access を許可し、初見・未信頼 repo では `safe` profile を使う。
 - 危険なコマンドは broad allow にせず、prompt または forbidden のルールに入れる。
 - Codex が実行時に読む canonical な定義は英語版のままにし、日本語訳は `docs/ja/` に置く。
 - 英語版を変更したら日本語参考訳を更新し、訳文ファイルに未コミットの本文変更がある状態で `.\scripts\check-ja-source-commits.ps1 -Update` を実行して `source_commit` を同期する。
