@@ -32,12 +32,13 @@ canonical: false
 
 ## Subagent Use
 
-subagents が使える場合は、広い作業、複数ファイル、不慣れな repo、risk のある作業、並列化できる作業で基本的に使う。小さな単一ファイル変更、一本道の緊急修正、tooling が使えない場合、user が使わないよう求めた場合は使わない。
+subagents が使える場合は、広い作業、複数ファイル、不慣れな repo、risk のある作業、並列化できる作業で優先して使う。小さな単一ファイル変更、一本道の緊急修正、tooling が使えない場合、user が使わないよう求めた場合は使わない。
 
 - each worker に bounded task を渡す。
 - worker には実装または調査だけを任せる。
 - parent は objective、slice list、ownership map、dependency graph、final verification plan、unresolved risks を保持する。
 - worker 結果を統合し、conflicts を解消し、final verification を実行する。
+- 小さな作業や一本道の作業では、subagent が使える場合でも parent session で直接進める。
 
 ## Output
 

@@ -115,6 +115,15 @@ merge 前の live config をバックアップする場合:
 publish、migration、破壊的な local command は `rules/command-policy.rules` で
 確認を挟む方針です。
 
+profile の使い分け:
+
+- `workspace`: 通常開発用。workspace-write sandbox と network access を許可する。
+- `local-check`: 初期調査後のローカル検証用。workspace-write sandbox だが network access は閉じる。
+- `safe`: 初見・未信頼 repo、レビュー専用、no-network 調査用。read-only sandbox。
+
+初見・未信頼 repo では、build/test も任意コード実行として扱います。まず `safe` で
+調査し、信頼できると判断した後に `local-check` または `workspace` へ切り替えます。
+
 `config/config.base.toml` と profile files には、`[projects.*]`、secrets、MCP server の
 private token/path、plugin runtime state、automation state、端末固有の絶対パスを入れません。
 

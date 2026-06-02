@@ -22,6 +22,15 @@ When subagents are available, prefer delegating parallel debug probes if they te
 
 ## Required Shape
 
+For trivial defects with an obvious cause and low blast radius, use a lightweight loop:
+
+1. Confirm the symptom or code path.
+2. Make the smallest fix.
+3. Run the nearest meaningful check.
+4. Report why full hypothesis branching was unnecessary.
+
+For nontrivial defects, use the full loop:
+
 1. Build a feedback loop that can show the failure:
    - failing test
    - CLI command

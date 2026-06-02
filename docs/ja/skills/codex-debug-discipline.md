@@ -14,6 +14,7 @@ bug、failing tests、flaky behavior、performance regression、wrong output、c
 
 ## Debug Loop
 
+- 原因が明らかで影響範囲が小さい trivial defect では、軽量 loop を使う。症状または code path を確認し、最小修正を行い、最も近い check を実行し、full hypothesis branching が不要だった理由を報告する。
 - まず症状を再現または観察する。
 - 失敗している command、route、input、state、expected/actual を切り分ける。
 - static inspection だけで飛びつかず、可能な限り runnable reproduction を作る。

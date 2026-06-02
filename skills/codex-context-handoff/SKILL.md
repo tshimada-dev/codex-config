@@ -38,15 +38,16 @@ Exclude:
 - full transcripts
 - duplicate specs already saved elsewhere
 - raw logs unless they are the artifact
+- secrets, tokens, credentials, cookies, private keys, and environment variable dumps
 - speculation not tied to a next step
 
 ## Format
 
 Do not create a handoff file unless the user requested durable context, the repo already has a matching convention, or the work is actively multi-session. Otherwise provide the handoff in the response.
 
-Use the project's existing handoff, run-note, or planning location if present. If an active run note exists, add a concise `## Handoff` section there. If a file is warranted and no convention exists, create a short markdown note under `docs/codex/handoffs/`.
+Use the project's existing handoff, run-note, or planning location if present. If an active run note exists, add a concise `## Handoff` section there. If a file is warranted and no convention exists, create a short markdown note under `$HOME\.codex\handoffs\<repo-name>\`.
 
-For long-running work without an existing convention, prefer active run notes under `docs/codex/runs/` and keep handoff details inside the run note when practical.
+For long-running work without an existing convention, prefer active run notes under `$HOME\.codex\runs\<repo-name>\` and keep handoff details inside the run note when practical.
 
 For completed temp-only simulations, a final response summary is usually enough unless the user asked to keep artifacts.
 

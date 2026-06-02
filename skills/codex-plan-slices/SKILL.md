@@ -30,11 +30,11 @@ Use after `codex-task-intake` and usually after `codex-repo-scout`. Hand off to 
 
 ## Subagent Rules
 
-Default to using subagents when available for broad, multi-file, unfamiliar, risky, or parallelizable work so the parent context stays small and decision-focused.
+Prefer subagents when available for broad, multi-file, unfamiliar, risky, or parallelizable work so the parent context stays small and decision-focused.
 
 Skip subagents for tiny edits, single-file linear changes, urgent blocking work, unavailable tooling, or when the user asks not to use them.
 
-When using subagents, prefer subagent-first execution to preserve parent context:
+When using subagents, prefer subagent-first execution for broad or parallel work to preserve parent context:
 
 - Parent keeps only the objective, slice list, ownership map, dependency graph, final verification plan, and unresolved risks.
 - Delegate repo scouting by subsystem to explorer agents instead of reading large file sets in the parent.
@@ -43,6 +43,8 @@ When using subagents, prefer subagent-first execution to preserve parent context
 - Ask agents to return concise reports: changed files, tests/checks run, important findings, risks, and integration notes.
 - Do not paste large source files, logs, screenshots, or raw diffs from agents into parent context unless they are the artifact under review.
 - Parent integrates results, resolves conflicts, runs final verification, and makes release/PR judgments.
+
+For small or linear work, keep the parent session direct instead of delegating merely because subagents are available.
 
 Close completed subagents when their results have been integrated or are no longer needed; stale completed threads still consume the available agent-thread budget in long sessions.
 

@@ -1,6 +1,9 @@
 # Personal command policy examples.
 #
 # Keep this file conservative. Specific safe commands can be added as they become routine.
+# Add allow rules only for read-only commands or trusted verification commands in already trusted
+# repositories. Package install, networked tools, publishing, deployment, migration, remote
+# mutation, and destructive commands must remain prompt or forbidden.
 
 prefix_rule(pattern=["git", "status"], decision="allow")
 prefix_rule(pattern=["git", "diff"], decision="allow")

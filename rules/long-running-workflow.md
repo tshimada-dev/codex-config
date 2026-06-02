@@ -6,7 +6,7 @@ Use this workflow when a task is likely to take more than 30 minutes, crosses mu
 
 - Keep the goal, current state, next step, and verification status written down.
 - Separate research, implementation, and verification, even when one Codex session performs all three.
-- Default to subagent-first work when subagents are available and the task has context-heavy research, broad planning, independent implementation slices, review, or verification work.
+- Prefer subagents when subagents are available and the task has context-heavy research, broad planning, independent implementation slices, review, or verification work.
 - Keep the parent session focused on decisions, integration, conflict resolution, final verification, and user reporting.
 - Prefer small, reviewable changes and repository-local conventions.
 - Preserve user changes. Never discard uncommitted work unless the user explicitly asks for it.
@@ -15,7 +15,7 @@ Use this workflow when a task is likely to take more than 30 minutes, crosses mu
 ## Run Note
 
 - Use a single active run note for each long-running task.
-- Prefer the repository's documented run-note convention. If none exists, create it under `docs/codex/runs/`.
+- Prefer the repository's documented run-note convention. If none exists, create it under `$HOME\.codex\runs\<repo-name>\`.
 - Name new run notes `YYYYMMDD-HHMM-<short-task>.md` using local time and a short lowercase slug, for example `20260601-1430-fix-ci-login.md`.
 - Copy `$HOME\.codex\templates\agent-run.md` as the starting structure.
 - Update the note at phase boundaries, when assumptions or scope change, after each meaningful implementation slice, after verification commands, before pausing, and before handing off.

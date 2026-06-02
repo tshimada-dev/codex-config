@@ -26,8 +26,8 @@ canonical: false
 
 - 既存の repo convention、run note、planning location がある場合はそれを優先する。
 - active run note がある場合は、そこに `## Handoff` として簡潔に追記する。
-- convention がなく長時間作業として run note が必要な場合は `docs/codex/runs/` を使う。
-- 単体 handoff file が必要な場合だけ `docs/codex/handoffs/` を使う。
+- convention がなく長時間作業として run note が必要な場合は `$HOME\.codex\runs\<repo-name>\` を使う。
+- 単体 handoff file が必要な場合だけ `$HOME\.codex\handoffs\<repo-name>\` を使う。
 
 ## 良い handoff
 
@@ -41,4 +41,4 @@ canonical: false
 - 大量の file contents を貼る。
 - 曖昧な「ほぼ完了」だけを書く。
 - 未検証なのに検証済みのように書く。
-- secrets や private tokens を含める。
+- secrets、tokens、credentials、cookies、private keys、environment variable dump を含める。

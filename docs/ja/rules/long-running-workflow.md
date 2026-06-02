@@ -14,7 +14,7 @@ canonical: false
 
 - ゴール、現在の状態、次の手順、検証状況を書き残す。
 - 調査、実装、検証を分ける。同じ Codex セッションで行う場合でも分離して扱う。
-- subagents が使える場合は、context-heavy research、広い planning、独立した implementation slice、review、verification で subagent-first を基本にする。
+- subagents が使える場合は、context-heavy research、広い planning、独立した implementation slice、review、verification で優先して使う。
 - 親セッションは意思決定、統合、conflict resolution、最終検証、user report に集中させる。
 - 小さく review しやすい変更と、リポジトリローカルの慣習を優先する。
 - ユーザーの変更を保持する。明示依頼なしに uncommitted work を破棄しない。
@@ -23,7 +23,7 @@ canonical: false
 ## Run Note
 
 - 長時間タスクごとに active run note は1つだけ使う。
-- リポジトリに run note の慣習がある場合はそれを優先する。ない場合は `docs/codex/runs/` に作る。
+- リポジトリに run note の慣習がある場合はそれを優先する。ない場合は `$HOME\.codex\runs\<repo-name>\` に作る。
 - 新しい run note はローカル時刻と短い lowercase slug を使い、`YYYYMMDD-HHMM-<short-task>.md` という名前にする。例: `20260601-1430-fix-ci-login.md`。
 - `$HOME\.codex\templates\agent-run.md` を初期構造としてコピーする。
 - phase boundary、前提や scope の変更、意味のある実装 slice の後、検証 command の後、pause 前、handoff 前に note を更新する。

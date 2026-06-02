@@ -21,7 +21,7 @@ canonical: false
 - 変更は依頼された挙動に絞る。
 - repository-local の helper や convention を優先する。
 - subagents が使える場合は、context-heavy research、広い planning、独立した implementation slice、review、verification に優先して使う。
-- 中断や再開の可能性がある長時間作業は、リポジトリに別の run note 場所が定められていない限り `docs/codex/runs/YYYYMMDD-HHMM-<short-task>.md` に記録する。
+- 中断や再開の可能性がある長時間作業は、このリポジトリで定められた run note 場所に記録する。慣習がない場合は、repo 内に internal run note を追加せず `$HOME\.codex\runs\<repo-name>\YYYYMMDD-HHMM-<short-task>.md` を使う。
 - handoff は active run note がある場合はそこに追記し、単体の handoff が必要な場合だけ `docs/codex/handoffs/` を使う。
 
 ## Verification
@@ -35,3 +35,4 @@ canonical: false
 ## Safety
 
 - 破壊的 command、remote mutation、deploy、migration、publishing、secret handling の前に確認する。
+- secret、token、private key、cookie、`.env` の内容は、ユーザーが明示的に依頼し、かつ task に必要な場合を除き、inspect、print、copy、upload、summary しない。

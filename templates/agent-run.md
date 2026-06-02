@@ -1,6 +1,6 @@
 # Agent Run: <task-name>
 
-Location: `docs/codex/runs/YYYYMMDD-HHMM-<short-task>.md`
+Location: `$HOME\.codex\runs\<repo-name>\YYYYMMDD-HHMM-<short-task>.md`, unless the repository documents a run-note convention
 Started: `<YYYY-MM-DD HH:MM local>`
 Last updated: `<YYYY-MM-DD HH:MM local>`
 Phase: `research | implementation | verification | paused | handoff`

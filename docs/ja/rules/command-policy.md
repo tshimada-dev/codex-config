@@ -12,6 +12,8 @@ canonical: false
 
 このファイルは保守的に運用する。日常的に安全だと分かったコマンドだけ、具体的に許可する。
 
+allow rule を追加するのは、読み取り専用 command、または既に信頼済みの repo における trusted verification command に限る。package install、networked tools、publish、deploy、migration、remote mutation、破壊的 command は `prompt` または `forbidden` のままにする。
+
 ## allow
 
 以下は読み取りまたは一般的な検証として扱い、許可する。

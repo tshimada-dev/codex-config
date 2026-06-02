@@ -33,9 +33,13 @@ Use a profile explicitly:
 
 ```powershell
 codex --profile safe
+codex --profile local-check
 codex --profile workspace
 ```
 
 `config.base.toml` and the `workspace` profile prioritize day-to-day productivity:
-workspace-write sandbox with network access enabled. Use `safe` for first-time,
-untrusted, review-only, or no-network work.
+workspace-write sandbox with network access enabled.
+
+Use `safe` for first-time, untrusted, review-only, or no-network inspection.
+Use `local-check` after initial inspection when local writes and tests are useful
+but dependency downloads or other outbound network access should stay blocked.
