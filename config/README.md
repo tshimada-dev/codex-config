@@ -1,0 +1,37 @@
+# Shared Codex Config
+
+This directory contains shareable Codex configuration fragments.
+
+## Files
+
+- `config.base.toml`: shared baseline keys that can be merged into `$CODEX_HOME/config.toml`.
+- `profiles/*.config.toml`: profile files copied to `$CODEX_HOME/<profile>.config.toml` when config install is requested.
+
+## Scope
+
+Do not put these in tracked config files:
+
+- `[projects.*]` trust state
+- secrets, tokens, credentials, or `.env` values
+- plugin cache or marketplace runtime state
+- automation state
+- logs
+- machine-specific absolute paths
+- MCP server entries that require local tokens or private paths
+
+`config.toml` is mutable runtime state. Codex may add local trust entries such as
+`[projects."/absolute/path"]`, so this repository does not copy a complete
+`config.toml` over the live file.
+
+Use the installer to merge only the shared baseline:
+
+```powershell
+.\scripts\install.ps1 -InstallConfig
+```
+
+Use a profile explicitly:
+
+```powershell
+codex --profile safe
+codex --profile workspace
+```

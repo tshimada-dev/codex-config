@@ -1,0 +1,14 @@
+# Shared Codex user configuration baseline.
+# This file intentionally excludes local trust state, secrets, plugin runtime state,
+# automation state, and machine-specific absolute paths.
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+model_reasoning_effort = "medium"
+model_reasoning_summary = "auto"
+
+[sandbox_workspace_write]
+network_access = false
+
+[shell_environment_policy]
+ignore_default_excludes = false

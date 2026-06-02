@@ -6,7 +6,11 @@ param(
 
     [switch]$Backup,
 
-    [switch]$Prune
+    [switch]$Prune,
+
+    [switch]$InstallConfig,
+
+    [switch]$OverwriteConfig
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,8 +31,12 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     throw "git is required because the installer copies only tracked managed files."
 }
 
-if ($Backup -and -not ($Overwrite -or $Prune)) {
-    throw "-Backup can only be used with -Overwrite or -Prune."
+if ($OverwriteConfig -and -not $InstallConfig) {
+    throw "-OverwriteConfig can only be used with -InstallConfig."
+}
+
+if ($Backup -and -not ($Overwrite -or $Prune -or $InstallConfig)) {
+    throw "-Backup can only be used with -Overwrite, -Prune, or -InstallConfig."
 }
 
 $script:CopiedFileCount = 0
@@ -36,6 +44,12 @@ $script:OverwrittenFileCount = 0
 $script:UnchangedFileCount = 0
 $script:BackedUpFileCount = 0
 $script:PrunedFileCount = 0
+$script:ConfigAddedKeyCount = 0
+$script:ConfigUpdatedKeyCount = 0
+$script:ConfigUnchangedKeyCount = 0
+$script:ConfigProfileCopiedCount = 0
+$script:ConfigProfileOverwrittenCount = 0
+$script:ConfigProfileUnchangedCount = 0
 
 $ManifestRelativePath = ".codex-config-managed-files"
 $ManifestVersion = 1
@@ -74,6 +88,16 @@ function Get-ManagedRelativeFiles {
         "rules",
         "templates",
         "skills/codex-*"
+    )
+
+    return $files | Where-Object { $_ } | Sort-Object
+}
+
+function Get-ConfigProfileRelativeFiles {
+    $files = Invoke-Git -Arguments @(
+        "ls-files",
+        "--",
+        "config/profiles/*.config.toml"
     )
 
     return $files | Where-Object { $_ } | Sort-Object
@@ -158,6 +182,137 @@ function Test-SameFileContent {
     )
 
     return (Get-FileHash -LiteralPath $Left).Hash -eq (Get-FileHash -LiteralPath $Right).Hash
+}
+
+function Test-ConfigTemplateIsShareable {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $sensitivePattern = "(?i)(api[_-]?key|token|password|secret|credential|private[_-]?key)"
+    foreach ($line in Get-Content -LiteralPath $Path) {
+        $trimmed = $line.Trim()
+        if (-not $trimmed -or $trimmed.StartsWith("#")) {
+            continue
+        }
+
+        if ($trimmed -match $sensitivePattern) {
+            throw "Refusing to install config template with sensitive-looking key or value: $Path"
+        }
+    }
+}
+
+function Get-ManagedConfigEntries {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    Test-ConfigTemplateIsShareable -Path $Path
+
+    $entries = @()
+    $seen = @{}
+    $table = ""
+    $blockedTablePattern = "^(projects|mcp_servers|marketplaces|plugins|otel)(\.|$)"
+
+    foreach ($line in Get-Content -LiteralPath $Path) {
+        $trimmed = $line.Trim()
+        if (-not $trimmed -or $trimmed.StartsWith("#")) {
+            continue
+        }
+
+        if ($trimmed -match "^\[([^\]]+)\]$") {
+            $table = $Matches[1]
+            if ($table -match $blockedTablePattern) {
+                throw "Refusing to install non-shareable config table [$table] from $Path"
+            }
+
+            continue
+        }
+
+        if ($trimmed -match "^([A-Za-z0-9_.-]+)\s*=") {
+            $key = $Matches[1]
+            $entryId = "$table`n$key"
+            if ($seen.ContainsKey($entryId)) {
+                throw "Duplicate managed config key in ${Path}: $key"
+            }
+            $seen[$entryId] = $true
+
+            $entries += [pscustomobject]@{
+                Table = $table
+                Key = $key
+                Line = $line
+            }
+        }
+    }
+
+    return @($entries)
+}
+
+function Get-ConfigLineInfo {
+    param(
+        [System.Collections.Generic.List[string]]$Lines
+    )
+
+    $keyIndexes = @{}
+    $tableIndexes = @{}
+    $table = ""
+
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        $trimmed = $Lines[$i].Trim()
+        if ($trimmed -match "^\[([^\]]+)\]$") {
+            $table = $Matches[1]
+            if (-not $tableIndexes.ContainsKey($table)) {
+                $tableIndexes[$table] = $i
+            }
+            continue
+        }
+
+        if ($trimmed -match "^([A-Za-z0-9_.-]+)\s*=") {
+            $key = $Matches[1]
+            $entryId = "$table`n$key"
+            if (-not $keyIndexes.ContainsKey($entryId)) {
+                $keyIndexes[$entryId] = $i
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        KeyIndexes = $keyIndexes
+        TableIndexes = $tableIndexes
+    }
+}
+
+function Get-FirstTableIndex {
+    param(
+        [System.Collections.Generic.List[string]]$Lines
+    )
+
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        if ($Lines[$i].Trim() -match "^\[[^\]]+\]$") {
+            return $i
+        }
+    }
+
+    return $Lines.Count
+}
+
+function Get-TableEndIndex {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+
+        [Parameter(Mandatory = $true)]
+        [int]$TableStartIndex
+    )
+
+    for ($i = $TableStartIndex + 1; $i -lt $Lines.Count; $i++) {
+        if ($Lines[$i].Trim() -match "^\[[^\]]+\]$") {
+            return $i
+        }
+    }
+
+    return $Lines.Count
 }
 
 function Copy-ManagedFile {
@@ -268,7 +423,7 @@ function Remove-PrunedManagedFiles {
         return
     }
 
-    $current = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $current = New-Object "System.Collections.Generic.HashSet[string]" ([StringComparer]::Ordinal)
     foreach ($relativePath in $CurrentRelativePaths) {
         [void]$current.Add($relativePath)
     }
@@ -307,6 +462,172 @@ function Remove-PrunedManagedFiles {
     }
 }
 
+function Merge-BaseConfig {
+    param(
+        [string]$BackupRoot
+    )
+
+    if (-not $InstallConfig) {
+        return
+    }
+
+    $baseConfigPath = Join-ManagedPath -Root $RepoRoot -RelativePath "config/config.base.toml"
+    if (-not (Test-Path -LiteralPath $baseConfigPath -PathType Leaf)) {
+        throw "Missing base config template: $baseConfigPath"
+    }
+
+    $entries = @(Get-ManagedConfigEntries -Path $baseConfigPath)
+    if ($entries.Count -eq 0) {
+        throw "Base config template has no managed keys: $baseConfigPath"
+    }
+
+    $configPath = Join-Path $CodexHome "config.toml"
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $configExists = Test-Path -LiteralPath $configPath -PathType Leaf
+    if ($configExists) {
+        foreach ($line in Get-Content -LiteralPath $configPath) {
+            $lines.Add($line)
+        }
+    }
+
+    $changed = $false
+    $info = Get-ConfigLineInfo -Lines $lines
+    foreach ($entry in $entries) {
+        $entryId = "$($entry.Table)`n$($entry.Key)"
+        if (-not $info.KeyIndexes.ContainsKey($entryId)) {
+            continue
+        }
+
+        $index = [int]$info.KeyIndexes[$entryId]
+        if ($lines[$index].Trim() -eq $entry.Line.Trim()) {
+            $script:ConfigUnchangedKeyCount++
+            continue
+        }
+
+        if (-not $OverwriteConfig) {
+            $displayKey = if ($entry.Table) { "[$($entry.Table)].$($entry.Key)" } else { $entry.Key }
+            throw "Refusing to overwrite existing config key with different value: $displayKey. Re-run with -InstallConfig -OverwriteConfig to replace shared config keys."
+        }
+
+        $lines[$index] = $entry.Line
+        $script:ConfigUpdatedKeyCount++
+        $changed = $true
+    }
+
+    $missingEntries = @($entries | Where-Object {
+        $entryId = "$($_.Table)`n$($_.Key)"
+        -not $info.KeyIndexes.ContainsKey($entryId)
+    })
+
+    $rootEntries = @($missingEntries | Where-Object { -not $_.Table })
+    if ($rootEntries.Count -gt 0) {
+        $insertIndex = Get-FirstTableIndex -Lines $lines
+        foreach ($entry in $rootEntries) {
+            $lines.Insert($insertIndex, $entry.Line)
+            $insertIndex++
+            $script:ConfigAddedKeyCount++
+            $changed = $true
+        }
+
+        if ($insertIndex -lt $lines.Count -and $lines[$insertIndex].Trim()) {
+            $lines.Insert($insertIndex, "")
+        }
+    }
+
+    $tables = @($missingEntries | Where-Object { $_.Table } | Select-Object -ExpandProperty Table -Unique)
+    foreach ($table in $tables) {
+        $tableEntries = @($missingEntries | Where-Object { $_.Table -eq $table })
+        $info = Get-ConfigLineInfo -Lines $lines
+
+        if ($info.TableIndexes.ContainsKey($table)) {
+            $insertIndex = Get-TableEndIndex -Lines $lines -TableStartIndex ([int]$info.TableIndexes[$table])
+            foreach ($entry in $tableEntries) {
+                $lines.Insert($insertIndex, $entry.Line)
+                $insertIndex++
+                $script:ConfigAddedKeyCount++
+                $changed = $true
+            }
+            continue
+        }
+
+        if ($lines.Count -gt 0 -and $lines[$lines.Count - 1].Trim()) {
+            $lines.Add("")
+        }
+        $lines.Add("[$table]")
+        foreach ($entry in $tableEntries) {
+            $lines.Add($entry.Line)
+            $script:ConfigAddedKeyCount++
+            $changed = $true
+        }
+    }
+
+    if (-not $changed) {
+        return
+    }
+
+    if ($configExists) {
+        Backup-ManagedFile -Source $configPath -RelativePath "config.toml" -BackupRoot $BackupRoot
+    }
+
+    $configParent = Split-Path -Parent $configPath
+    if ($configParent -and -not (Test-Path -LiteralPath $configParent)) {
+        if ($PSCmdlet.ShouldProcess($configParent, "Create config directory")) {
+            New-Item -ItemType Directory -Path $configParent -Force | Out-Null
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess($configPath, "Merge shared config keys from config/config.base.toml")) {
+        Set-Content -LiteralPath $configPath -Value $lines.ToArray() -Encoding utf8
+    }
+}
+
+function Copy-ConfigProfileFiles {
+    param(
+        [string]$BackupRoot
+    )
+
+    if (-not $InstallConfig) {
+        return
+    }
+
+    foreach ($relativePath in Get-ConfigProfileRelativeFiles) {
+        $source = Join-ManagedPath -Root $RepoRoot -RelativePath $relativePath
+        $profileName = Split-Path -Leaf $source
+        $destination = Join-Path $CodexHome $profileName
+        $destinationExists = Test-Path -LiteralPath $destination
+
+        Test-ConfigTemplateIsShareable -Path $source
+
+        if ($destinationExists) {
+            if (-not (Test-Path -LiteralPath $destination -PathType Leaf)) {
+                throw "Destination profile exists and is not a file: $destination"
+            }
+
+            if (Test-SameFileContent -Left $source -Right $destination) {
+                $script:ConfigProfileUnchangedCount++
+                Write-Host "Unchanged profile: $profileName"
+                continue
+            }
+
+            if (-not $OverwriteConfig) {
+                throw "Refusing to overwrite existing config profile with different content: $destination. Re-run with -InstallConfig -OverwriteConfig to replace shared config profiles."
+            }
+
+            Backup-ManagedFile -Source $destination -RelativePath $profileName -BackupRoot $BackupRoot
+        }
+
+        if ($PSCmdlet.ShouldProcess($destination, "Install config profile from $source")) {
+            Copy-Item -LiteralPath $source -Destination $destination -Force
+            if ($destinationExists) {
+                $script:ConfigProfileOverwrittenCount++
+            }
+            else {
+                $script:ConfigProfileCopiedCount++
+            }
+        }
+    }
+}
+
 $managedRelativeFiles = @(Get-ManagedRelativeFiles)
 $previousManagedRelativeFiles = @(Read-ManagedManifest)
 
@@ -328,14 +649,28 @@ foreach ($relativePath in $managedRelativeFiles) {
     Copy-ManagedFile -RelativePath $relativePath -BackupRoot $backupRoot
 }
 
+Merge-BaseConfig -BackupRoot $backupRoot
+Copy-ConfigProfileFiles -BackupRoot $backupRoot
+
 Write-ManagedManifest -RelativePaths $managedRelativeFiles
 
 if ($WhatIfPreference) {
     Write-Host "WhatIf completed for Codex config install to $CodexHome"
 }
-elseif ($Overwrite) {
-    Write-Host "Installed Codex config to $CodexHome with overwrite enabled"
+elseif ($Overwrite -or $OverwriteConfig) {
+    $enabledOverwriteModes = @()
+    if ($Overwrite) {
+        $enabledOverwriteModes += "managed file overwrite"
+    }
+    if ($OverwriteConfig) {
+        $enabledOverwriteModes += "config overwrite"
+    }
+    Write-Host "Installed Codex config to $CodexHome with $($enabledOverwriteModes -join ', ') enabled"
     Write-Host "Copied: $CopiedFileCount; overwritten: $OverwrittenFileCount; unchanged: $UnchangedFileCount; pruned: $PrunedFileCount"
+    if ($InstallConfig) {
+        Write-Host "Config keys added: $ConfigAddedKeyCount; updated: $ConfigUpdatedKeyCount; unchanged: $ConfigUnchangedKeyCount"
+        Write-Host "Config profiles copied: $ConfigProfileCopiedCount; overwritten: $ConfigProfileOverwrittenCount; unchanged: $ConfigProfileUnchangedCount"
+    }
     if ($Backup -and $BackedUpFileCount -gt 0) {
         Write-Host "Backed up $BackedUpFileCount file(s) to $backupRoot"
     }
@@ -343,4 +678,8 @@ elseif ($Overwrite) {
 else {
     Write-Host "Installed Codex config to $CodexHome without overwriting existing files"
     Write-Host "Copied: $CopiedFileCount; unchanged: $UnchangedFileCount; pruned: $PrunedFileCount"
+    if ($InstallConfig) {
+        Write-Host "Config keys added: $ConfigAddedKeyCount; updated: $ConfigUpdatedKeyCount; unchanged: $ConfigUnchangedKeyCount"
+        Write-Host "Config profiles copied: $ConfigProfileCopiedCount; overwritten: $ConfigProfileOverwrittenCount; unchanged: $ConfigProfileUnchangedCount"
+    }
 }

@@ -7,8 +7,9 @@ AI 活用状況を説明する際の実例として参照することはあり�
 汎用テンプレートではありません。
 
 このリポジトリでは、再利用しやすい Codex の作業ルール、テンプレート、汎用的な
-`codex-*` スキルだけを管理します。プラグインのキャッシュ、automation の状態、
-シークレット、実行ログ、端末固有のローカルファイルは管理しません。
+`codex-*` スキル、共有可能な config baseline だけを管理します。
+プラグインのキャッシュ、automation の状態、シークレット、実行ログ、
+端末固有のローカルファイルは管理しません。
 
 ## 内容
 
@@ -16,6 +17,7 @@ AI 活用状況を説明する際の実例として参照することはあり�
 - `rules/`: 共通のコマンドポリシーと長時間作業用の手順
 - `templates/`: run note や repository instruction のテンプレート
 - `skills/codex-*`: 汎用的な Codex ワークフロースキル
+- `config/`: 共有可能な `config.toml` baseline と profile files
 - `scripts/install.ps1`: 管理対象ファイルを `$HOME\.codex` にコピーする導入スクリプト
 - `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` 検査スクリプト
 - `docs/ja/`: 人間が読むための日本語参考訳
@@ -70,11 +72,42 @@ AI 活用状況を説明する際の実例として参照することはあり�
 
 `-Backup` は、削除または上書きされる既存ファイルを
 `$HOME\.codex.backup-YYYYMMDD-HHMMSS` に退避します。
-`-Backup` は `-Overwrite` または `-Prune` と一緒に指定します。
+`-Backup` は `-Overwrite`、`-Prune`、または `-InstallConfig` と一緒に指定します。
 
 untracked / ignored / hidden ファイルを意図せず配布しないよう、installer は git で
 tracked されている管理対象ファイルだけをコピーします。`-Prune` も manifest に載った
 過去の管理対象ファイルだけを削除し、個人用の未管理ファイルは削除しません。
+
+### config baseline を反映する場合
+
+`~/.codex/config.toml` は Codex runtime が local trust state や端末固有設定を
+追記する可能性があるため、このリポジトリでは live `config.toml` を丸ごと同期しません。
+共有可能な設定だけを `config/config.base.toml` に置き、明示指定時だけ既存 config に
+merge します。
+
+```powershell
+.\scripts\install.ps1 -InstallConfig
+```
+
+`-InstallConfig` は、`config/config.base.toml` の managed keys を
+`$CODEX_HOME/config.toml` に追加します。既存 key の値が異なる場合は上書きせず停止します。
+既存の shared config key を明示的に置き換える場合:
+
+```powershell
+.\scripts\install.ps1 -InstallConfig -OverwriteConfig
+```
+
+merge 前の live config をバックアップする場合:
+
+```powershell
+.\scripts\install.ps1 -InstallConfig -OverwriteConfig -Backup
+```
+
+`config/profiles/*.config.toml` は `$CODEX_HOME/<profile>.config.toml` にコピーされます。
+たとえば `config/profiles/safe.config.toml` は `codex --profile safe` で利用できます。
+
+`config/config.base.toml` と profile files には、`[projects.*]`、secrets、MCP server の
+private token/path、plugin runtime state、automation state、端末固有の絶対パスを入れません。
 
 ### スキルだけをインストールする場合
 
@@ -97,6 +130,7 @@ gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scop
 - 再利用できるスキルとドキュメントだけを管理する。
 - シークレット、トークン、`.env`、プラグインキャッシュ、automation の状態はコミットしない。
 - 端末固有の上書き設定は、git 管理外の local ファイルに置く。
+- live `config.toml` は丸ごと同期せず、共有可能な baseline だけを明示 merge する。
 - 危険なコマンドは broad allow にせず、prompt または forbidden のルールに入れる。
 - Codex が実行時に読む canonical な定義は英語版のままにし、日本語訳は `docs/ja/` に置く。
 - 英語版を変更したら日本語参考訳を更新し、訳文ファイルに未コミットの本文変更がある状態で `.\scripts\check-ja-source-commits.ps1 -Update` を実行して `source_commit` を同期する。

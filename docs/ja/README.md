@@ -18,6 +18,9 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [rules/checklists/ci-fix.md](rules/checklists/ci-fix.md): CI 修正チェックリスト
 - [templates/agent-run.md](templates/agent-run.md): run note テンプレート
 - [templates/repo-agents.md](templates/repo-agents.md): repository AGENTS テンプレート
+- `config/config.base.toml`: 共有可能な config baseline
+- `config/profiles/*.config.toml`: profile file
+- `config/README.md`: config baseline の管理範囲
 - [skills/codex-task-intake.md](skills/codex-task-intake.md): タスク受け入れ
 - [skills/codex-repo-scout.md](skills/codex-repo-scout.md): リポジトリ調査
 - [skills/codex-implementation-loop.md](skills/codex-implementation-loop.md): 実装ループ
@@ -32,6 +35,7 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - 英語版を変更したら、対応する日本語参考訳も更新する。
 - 日本語版には実行上の新ルールを追加しない。
 - 実行時に Codex に効かせたい変更は、必ず英語版の canonical ファイルに入れる。
+- live `config.toml` は丸ごと同期せず、共有可能な baseline だけを明示 merge する。
 - 各ファイル冒頭の `source` と `source_commit` を確認し、どの英語版に対応する訳か分かるようにする。
 - `source_commit` の確認と更新には `scripts/check-ja-source-commits.ps1` を使う。
 - `-Update` は、訳文ファイルに未コミットの本文変更がある場合だけ `source_commit` を更新する。

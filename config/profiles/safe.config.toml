@@ -1,0 +1,9 @@
+# Conservative profile for inspection, review, and planning.
+
+approval_policy = "on-request"
+sandbox_mode = "read-only"
+model_reasoning_effort = "medium"
+model_reasoning_summary = "auto"
+
+[shell_environment_policy]
+ignore_default_excludes = false
