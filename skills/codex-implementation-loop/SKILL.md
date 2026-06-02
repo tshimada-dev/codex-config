@@ -32,6 +32,16 @@ When subagents are available, prefer worker agents for bounded implementation sl
 7. Broaden checks when shared contracts, state, CLI behavior, UI flows, or public APIs changed.
 8. Summarize changed files, checks, and residual risk.
 
+## Loopback Conditions
+
+Return to an earlier step when:
+
+- New information changes the target behavior: go back to step 1, reconfirm the target behavior and files.
+- The file has changed or is dirty in a relevant area: go back to step 2, inspect the current file before editing.
+- The diff grows beyond the requested scope: go back to step 3, choose the smallest change again.
+- A check fails because of your change: fix the cause and go back to step 6, run the narrowest meaningful check.
+- A broader check exposes a shared-contract issue: go back to step 1 or step 3, depending on whether the expected behavior changed.
+
 ## Change Discipline
 
 - Preserve user changes in the worktree.
