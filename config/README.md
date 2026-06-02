@@ -1,35 +1,35 @@
 # Shared Codex Config
 
-This directory contains shareable Codex configuration fragments.
+このディレクトリには、複数端末で共有しやすい Codex config の断片を置きます。
 
 ## Files
 
-- `config.base.toml`: shared baseline keys that can be merged into `$CODEX_HOME/config.toml`.
-- `profiles/*.config.toml`: profile files copied to `$CODEX_HOME/<profile>.config.toml` when config install is requested.
+- `config.base.toml`: `$CODEX_HOME/config.toml` に merge できる共有 baseline key
+- `profiles/*.config.toml`: `-InstallConfig` 実行時に `$CODEX_HOME/<profile>.config.toml` へコピーされる profile file
 
 ## Scope
 
-Do not put these in tracked config files:
+tracked config file には以下を入れません。
 
 - `[projects.*]` trust state
-- secrets, tokens, credentials, or `.env` values
-- plugin cache or marketplace runtime state
+- secrets、tokens、credentials、`.env` values
+- plugin cache や marketplace runtime state
 - automation state
 - logs
 - machine-specific absolute paths
-- MCP server entries that require local tokens or private paths
+- local tokens や private paths が必要な MCP server entries
 
-`config.toml` is mutable runtime state. Codex may add local trust entries such as
-`[projects."/absolute/path"]`, so this repository does not copy a complete
-`config.toml` over the live file.
+`config.toml` は mutable runtime state です。Codex は
+`[projects."/absolute/path"]` のような local trust entries を追記する可能性があるため、
+この repository では live `config.toml` を丸ごとコピーしません。
 
-Use the installer to merge only the shared baseline:
+共有 baseline だけを merge するには installer を使います。
 
 ```powershell
 .\scripts\install.ps1 -InstallConfig
 ```
 
-Use a profile explicitly:
+profile を明示して使う場合:
 
 ```powershell
 codex --profile safe
@@ -37,9 +37,10 @@ codex --profile local-check
 codex --profile workspace
 ```
 
-`config.base.toml` and the `workspace` profile prioritize day-to-day productivity:
-workspace-write sandbox with network access enabled.
+`config.base.toml` と `workspace` profile は、日常開発の生産性を優先します。
+workspace-write sandbox で network access を許可します。
 
-Use `safe` for first-time, untrusted, review-only, or no-network inspection.
-Use `local-check` after initial inspection when local writes and tests are useful
-but dependency downloads or other outbound network access should stay blocked.
+`safe` は、初見 repo、未信頼 repo、review-only、no-network inspection に使います。
+
+`local-check` は、初期調査後に local writes や tests は必要だが、dependency download や
+外向き network access は止めたい場合に使います。
