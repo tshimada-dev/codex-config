@@ -2,6 +2,10 @@
 
 個人用の Codex 設定を、複数端末で使い回すためのリポジトリです。
 
+これは社内標準や公式ルールではなく、個人の作業環境を再現するための設定集です。
+AI 活用状況を説明する際の実例として参照することはありますが、導入を前提とした
+汎用テンプレートではありません。
+
 このリポジトリでは、再利用しやすい Codex の作業ルール、テンプレート、汎用的な
 `codex-*` スキルだけを管理します。プラグインのキャッシュ、automation の状態、
 シークレット、実行ログ、端末固有のローカルファイルは管理しません。
@@ -26,9 +30,12 @@
 
 前提: PowerShell 7+ と Git が利用できる環境で、git clone した作業ツリーから実行します。
 
-デフォルトでは追加のみを行います。既存の `$HOME\.codex` に同名ファイルがあり、
+デフォルトでは `$env:CODEX_HOME` を優先し、未設定の場合は `$HOME\.codex` に
+インストールします。インストール先に同名ファイルがあり、
 内容が異なる場合は上書きせずに停止します。既存ファイルと同じ内容の場合は
-`Unchanged` として skip します。
+`Unchanged` として skip します。installer はインストール先の `.codex-config-managed-files`
+に source repo、source commit、install 時刻、管理対象ファイル一覧を含む manifest を
+書き込みます。
 
 コピー内容を事前確認する場合:
 
@@ -42,17 +49,46 @@
 .\scripts\install.ps1 -Overwrite
 ```
 
+前回 installer が管理した後に、このリポジトリから削除またはリネームされたファイルを
+`$HOME\.codex` から削除する場合:
+
+```powershell
+.\scripts\install.ps1 -Prune
+```
+
 置き換え前のファイルをバックアップする場合:
 
 ```powershell
 .\scripts\install.ps1 -Overwrite -Backup
 ```
 
-`-Backup` は、上書きされる既存ファイルを `$HOME\.codex.backup-YYYYMMDD-HHMMSS`
-に退避します。`-Backup` は `-Overwrite` と一緒に指定します。
+削除または置き換え前のファイルをバックアップする場合:
+
+```powershell
+.\scripts\install.ps1 -Prune -Backup
+```
+
+`-Backup` は、削除または上書きされる既存ファイルを
+`$HOME\.codex.backup-YYYYMMDD-HHMMSS` に退避します。
+`-Backup` は `-Overwrite` または `-Prune` と一緒に指定します。
 
 untracked / ignored / hidden ファイルを意図せず配布しないよう、installer は git で
-tracked されている管理対象ファイルだけをコピーします。
+tracked されている管理対象ファイルだけをコピーします。`-Prune` も manifest に載った
+過去の管理対象ファイルだけを削除し、個人用の未管理ファイルは削除しません。
+
+### スキルだけをインストールする場合
+
+`skills/codex-*` だけを配布したい場合は、GitHub CLI の
+[`gh skill install`](https://cli.github.com/manual/gh_skill_install) も利用できます。
+全体設定ではなく、特定 skill だけを Codex の user scope に入れたいときに使います。
+
+```powershell
+gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scope user
+```
+
+このリポジトリの `scripts/install.ps1` は、`AGENTS.md`、`rules/`、`templates/`、
+複数の `skills/codex-*` をまとめて同期し、manifest と `-Prune` で管理対象を保守する
+ために残します。
 
 ## 運用方針
 
