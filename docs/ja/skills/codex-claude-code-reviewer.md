@@ -62,16 +62,16 @@ Useful options:
 - `-MaxPromptChars 200000` で prompt-size refusal threshold を変更する。
 - `-Run` を省略すると、Claude を呼ばずに generated prompt path と command preview を表示する。
 
-## Review Prompt Shape
+## レビュープロンプトの形
 
 Claude には findings-first の review output を依頼する。
 
 ```text
-Review the included Codex work as a senior code reviewer.
-Do not modify files. Base your answer only on the provided context.
-Prioritize correctness bugs, regressions, security/privacy issues, data loss, and missing tests.
-Return findings first, ordered by severity, with file/path references when possible.
-If there are no material issues, say so clearly and note residual risk.
+同梱した Codex の作業内容を、senior code reviewer としてレビューしてください。
+ファイルは変更しないでください。提供された context だけに基づいて回答してください。
+correctness bugs、regressions、security/privacy issues、data loss、missing tests を優先してください。
+findings を最初に返し、severity の高い順に並べ、可能な場合は file/path references を付けてください。
+material issues が無い場合はその旨を明確に述べ、残る risk を簡潔に補足してください。
 ```
 
 ## Guardrails
