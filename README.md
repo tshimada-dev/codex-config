@@ -6,12 +6,10 @@
 AI 活用状況を説明する際の実例として参照することはありますが、導入を前提とした
 汎用テンプレートではありません。
 
+## 管理するもの
+
 このリポジトリでは、再利用しやすい Codex の作業ルール、テンプレート、汎用的な
 `codex-*` スキル、共有可能な config baseline だけを管理します。
-プラグインのキャッシュ、automation の状態、シークレット、実行ログ、
-端末固有のローカルファイルは管理しません。
-
-## 内容
 
 - `AGENTS.md`: グローバルな Codex 作業ルール
 - `rules/`: 共通のコマンドポリシーと長時間作業用の手順
@@ -22,53 +20,32 @@ AI 活用状況を説明する際の実例として参照することはあり�
 - `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` 検査スクリプト
 - `docs/ja/`: 人間が読むための日本語参考訳
 
+管理しないもの:
+
+- シークレット、トークン、`.env`
+- プラグインキャッシュ、automation の状態、実行ログ
+- 端末固有のローカルファイル
+- live `config.toml` 全体
+
 ## インストール
-
-このリポジトリのルートで実行します。
-
-```powershell
-.\scripts\install.ps1
-```
 
 前提: PowerShell 7+ と Git が利用できる環境で、git clone した作業ツリーから実行します。
 
 デフォルトでは `$env:CODEX_HOME` を優先し、未設定の場合は `$HOME\.codex` に
-インストールします。インストール先に同名ファイルがあり、
-内容が異なる場合は上書きせずに停止します。既存ファイルと同じ内容の場合は
-`Unchanged` として skip します。installer はインストール先の `.codex-config-managed-files`
-に source repo、source commit、install 時刻、管理対象ファイル一覧を含む manifest を
-書き込みます。
+インストールします。インストール先に同名ファイルがあり、内容が異なる場合は
+上書きせずに停止します。既存ファイルと同じ内容の場合は `Unchanged` として skip します。
 
-コピー内容を事前確認する場合:
+installer はインストール先の `.codex-config-managed-files` に source repo、
+source commit、install 時刻、管理対象ファイル一覧を含む manifest を書き込みます。
 
-```powershell
-.\scripts\install.ps1 -WhatIf
-```
-
-既存の管理対象ファイルを明示的に置き換える場合:
-
-```powershell
-.\scripts\install.ps1 -Overwrite
-```
-
-前回 installer が管理した後に、このリポジトリから削除またはリネームされたファイルを
-`$HOME\.codex` から削除する場合:
-
-```powershell
-.\scripts\install.ps1 -Prune
-```
-
-置き換え前のファイルをバックアップする場合:
-
-```powershell
-.\scripts\install.ps1 -Overwrite -Backup
-```
-
-削除または置き換え前のファイルをバックアップする場合:
-
-```powershell
-.\scripts\install.ps1 -Prune -Backup
-```
+| 目的 | コマンド |
+| --- | --- |
+| 通常インストール | `.\scripts\install.ps1` |
+| 事前確認 | `.\scripts\install.ps1 -WhatIf` |
+| 既存の管理対象ファイルを置き換える | `.\scripts\install.ps1 -Overwrite` |
+| 前回管理後に削除・リネームされたファイルを `$HOME\.codex` から削除する | `.\scripts\install.ps1 -Prune` |
+| 置き換え前にバックアップする | `.\scripts\install.ps1 -Overwrite -Backup` |
+| 削除前にバックアップする | `.\scripts\install.ps1 -Prune -Backup` |
 
 `-Backup` は、削除または上書きされる既存ファイルを
 `$HOME\.codex.backup-YYYYMMDD-HHMMSS` に退避します。
@@ -78,56 +55,45 @@ untracked / ignored / hidden ファイルを意図せず配布しないよう、
 tracked されている管理対象ファイルだけをコピーします。`-Prune` も manifest に載った
 過去の管理対象ファイルだけを削除し、個人用の未管理ファイルは削除しません。
 
-### config baseline を反映する場合
+## Config Baseline
 
 `~/.codex/config.toml` は Codex runtime が local trust state や端末固有設定を
 追記する可能性があるため、このリポジトリでは live `config.toml` を丸ごと同期しません。
+
 共有可能な設定だけを `config/config.base.toml` に置き、明示指定時だけ既存 config に
 merge します。
 
-```powershell
-.\scripts\install.ps1 -InstallConfig
-```
+| 目的 | コマンド |
+| --- | --- |
+| baseline を既存 config に追加する | `.\scripts\install.ps1 -InstallConfig` |
+| 既存の shared config key を明示的に置き換える | `.\scripts\install.ps1 -InstallConfig -OverwriteConfig` |
+| merge 前の live config をバックアップする | `.\scripts\install.ps1 -InstallConfig -OverwriteConfig -Backup` |
 
 `-InstallConfig` は、`config/config.base.toml` の managed keys を
 `$CODEX_HOME/config.toml` に追加します。既存 key の値が異なる場合は上書きせず停止します。
-既存の shared config key を明示的に置き換える場合:
 
-```powershell
-.\scripts\install.ps1 -InstallConfig -OverwriteConfig
-```
+`config/config.base.toml` と profile files には、`[projects.*]`、secrets、MCP server の
+private token/path、plugin runtime state、automation state、端末固有の絶対パスを入れません。
 
-merge 前の live config をバックアップする場合:
-
-```powershell
-.\scripts\install.ps1 -InstallConfig -OverwriteConfig -Backup
-```
+## Profiles
 
 `config/profiles/*.config.toml` は `$CODEX_HOME/<profile>.config.toml` にコピーされます。
 たとえば `config/profiles/safe.config.toml` は `codex --profile safe` で利用できます。
 
-通常開発では、検証や依存解決の生産性を優先し、`config/config.base.toml` と
-`workspace` profile は workspace-write sandbox で network access を許可します。
-初見・未信頼リポジトリの調査、レビュー専用、または外向き通信を避けたい作業では
-`safe` profile を使います。
+| Profile | 用途 | Sandbox | Network |
+| --- | --- | --- | --- |
+| `workspace` | 通常開発用。検証や依存解決の生産性を優先する。 | `workspace-write` | enabled |
+| `local-check` | 初期調査後のローカル検証用。外向き通信は避ける。 | `workspace-write` | disabled |
+| `safe` | 初見・未信頼 repo、レビュー専用、no-network 調査用。 | `read-only` | disabled |
 
 `workspace` では network access を許可しますが、remote mutation、package install、
 publish、migration、破壊的な local command は `rules/command-policy.rules` で
 確認を挟む方針です。
 
-profile の使い分け:
-
-- `workspace`: 通常開発用。workspace-write sandbox と network access を許可する。
-- `local-check`: 初期調査後のローカル検証用。workspace-write sandbox だが network access は閉じる。
-- `safe`: 初見・未信頼 repo、レビュー専用、no-network 調査用。read-only sandbox。
-
 初見・未信頼 repo では、build/test も任意コード実行として扱います。まず `safe` で
 調査し、信頼できると判断した後に `local-check` または `workspace` へ切り替えます。
 
-`config/config.base.toml` と profile files には、`[projects.*]`、secrets、MCP server の
-private token/path、plugin runtime state、automation state、端末固有の絶対パスを入れません。
-
-### スキルだけをインストールする場合
+## スキルだけをインストールする場合
 
 `skills/codex-*` だけを配布したい場合は、GitHub CLI の
 [`gh skill install`](https://cli.github.com/manual/gh_skill_install) も利用できます。
