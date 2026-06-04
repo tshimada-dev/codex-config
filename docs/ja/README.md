@@ -32,6 +32,7 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [skills/codex-pr-readiness.md](skills/codex-pr-readiness.md): PR 準備
 - [skills/codex-context-handoff.md](skills/codex-context-handoff.md): 引き継ぎ文脈
 - [skills/codex-claude-code-reviewer.md](skills/codex-claude-code-reviewer.md): Claude Code による外部レビュー
+- [skills/codex-effort-estimator.md](skills/codex-effort-estimator.md): 工数見積もり統括
 
 ## 更新ルール
 

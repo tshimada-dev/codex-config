@@ -18,6 +18,7 @@ AI 活用状況を説明する際の実例として参照することはあり�
 - `config/`: 共有可能な `config.toml` baseline と profile files
 - `scripts/install.ps1`: 管理対象ファイルを `$HOME\.codex` にコピーする導入スクリプト
 - `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` 検査スクリプト
+- `scripts/install-estimation-skills.ps1`: 見積もり系スキルが使う外部依存スキルの導入スクリプト
 - `docs/ja/`: 人間が読むための日本語参考訳
 
 管理しないもの:
@@ -106,6 +107,28 @@ gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scop
 このリポジトリの `scripts/install.ps1` は、`AGENTS.md`、`rules/`、`templates/`、
 複数の `skills/codex-*` をまとめて同期し、manifest と `-Prune` で管理対象を保守する
 ために残します。
+
+## 外部依存スキル
+
+`skills/codex-effort-estimator` は単体でも動作しますが、既存の見積もりスキルを
+併用できる環境ではそれらをサブエージェントごとの手法として使えます。
+
+外部依存スキルをまとめて導入する場合:
+
+```powershell
+.\scripts\install-estimation-skills.ps1
+```
+
+既存の導入済みスキルを置き換える場合:
+
+```powershell
+.\scripts\install-estimation-skills.ps1 -Overwrite
+```
+
+このスクリプトは、上流リポジトリの固定コミットから
+`development-estimation`、`plan-estimateeffort`、`cost-estimate` を導入します。
+`development-estimation` は上流の参照ファイルが欠けているため、必要最小限の
+`references/estimate.md` をローカルで補います。
 
 ## 運用方針
 
