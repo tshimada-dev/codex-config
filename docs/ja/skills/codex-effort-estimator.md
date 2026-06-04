@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/SKILL.md
-source_commit: 4e0c02d56986cbae7db1327e3fe27ba6b9a4b8e6
+source_commit: e96e2a4a183cc6d6c911b6a2aa222c8ec5a1f13e
 canonical: false
 ---
 
