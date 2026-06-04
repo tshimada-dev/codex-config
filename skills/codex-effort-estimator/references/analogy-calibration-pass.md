@@ -25,7 +25,8 @@ Compare the current project with historical anchors and return adjustment candid
    - Requirements clarity and stakeholder review load.
    - Testing, acceptance, documentation, and handoff burden.
 4. Produce calibration factors or adjustment candidates only where the comparison is credible.
-5. Explain why the current WBS/PERT should stay unchanged, move up/down, or widen.
+5. When organization-specific productivity baselines exist, compare current scope against them, such as person-days per screen, report, integration, CRUD module, migration object, or KLOC.
+6. Explain why the current WBS/PERT should stay unchanged, move up/down, or widen.
 
 ## Output Schema
 
@@ -34,6 +35,7 @@ Return:
 - Current sources and historical anchors inspected.
 - Anchor table with `Anchor`, `Scope`, `Actual/Estimate`, `Similarity`, `Differences`, and `Reliability`.
 - Calibration table with `Dimension`, `Current vs anchor`, `Implication`, and `Adjustment candidate`.
+- Productivity baseline comparison when actual organizational metrics are available.
 - Recommended calibration action: keep, shift center, widen range, or reject anchor.
 - Confidence level.
 - What historical data would improve calibration.

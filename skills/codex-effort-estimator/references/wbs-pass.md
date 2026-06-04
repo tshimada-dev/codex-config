@@ -11,7 +11,7 @@ Estimate human engineering effort in person-days. Do not estimate price, rates, 
 1. List the source files or text blocks inspected.
 2. Identify in-scope deliverables, explicit exclusions, and unknowns.
 3. Break work into WBS lines that are small enough to estimate without hiding unrelated features.
-4. Estimate each line with low / likely / high person-days.
+4. Estimate each line with low / most likely / high person-days. In WBS output, `Likely` means the same central estimate as PERT `Most likely`, not a median or probability-weighted expected value.
 5. Include PM, requirements, design, implementation, reports/output, testing, acceptance support, manuals/training, deployment, and handoff when they are part of the delivery.
 6. Apply risk at the WBS line or total level only when it is traceable to source evidence.
 7. If AI coding assistance is explicitly in scope, keep raw human effort values but label which WBS lines are routine coding, code-adjacent, or non-reducible for downstream adjustment.
@@ -40,7 +40,7 @@ Return:
 
 - Source files inspected.
 - Scope and exclusions.
-- WBS table with `Component`, `Basis`, `Low`, `Likely`, `High`, and `Notes`.
+- WBS table with `Component`, `Basis`, `Low`, `Likely / Most likely`, `High`, and `Notes`.
 - AI-reducibility notes when AI coding assistance is explicitly assumed.
 - Total low / likely / high person-days.
 - Main assumptions.

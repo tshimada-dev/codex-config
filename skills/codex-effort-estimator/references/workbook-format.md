@@ -50,7 +50,7 @@ Use these exact sheet names. Keep the numeric prefixes stable. Do not renumber s
 | 7 | `07_AI補正` | Optional | AI coding assistance adjustment when explicitly assumed. |
 | 8 | `08_公共レビュー` | Optional | Public-sector/report/acceptance coverage review. |
 | 9 | `09_Repo` | Optional | Repository rebuild or completion estimate. |
-| 10 | `10_親統合` | Yes | Parent reconciliation, final recommendation, high-risk scenario. |
+| 10 | `10_親統合` | Yes | Pass coverage, parent reconciliation, final recommendation, high-risk scenario. |
 | 11 | `11_前提リスク` | Yes | Assumptions, exclusions, risks, and confirmation questions. |
 
 For high-stakes estimates, include optional sheets that were considered but not applicable with a short `適用なし` row rather than silently changing the workbook structure. For quick internal estimates, optional sheets may be omitted, but required sheets and their order stay fixed.
@@ -112,7 +112,7 @@ Columns:
 
 Columns:
 
-`分類`, `作業`, `根拠`, `Low`, `Likely`, `High`, `AI削減区分`, `メモ`
+`分類`, `作業`, `根拠`, `Low`, `Most likely`, `High`, `AI削減区分`, `メモ`
 
 `AI削減区分` values: `定型実装`, `コード隣接`, `削減不可`, `対象外`.
 
@@ -120,7 +120,7 @@ Columns:
 
 Columns:
 
-`タスク`, `根拠`, `楽観`, `最頻/普通`, `悲観`, `期待値`, `AI削減区分`, `メモ`
+`タスク`, `根拠`, `楽観`, `最頻/普通`, `悲観`, `期待値`, `SD`, `分散`, `AI削減区分`, `メモ`
 
 Expected formula:
 
@@ -129,6 +129,12 @@ Expected formula:
 ```
 
 For example, when `楽観`, `最頻/普通`, and `悲観` are columns C, D, and E on row 5, use `=(C5+4*D5+E5)/6`. Use cell references or structured table references supported by the spreadsheet tool; do not emit display-label formulas such as `=(Optimistic+4*Most likely+Pessimistic)/6`.
+
+SD formula example: `=(E5-C5)/6`.
+
+Variance formula example: `=G5^2` when SD is column G.
+
+For totals, sum `期待値` and `分散`, then calculate aggregate SD with `=SQRT(SUM([variance range]))`. Show the stakeholder confidence interval as `total expected +/- z * aggregate SD`; use `z=1.645` for the default 90% range. Do not use simple sums of optimistic and pessimistic columns as the normal total range.
 
 ### `05_類推補正`
 
@@ -166,7 +172,13 @@ Columns:
 
 ### `10_親統合`
 
-Columns:
+Start with a pass coverage table:
+
+`Pass`, `状態`, `理由`, `根拠`
+
+`状態` values: `実行`, `スキップ`, `非該当`.
+
+Then include the reconciliation table:
 
 `論点`, `WBS/PERTとの差`, `親判断`, `Final Low`, `Final Base`, `Final High`, `根拠`
 
@@ -201,7 +213,9 @@ Before delivery, verify:
 - Required sheets exist with exact names and order.
 - Optional sheets keep their fixed names when present.
 - Required columns are present and in order.
+- `10_親統合` includes a pass coverage table for every standard delegate with run/skip reason.
 - Totals and PERT expected values use formulas.
+- PERT total range uses variance aggregation, not simple endpoint sums.
 - Baseline and AI-assisted values are separate when AI assistance is assumed.
 - Public/report review findings are not displayed as comparable total estimates unless explicitly additive.
 - No formula errors: `#REF!`, `#VALUE!`, `#DIV/0!`, `#NAME?`, `#N/A`.

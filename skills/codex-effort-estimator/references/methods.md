@@ -27,9 +27,18 @@ PERT expected value:
 ```text
 expected = (optimistic + 4 * most_likely + pessimistic) / 6
 standard_deviation = (pessimistic - optimistic) / 6
+variance = standard_deviation ^ 2
 ```
 
-Use the PERT expected value for planning, but present rounded ranges for stakeholders.
+Use the PERT expected value for planning. For aggregate ranges, sum expected values and aggregate variance:
+
+```text
+total_expected = sum(expected)
+total_standard_deviation = sqrt(sum(variance))
+confidence_interval = total_expected +/- z * total_standard_deviation
+```
+
+Use `z = 1.282` for about 80% confidence, `z = 1.645` for about 90%, and `z = 1.960` for about 95%. Do not present `sum(optimistic)` and `sum(pessimistic)` as the normal aggregate range unless you explicitly mean a fully correlated best/worst-case scenario.
 
 ## Risk Multipliers
 
@@ -46,6 +55,13 @@ Apply multipliers after estimating the base WBS.
 | Regulated/security-sensitive workflow | 1.15-1.5 |
 
 Do not stack many multipliers mechanically. Explain the dominant risk drivers and use a single combined adjustment when that is clearer.
+
+## Quantitative Sanity Checks
+
+- For three-point estimates, pessimistic should usually be about 1.5-3.0x optimistic. Values outside that range are allowed, but require a note explaining the asymmetric risk.
+- For very small tasks, avoid false precision; group related tasks when decimals imply more accuracy than the source supports.
+- If one line item is more than 25-30% of the total, split it or explain why it cannot be decomposed.
+- If organization-specific actual productivity is available, such as person-days per screen, report, integration, CRUD module, or KLOC, use it as calibration evidence. If no baseline exists, state that the estimate relies on document-derived judgment rather than measured organizational productivity.
 
 ## AI Coding Assistance
 
@@ -64,5 +80,6 @@ Before finalizing:
 - Confidence should drop when source documents are samples rather than final specifications.
 - Quote ranges should widen when requirements are document-derived and not yet confirmed by workshops.
 - If similar past work exists, explain whether it validates, shifts, widens, or is rejected as an anchor.
+- If historical productivity exists, state whether current effort is consistent with that baseline or why it differs.
 - If requirements are unclear, produce a discovery estimate instead of pretending implementation scope is stable.
 - If AI coding assistance is assumed, show both baseline and adjusted effort so the productivity assumption remains auditable.

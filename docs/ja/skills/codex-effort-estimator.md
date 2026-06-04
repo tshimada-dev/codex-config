@@ -20,10 +20,10 @@ canonical: false
 
 1. scope、out of scope、不明点、対象読者、単位を確認する。
 2. document、repository、issue backlog などの根拠を収集する。
-3. 手法 pass を実行する前に subagent が利用可能かを最優先で確認し、利用可能なら規模に関係なく手法ごとに subagent を分ける。
-4. WBS に分解する。
-5. low / base / high、または PERT で見積もる。
-6. 前提、除外、リスク、信頼度、確認事項を含めて要約する。
+3. 該当する Decision Path をすべて選び、Pass Coverage Gate で全 pass を `run` / `skipped` / `not applicable` に分類し、skip 理由を記録する。
+4. 手法 pass を実行する前に subagent が利用可能かを最優先で確認し、利用可能なら規模に関係なく手法ごとに subagent を分ける。
+5. WBS、PERT、repo-cost、discovery など該当 pass を実行する。
+6. 前提、除外、リスク、信頼度、確認事項、pass coverage を含めて要約する。
 
 ## Subagent 統括
 
@@ -42,6 +42,8 @@ subagent 利用の目的は並行作業ではなく、見積もり観点の独�
 
 親 agent は各手法の差分を比較し、前提や scope の違いを明示したうえで、最終レンジと planning center をまとめます。
 
+非 trivial な見積もりでは、最低限 `sizing または sizing 不要理由`、`WBS/PERT/repo-cost のうち少なくとも1つの工数手法`、`coverage/risk review`、`parent synthesis`、`固定フォーマット Excel workbook` を通します。公共、repo、discovery、analogy、AI補正などの条件付き pass は、実行しない場合も skip 理由を明示します。
+
 Sizing は画面、帳票、CSV、データ、連携、deliverables などの規模根拠として扱い、単独の総工数見積もりにはしません。Analogy calibration は過去実績との比較による補正・検証として扱い、WBS/PERT を根拠なく平均値で置き換えません。Discovery は要件が不安定な場合の事前調査・要件定義工数として扱い、実装工数とは分けて表示します。
 
 公共・帳票・受入などの specialist pass は、原則として単純加算する補正値ではなく、WBS/PERT の coverage audit として扱います。親 agent は findings を `already covered`、`missing/thin`、`risk-only` に分け、既に WBS/PERT に含まれる作業は二重計上しません。未織り込み部分だけを調整し、不確実性が高いだけの項目は high range や high-risk scenario に反映します。
@@ -51,6 +53,8 @@ Sizing は画面、帳票、CSV、データ、連携、deliverables などの規
 Excel workbook は、非 trivial な見積もりの標準成果物として扱います。ユーザーが text-only を求めた場合、または quick gut-check の場合だけ省略します。作成時は `references/spreadsheet-output.md` と `references/workbook-format.md` を読み、固定の sheet 名、sheet 順、列構成、色、数値形式に従って作成します。公共・帳票 review のような補正候補は、WBS/PERT などの総工数見積と同じ比較表に置かず、coverage/risk review または adjustment candidate として分けて表示します。
 
 ユーザーが AI coding assistance を前提として明示した場合は、raw human baseline と AI-assisted adjusted range を分けて示します。補正は実装・定型テスト・雛形生成など coding-heavy な工程に限定し、requirements、stakeholder review、acceptance、帳票目視 QA、data validation、deployment coordination、不明な domain decision は安易に削減しません。
+
+PERT の集計では、各 task の期待値を合計し、レンジは端点の単純合計ではなく分散加算で求めます。標準では `total expected ± 1.645 * sqrt(sum(variance))` を 90% confidence range として扱います。WBS の `Likely` は PERT の `Most likely` と同じ中心値を意味します。
 
 ## 注意
 

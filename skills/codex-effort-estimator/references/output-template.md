@@ -33,6 +33,7 @@ Use this structure for concise estimate deliverables.
 
 Always include:
 
+- Pass coverage: which method passes were run, skipped, or not applicable, with reasons
 - Assumptions
 - Exclusions
 - Risks and contingency

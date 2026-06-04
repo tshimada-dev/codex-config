@@ -26,7 +26,7 @@ For substantial estimates, create the standard workbook shape from `workbook-for
 | `07_AI補正` | AI coding assistance adjustment when explicitly assumed. |
 | `08_公共レビュー` | Public-sector/report/acceptance coverage review when applicable. |
 | `09_Repo` | Repository rebuild or completion estimate when applicable. |
-| `10_親統合` | Parent reconciliation: method differences, final range, implementation-only range, high-risk range. |
+| `10_親統合` | Parent reconciliation: pass coverage, method differences, final range, implementation-only range, high-risk range. |
 | `11_前提リスク` | Assumptions, exclusions, risks, and confirmation questions. |
 
 When AI coding assistance is explicitly assumed, add either a dedicated `AI補正` / `AI Adjustment` sheet or a clearly separated table in `親統合`.
@@ -47,13 +47,13 @@ Default phases:
 - Testing/acceptance
 - Training/manuals/delivery/handoff
 
-A phase summary should include total-estimate method center values by phase, for example WBS likely, PERT most-likely, and parent final standard. If a specialist pass is a coverage/risk review rather than a total estimate, label it clearly as review coverage, risk range driver, or adjustment candidate.
+A phase summary should include total-estimate method center values by phase, for example WBS most likely, PERT expected, and parent final standard. If a specialist pass is a coverage/risk review rather than a total estimate, label it clearly as review coverage, risk range driver, or adjustment candidate.
 
 | Column | Meaning |
 |---|---|
 | Phase | Work phase or delivery area. |
-| WBS likely | WBS method central value. |
-| PERT most likely | PERT method central value. |
+| WBS most likely | WBS method central value. |
+| PERT expected | PERT expected value after variance aggregation. |
 | Review/adjustment candidate | Public-sector/report/repository review finding, risk driver, or non-overlapping adjustment candidate. Do not present it as a comparable total estimate unless it is actually a total estimate. |
 | Parent final standard | Final parent synthesis central value. |
 | AI-assisted adjusted | Final adjusted central value when AI coding assistance is explicitly assumed. |
@@ -68,19 +68,30 @@ The summary should include a method comparison table:
 | 手法 | 楽観/Low | 普通/Base | 悲観/High | 中心/期待値 | 親の解釈 |
 |---|---:|---:|---:|---:|---|
 
+The synthesis sheet must also include a pass coverage table:
+
+| Pass | Status | Reason | Evidence |
+|---|---|---|---|
+
+Use `run`, `skipped`, or `not applicable` in English outputs. For the default Japanese workbook, use `実行`, `スキップ`, or `非該当`. Do not omit a pass silently.
+
 For PERT, show:
 
 - optimistic
 - most likely
 - pessimistic
 - expected value using `(O + 4M + P) / 6`
-- optional standard deviation using `(P - O) / 6`
+- standard deviation using `(P - O) / 6`
+- variance using `standard_deviation ^ 2`
+- aggregate confidence interval using `sum(expected) +/- z * sqrt(sum(variance))`
+
+Do not use `sum(optimistic)` and `sum(pessimistic)` as the normal aggregate PERT range. If you show those endpoint sums, label them as fully correlated best/worst-case scenario, not as the default confidence interval.
 
 For WBS, show:
 
 - WBS component
 - basis
-- low/likely/high
+- low / most likely / high, where `likely` is the central most-likely estimate
 - total formulas
 
 For review or adjustment passes, separate them from total-estimate methods unless they are intentionally total estimates. Show:

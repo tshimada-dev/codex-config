@@ -1,6 +1,6 @@
 ---
 name: codex-effort-estimator
-description: Estimate software projects, feature work, public-sector/business systems, document-driven RFPs, GitHub issue backlogs, or existing repository rebuild cost. Use when Codex is asked for effort estimates, person-days, timeline ranges, WBS breakdowns, quote support, assumptions, risks, exclusions, confidence intervals, stakeholder-ready summaries, or estimate workbooks. Orchestrates self-contained local estimation references and method-specific subagent passes.
+description: Estimate software projects, feature work, public-sector/business systems, document-driven RFPs, GitHub issue backlogs, or existing repository rebuild cost. Use when Codex is asked for effort estimates, person-days, timeline ranges, WBS breakdowns, quote support, assumptions, risks, exclusions, confidence intervals, stakeholder-ready summaries, or estimate workbooks. Orchestrates self-contained local estimation references, method-specific subagent passes, and pass coverage gates.
 ---
 
 # Codex Effort Estimator
@@ -22,7 +22,38 @@ Classify the request before estimating:
 | User explicitly assumes AI coding assistance | Use `references/ai-coding-assistance-adjustment.md` during parent synthesis or as an explicit adjustment pass. Adjust implementation-heavy work, not stakeholder, acceptance, or uncertainty work. |
 | AI-agent execution time estimate | Use a separate agent-work estimation approach if available; do not convert human delivery estimates directly into agent wall-clock time. |
 
-If multiple paths apply, run the relevant local reference passes first and use this skill to normalize and reconcile the final answer.
+Select every matching row, not just the best-looking row. Hybrid requests, such as public-sector repository rebuilds or RFP-derived backlog estimates, require the union of all applicable passes.
+
+Before estimating, complete the `Pass Coverage Gate` below. Do not silently skip an applicable viewpoint.
+
+## Minimum Spine
+
+Every non-trivial estimate should include this minimum spine:
+
+1. Sizing or explicit reason sizing is not useful.
+2. At least one effort method: WBS for broad/document-driven scope, PERT for decomposed task scope, or repository cost for rebuild/completion scope.
+3. Coverage/risk review: public/report review when any trigger is present; otherwise a parent-owned risk review that checks assumptions, exclusions, validation, acceptance, and delivery support.
+4. Parent synthesis with final range, confidence, and pass coverage.
+5. Fixed-format workbook unless the user asks for text only or the request is a quick gut-check.
+
+Use discovery instead of implementation estimating when the source material is not stable enough to define delivery scope. Use analogy calibration only when comparable actuals, prior estimates, or productivity baselines exist, but always record whether it was run or skipped.
+
+## Pass Coverage Gate
+
+Before running method passes, create a coverage checklist from the table below. For each pass, record `run`, `skipped`, or `not applicable`, with a reason. Include this checklist in the final answer and workbook synthesis.
+
+| Pass | Run when | Skip only when |
+|---|---|---|
+| Sizing | Scope has countable screens, reports, imports, exports, entities, workflows, roles, integrations, environments, or deliverables | Source is too small or abstract to count; record what could not be counted. |
+| WBS | Scope is broad, document-driven, RFP-driven, or feature/project oriented | PERT or repo-cost is the sole appropriate effort method and WBS would duplicate it without adding structure. |
+| PERT | Tasks are decomposed enough for three-point estimates | Tasks are not decomposed enough; record that WBS or discovery is used instead. |
+| Repository cost | Existing repository rebuild, replacement, completion, or production-hardening effort is in scope | No repository or codebase is in scope. |
+| Discovery | Requirements, data, reports, integrations, acceptance criteria, or constraints are too unclear for implementation estimating | Implementation scope is stable enough for WBS/PERT/repo-cost. |
+| Analogy calibration | Comparable historical actuals, prior estimates, or productivity baselines exist | No credible anchor exists; state that no baseline is available. |
+| AI coding assistance adjustment | The user explicitly assumes AI-assisted coding | The user did not explicitly include AI coding assistance. |
+| Public-sector/report review | Procurement, government, legacy Office, CSV, reports, training, acceptance, formal deliverables, or handoff matters | None of those triggers are present; state the checked triggers. |
+
+If a pass is skipped, the final synthesis must make the skip visible. A silent omission is a workflow failure.
 
 ## Workflow
 
@@ -38,6 +69,7 @@ If multiple paths apply, run the relevant local reference passes first and use t
    - When counts matter, use `references/sizing-pass.md` before estimating so WBS/PERT lines are grounded in visible size signals.
 
 3. Decide whether to delegate:
+   - Build the pass coverage checklist first, selecting all applicable passes from the decision path and coverage gate.
    - Check whether subagents are available before running method passes. This is a priority check, not an optional optimization.
    - When subagents are available, delegate each applicable method pass to a separate subagent regardless of estimate size.
    - Use subagents primarily to preserve independence between estimation viewpoints; parallel execution is useful but not the reason for delegation.
@@ -87,6 +119,7 @@ The purpose of delegation in this skill is viewpoint independence and anchoring 
 - Do not pass parent estimates, prior estimate files, preferred ranges, suspected answers, or parent interpretations into subagent prompts.
 - Start subagents without forked conversation context when the tool supports it, so they do not inherit the parent's prior reasoning.
 - Collect each estimate with its assumptions, exclusions, risks, confidence, and rationale.
+- Collect each pass status with run/skip reason, even when the pass was not delegated.
 - Reconcile differences by identifying which method, scope, or risk assumption caused the gap.
 - Produce the final range, planning center, confidence, and stakeholder-ready explanation.
 
@@ -114,7 +147,7 @@ For specialist passes, name only the specialization and source documents. Let th
 | Delegate | Use when | Assignment |
 |---|---|---|
 | Sizing pass | Documents, RFPs, repos, or backlogs expose countable scope signals | Use `references/sizing-pass.md`. Produce counted scope facts and sizing confidence; do not estimate total effort unless asked. |
-| WBS bottom-up pass | General feature/project or document-driven scope | Use `references/wbs-pass.md`. Produce WBS low/likely/high effort, assumptions, exclusions, risks, and confidence. |
+| WBS bottom-up pass | General feature/project or document-driven scope | Use `references/wbs-pass.md`. Produce WBS low/most-likely/high effort, assumptions, exclusions, risks, and confidence. |
 | PERT pass | Tasks can be estimated with three-point ranges | Use `references/pert-pass.md`. Produce optimistic/most-likely/pessimistic estimates, PERT expected value, and confidence notes. |
 | Analogy calibration pass | Comparable past projects, actuals, or prior estimates are available | Use `references/analogy-calibration-pass.md`. Compare WBS/PERT against historical anchors and explain adjustment candidates without hiding variance. |
 | Discovery pass | Requirements are too unclear for implementation estimating | Use `references/discovery-pass.md`. Estimate discovery/requirements work and identify decisions needed before implementation estimating. |
@@ -131,7 +164,7 @@ Use $codex-effort-estimator with references/sizing-pass.md only for the method i
 ```
 
 ```text
-Use $codex-effort-estimator with references/wbs-pass.md only for the method instructions. Source documents: [paths]. Estimate the named project in person-days using WBS low/likely/high ranges. Return WBS table, assumptions, exclusions, risks, confidence, and what would materially change the estimate. Do not use conclusions from other estimators. Do not price the work.
+Use $codex-effort-estimator with references/wbs-pass.md only for the method instructions. Source documents: [paths]. Estimate the named project in person-days using WBS low/most-likely/high ranges. Return WBS table, assumptions, exclusions, risks, confidence, and what would materially change the estimate. Do not use conclusions from other estimators. Do not price the work.
 ```
 
 ```text
@@ -162,6 +195,7 @@ Use $codex-effort-estimator with references/repo-cost-pass.md only for the metho
 
 The parent should report:
 
+- Pass coverage checklist with `run`, `skipped`, or `not applicable` for every standard delegate, including reasons.
 - Method results side by side.
 - Agreement and disagreement.
 - Scope or assumption differences causing gaps.
