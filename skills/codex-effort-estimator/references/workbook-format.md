@@ -160,7 +160,7 @@ Columns:
 
 Columns:
 
-`工程`, `ベースライン`, `倍率`, `補正後`, `削減可否`, `根拠`
+`分類`, `工程`, `ベースライン`, `倍率`, `補正後`, `削減可否`, `根拠`
 
 Keep `ベースライン` and `補正後` side by side. Do not overwrite the raw estimate.
 
@@ -211,6 +211,7 @@ Use separate tables with the same columns:
 - Use thin borders around all table cells.
 - Wrap long text columns.
 - Right-align numeric columns.
+- Set column widths per sheet according to that sheet's actual columns and content. Do not rely on one global default width map when sheet structures differ; each populated column must receive an intentional width based on whether it is a label, number, evidence, or notes column.
 - Keep column widths stable:
   - short label columns: 14-18
   - description/evidence columns: 28-45
@@ -231,6 +232,8 @@ Before delivery, verify:
 - WBS three-point data produces WBS-derived variance aggregation even when independent PERT was skipped.
 - Baseline and AI-assisted values are separate when AI assistance is assumed.
 - Public/report review findings are not displayed as comparable total estimates unless explicitly additive.
+- Every populated column in every sheet has an intentional width. Check each sheet independently; do not assume a shared width setup covers sheets with different column counts or different long-text columns.
 - No formula errors: `#REF!`, `#VALUE!`, `#DIV/0!`, `#NAME?`, `#N/A`.
 - Header rows, total rows, and risk/assumption colors follow the token table.
 - Text is readable without manual resizing in the main summary and synthesis sheets.
+- Render and visually inspect representative detailed sheets with different layouts, including any sheet that has wide evidence/notes text, many numeric columns, or optional method-specific columns.

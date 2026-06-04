@@ -166,7 +166,7 @@ Columns:
 
 Columns:
 
-`工程`, `ベースライン`, `倍率`, `補正後`, `削減可否`, `根拠`
+`分類`, `工程`, `ベースライン`, `倍率`, `補正後`, `削減可否`, `根拠`
 
 `ベースライン` と `補正後` は横に並べて保持します。raw estimate を overwrite しないでください。
 
@@ -217,6 +217,7 @@ three-point data が存在するときは、range synthesis table も含めま�
 - 全 table cells に thin borders を付ける。
 - long text columns は wrap する。
 - numeric columns は right-align する。
+- column widths は sheet ごとの実際の columns と content に合わせて設定する。sheet structures が異なるときに global default width map 1つへ依存しない。populate された各 column には、label、number、evidence、notes のどれに当たるかに基づいた意図的な width を与える。
 - column widths を安定させる:
   - short label columns: 14-18
   - description/evidence columns: 28-45
@@ -237,6 +238,8 @@ delivery 前に確認します。
 - independent PERT が skipped でも、WBS three-point data から WBS-derived variance aggregation が作られる。
 - AI assistance が前提の場合、baseline と AI-assisted values が分かれている。
 - public/report review findings が明示的に additive でない限り comparable total estimates として表示されていない。
+- すべての sheet の populate された column に intentional width がある。sheet ごとに独立して確認し、column 数や long-text columns が異なる sheet に shared width setup が効いていると仮定しない。
 - formula errors がない: `#REF!`, `#VALUE!`, `#DIV/0!`, `#NAME?`, `#N/A`.
 - header rows、total rows、risk/assumption colors が token table に従っている。
 - main summary と synthesis sheets の text が manual resizing なしで読める。
+- wide evidence/notes text、多数の numeric columns、optional method-specific columns を持つ sheet を含め、layout が異なる代表的な detailed sheets を render して visual inspect する。
