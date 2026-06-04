@@ -7,8 +7,9 @@ Use this reference for software effort estimation when the input is requirements
 | Situation | Preferred method |
 |---|---|
 | Requirements are broad but readable | WBS bottom-up with low/base/high ranges |
+| Scope has countable screens, reports, data, integrations, or deliverables | Sizing pass before WBS/PERT |
 | Tasks are already decomposed | PERT per task plus dependency/risk review |
-| Similar past work exists | Analogy estimate, then adjust for differences |
+| Similar past work exists | Analogy calibration after WBS/PERT, then adjust for differences |
 | Existing codebase is the target | Repository inventory plus rebuild/completion model |
 | Requirements are unclear | Discovery estimate first, implementation estimate second |
 
@@ -49,8 +50,11 @@ Do not stack many multipliers mechanically. Explain the dominant risk drivers an
 
 Before finalizing:
 
+- Sizing facts should be visible when scope can be counted; avoid estimating from prose alone when counts are extractable.
 - No large line item should hide multiple unrelated features.
 - Management, testing, documentation, and acceptance support should not be omitted.
 - Calendar duration should account for review waits, not only person-days.
 - Confidence should drop when source documents are samples rather than final specifications.
 - Quote ranges should widen when requirements are document-derived and not yet confirmed by workshops.
+- If similar past work exists, explain whether it validates, shifts, widens, or is rejected as an anchor.
+- If requirements are unclear, produce a discovery estimate instead of pretending implementation scope is stable.

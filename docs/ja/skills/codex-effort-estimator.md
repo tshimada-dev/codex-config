@@ -14,7 +14,7 @@ canonical: false
 
 ## 使い方
 
-依頼内容を見積もりタイプに分類し、必要に応じて `development-estimation`、`plan-estimateeffort`、`cost-estimate` などの既存スキルを使います。依存スキルがない場合は、このスキル内の reference を使って代替します。
+依頼内容を見積もりタイプに分類し、このスキル内の reference を使って見積もります。外部の見積もり Skill は前提にせず、sizing、WBS、PERT、analogy calibration、discovery、公共・帳票 review、repository rebuild/completion の各手法を同一 Skill 内の独立した reference として扱います。
 
 ## 基本 Workflow
 
@@ -27,16 +27,21 @@ canonical: false
 
 ## Subagent 統括
 
-subagent を使う場合、親 agent は scope、source files、output unit、output schema だけを渡します。親の推測、過去の見積もり、期待するレンジ、他の estimator の結論は渡しません。
+subagent を使う場合、親 agent は scope、source files、output unit、output schema、使用する local reference だけを渡します。tool が直接 file/context を選べる場合は、指定した reference と source document だけを渡します。subagent がこの Skill 本文を読む必要がある場合も、手法としては指定 reference だけに従わせ、親の推測、過去の見積もり、期待するレンジ、他の estimator の結論は渡しません。
 
 標準の delegate は以下です。
 
-- WBS bottom-up pass
-- PERT pass
-- Public-sector/business-system review pass
-- Repository cost pass
+- Sizing pass: `references/sizing-pass.md`
+- WBS bottom-up pass: `references/wbs-pass.md`
+- PERT pass: `references/pert-pass.md`
+- Analogy calibration pass: `references/analogy-calibration-pass.md`
+- Discovery pass: `references/discovery-pass.md`
+- Public-sector/business-system review pass: `references/public-review-pass.md` と `references/public-sector-business-systems.md`
+- Repository rebuild/completion pass: `references/repo-cost-pass.md`
 
 親 agent は各手法の差分を比較し、前提や scope の違いを明示したうえで、最終レンジと planning center をまとめます。
+
+Sizing は画面、帳票、CSV、データ、連携、deliverables などの規模根拠として扱い、単独の総工数見積もりにはしません。Analogy calibration は過去実績との比較による補正・検証として扱い、WBS/PERT を根拠なく平均値で置き換えません。Discovery は要件が不安定な場合の事前調査・要件定義工数として扱い、実装工数とは分けて表示します。
 
 公共・帳票・受入などの specialist pass は、原則として単純加算する補正値ではなく、WBS/PERT の coverage audit として扱います。親 agent は findings を `already covered`、`missing/thin`、`risk-only` に分け、既に WBS/PERT に含まれる作業は二重計上しません。未織り込み部分だけを調整し、不確実性が高いだけの項目は high range や high-risk scenario に反映します。
 
@@ -47,6 +52,6 @@ subagent を使う場合、親 agent は scope、source files、output unit、ou
 ## 注意
 
 - 不完全な要件に対して、過度に精密な数字を出さない。
-- 外部スキルの結論をそのまま採用せず、手法と前提を比較する。
+- 外部スキルの結論をこの workflow に混ぜない。比較が必要な場合は、ユーザーが明示したときだけ別扱いにする。
 - 単価や金額は、ユーザーが求めた場合だけ扱う。
 - 公共・RFP 案件では、deliverables、review gates、training、manual、acceptance testing、handoff を含める。

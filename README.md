@@ -18,7 +18,6 @@ AI 活用状況を説明する際の実例として参照することはあり�
 - `config/`: 共有可能な `config.toml` baseline と profile files
 - `scripts/install.ps1`: 管理対象ファイルを `$HOME\.codex` にコピーする導入スクリプト
 - `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` 検査スクリプト
-- `scripts/install-estimation-skills.ps1`: 見積もり系スキルが使う外部依存スキルの導入スクリプト
 - `docs/ja/`: 人間が読むための日本語参考訳
 
 管理しないもの:
@@ -108,35 +107,16 @@ gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scop
 複数の `skills/codex-*` をまとめて同期し、manifest と `-Prune` で管理対象を保守する
 ために残します。
 
-## 外部依存スキル
+## 見積もりスキル
 
-`skills/codex-effort-estimator` は単体でも動作しますが、既存の見積もりスキルを
-併用できる環境ではそれらをサブエージェントごとの手法として使えます。
+`skills/codex-effort-estimator` は自己完結型の見積もりスキルとして管理します。
+第三者リポジトリから取得した Skill instruction は、このリポジトリの導入スクリプトでは
+インストールしません。
 
-外部依存スキルをまとめて導入する場合:
-
-```powershell
-.\scripts\install-estimation-skills.ps1 -AcceptThirdPartySkillRisk
-```
-
-既存の導入済みスキルを置き換える場合:
-
-```powershell
-.\scripts\install-estimation-skills.ps1 -AcceptThirdPartySkillRisk -Overwrite -Backup
-```
-
-このスクリプトは、上流リポジトリの固定コミットから
-`development-estimation`、`plan-estimateeffort`、`cost-estimate` を導入します。
-`development-estimation` は上流の参照ファイルが欠けているため、必要最小限の
-`references/estimate.md` をローカルで補います。
-
-外部依存スキルは Codex が読む第三者の instruction です。installer は以下を行います。
-
-- 40 文字の git commit SHA だけを受け付け、branch/tag/short ref を拒否する。
-- ダウンロードした `SKILL.md` を簡易監査し、危険な実行・削除・secret・remote 変更指示を拒否する。
-- 外部 `agents/openai.yaml` は取得せず、ローカルで最小 metadata を生成する。
-- 取得元 URL、ref、downloaded/installed SHA256 を `$CODEX_HOME\skills\.codex-estimation-skill-dependencies.json` に記録する。
-- `-Overwrite` 時は対象 skill path が `$CODEX_HOME\skills` 配下であることを確認し、`-Backup` 指定時は置換前に退避する。
+見積もり手法は同一 skill 内の `references/` に分け、必要に応じて WBS、PERT、
+公共・帳票 review、repository rebuild/completion の各 pass を subagent に渡します。
+これにより、サブエージェントの独立性を保ちつつ、外部 Skill の再配布や
+サプライチェーン上の懸念を避けます。
 
 ## 運用方針
 

@@ -1,6 +1,6 @@
 ---
 name: codex-effort-estimator
-description: Estimate software projects, feature work, public-sector/business systems, document-driven RFPs, GitHub issue backlogs, or existing repository rebuild cost. Use when Codex is asked for effort estimates, person-days, timeline ranges, WBS breakdowns, quote support, assumptions, risks, exclusions, confidence intervals, stakeholder-ready summaries, or estimate workbooks. Orchestrates local estimation references and optional installed estimation skills such as development-estimation, plan-estimateeffort, and cost-estimate without requiring them.
+description: Estimate software projects, feature work, public-sector/business systems, document-driven RFPs, GitHub issue backlogs, or existing repository rebuild cost. Use when Codex is asked for effort estimates, person-days, timeline ranges, WBS breakdowns, quote support, assumptions, risks, exclusions, confidence intervals, stakeholder-ready summaries, or estimate workbooks. Orchestrates self-contained local estimation references and method-specific subagent passes.
 ---
 
 # Codex Effort Estimator
@@ -13,13 +13,15 @@ Classify the request before estimating:
 
 | Estimate type | Use this path |
 |---|---|
-| General feature/project estimate | Use installed `development-estimation` when available; otherwise use `references/methods.md` for WBS bottom-up estimation. Summarize through this skill's output shape when a stakeholder-ready synthesis is needed. |
-| Requirements/RFP/document-driven estimate | Read `references/methods.md`, then `references/public-sector-business-systems.md` when procurement, government, legacy Office, CSV, reports, training, or deliverables are involved. Use `development-estimation` as an optional base workflow when available. |
-| Existing repository rebuild/cost estimate | Use installed `cost-estimate` when available; otherwise use `references/methods.md` plus repository facts and clearly state the fallback. |
-| Task backlog/GitHub issue estimate | Use installed `plan-estimateeffort` when available and tasks are already decomposed; otherwise apply PERT from `references/methods.md`. |
+| General feature/project estimate | Use `references/sizing-pass.md` when scope can be counted, then `references/wbs-pass.md` for WBS bottom-up estimation. Use `references/methods.md` for shared range logic. |
+| Requirements/RFP/document-driven estimate | Use `references/sizing-pass.md`, `references/wbs-pass.md`, then `references/public-review-pass.md` when procurement, government, legacy Office, CSV, reports, training, acceptance, or formal deliverables are involved. |
+| Existing repository rebuild/cost estimate | Use `references/repo-cost-pass.md` plus measured repository facts. Keep rebuild/completion effort separate from price unless the user asks for cost. |
+| Task backlog/GitHub issue estimate | Use `references/pert-pass.md` when tasks are already decomposed enough for three-point ranges; otherwise decompose first with WBS. |
+| Similar past work exists | Use `references/analogy-calibration-pass.md` after WBS/PERT to compare against historical actuals or prior estimates and explain variance. |
+| Requirements are too unclear for implementation estimating | Use `references/discovery-pass.md` to estimate discovery, requirements definition, prototype, data/report investigation, and decision work before implementation. |
 | AI-agent execution time estimate | Use a separate agent-work estimation approach if available; do not convert human delivery estimates directly into agent wall-clock time. |
 
-If multiple paths apply, run the specific skill/reference first and use this skill only to normalize the final answer.
+If multiple paths apply, run the relevant local reference passes first and use this skill to normalize and reconcile the final answer.
 
 ## Workflow
 
@@ -32,6 +34,7 @@ If multiple paths apply, run the specific skill/reference first and use this ski
    - For documents: list source files, count major functions, reports, imports, exports, data volumes, integrations, environments, and required deliverables.
    - For repos: count non-generated code and identify architecture, tests, integrations, operational maturity, and missing production work.
    - For issues/backlogs: normalize tasks, dependencies, acceptance criteria, and confidence.
+   - When counts matter, use `references/sizing-pass.md` before estimating so WBS/PERT lines are grounded in visible size signals.
 
 3. Decide whether to delegate:
    - For small or quick estimates, proceed in one agent.
@@ -54,6 +57,8 @@ If multiple paths apply, run the specific skill/reference first and use this ski
 5. Estimate:
    - Prefer low / base / high ranges.
    - Use PERT when a three-point model is useful: expected = `(O + 4M + P) / 6`.
+   - Use discovery estimates instead of implementation estimates when the source material is not sufficient to define implementation scope.
+   - Use analogy calibration when comparable historical work is available; report calibration separately from raw WBS/PERT.
    - Apply risk multipliers only after base work is decomposed.
    - Keep contingency visible instead of hiding it inside every line.
 
@@ -64,12 +69,14 @@ If multiple paths apply, run the specific skill/reference first and use this ski
 
 ## Multi-Agent Orchestration
 
-When subagents are available and the estimate is substantial, assign one subagent per estimation method. Treat each subagent output as an independent observation, not a vote.
+When subagents are available and the estimate is substantial, assign one subagent per local estimation reference. Treat each subagent output as an independent observation, not a vote.
 
 ### Parent Responsibilities
 
 - Define the shared scope, source files, output unit, and assumptions before delegation.
 - Give each subagent only the source material and method-specific task it needs.
+- When the tool supports direct file/context selection, pass only the named local reference file(s), source documents, unit, and output schema to the subagent.
+- If the subagent must load this skill, instruct it to follow only the named reference file(s) for method behavior and to ignore parent synthesis guidance until it returns its method output.
 - Do not share one subagent's conclusion with another subagent.
 - Do not pass parent estimates, prior estimate files, preferred ranges, suspected answers, or parent interpretations into subagent prompts.
 - Start subagents without forked conversation context when the tool supports it, so they do not inherit the parent's prior reasoning.
@@ -81,7 +88,7 @@ When subagents are available and the estimate is substantial, assign one subagen
 
 Use a neutral delegation packet. It may include:
 
-- Skill or method to use.
+- Local method reference to use.
 - Exact source document paths or raw document text.
 - Output unit, such as person-days.
 - Required output schema.
@@ -100,25 +107,44 @@ For specialist passes, name only the specialization and source documents. Let th
 
 | Delegate | Use when | Assignment |
 |---|---|---|
-| WBS bottom-up pass | General feature/project or document-driven scope | Use `development-estimation` if installed, otherwise use `references/methods.md`. Produce WBS low/likely/high effort, assumptions, risks, and confidence. |
-| PERT pass | Tasks can be estimated with three-point ranges | Use `plan-estimateeffort` if installed, otherwise use PERT in `references/methods.md`. Produce optimistic/most-likely/pessimistic estimates and confidence notes. |
-| Public-sector/business-system review pass | Government, RFP, Excel/PDF, CSV, training, acceptance, or formal deliverables matter | Use this skill with `references/public-sector-business-systems.md` as a risk-review and coverage-audit pass. Identify which public/report/acceptance factors are already included in WBS or PERT, which are missing or thin, and which should only widen the risk range. Do not treat this pass as a mechanical additive estimate unless the assignment explicitly asks for an additive-only adjustment. |
-| Repository cost pass | Existing repository or rebuild/completion value is in scope | Use `cost-estimate` if installed, otherwise inventory repository facts and state the fallback. Report measured facts separately from inference. |
+| Sizing pass | Documents, RFPs, repos, or backlogs expose countable scope signals | Use `references/sizing-pass.md`. Produce counted scope facts and sizing confidence; do not estimate total effort unless asked. |
+| WBS bottom-up pass | General feature/project or document-driven scope | Use `references/wbs-pass.md`. Produce WBS low/likely/high effort, assumptions, exclusions, risks, and confidence. |
+| PERT pass | Tasks can be estimated with three-point ranges | Use `references/pert-pass.md`. Produce optimistic/most-likely/pessimistic estimates, PERT expected value, and confidence notes. |
+| Analogy calibration pass | Comparable past projects, actuals, or prior estimates are available | Use `references/analogy-calibration-pass.md`. Compare WBS/PERT against historical anchors and explain adjustment candidates without hiding variance. |
+| Discovery pass | Requirements are too unclear for implementation estimating | Use `references/discovery-pass.md`. Estimate discovery/requirements work and identify decisions needed before implementation estimating. |
+| Public-sector/business-system review pass | Government, RFP, Excel/PDF, CSV, training, acceptance, or formal deliverables matter | Use `references/public-review-pass.md` and `references/public-sector-business-systems.md` as a risk-review and coverage-audit pass. Identify which public/report/acceptance factors are already included in WBS or PERT, which are missing or thin, and which should only widen the risk range. Do not treat this pass as a mechanical additive estimate unless the assignment explicitly asks for an additive-only adjustment. |
+| Repository cost pass | Existing repository or rebuild/completion value is in scope | Use `references/repo-cost-pass.md`. Report measured facts separately from inference. |
 
 ### Delegate Prompt Shape
 
 Use concise prompts like:
 
 ```text
-Use $development-estimation if available; otherwise use $codex-effort-estimator references/methods.md. Source documents: [paths]. Estimate the named project in person-days using WBS low/likely/high ranges. Return WBS table, assumptions, exclusions, risks, confidence, and what would materially change the estimate. Do not use conclusions from other estimators. Do not price the work.
+Use $codex-effort-estimator with references/sizing-pass.md only for the method instructions. Source documents: [paths]. Count scope signals such as screens, reports, imports, exports, entities, workflows, roles, integrations, environments, and deliverables. Return sizing facts, ambiguity notes, confidence, and which counts should feed WBS/PERT. Do not estimate total effort unless asked. Do not use conclusions from other estimators.
 ```
 
 ```text
-Use $plan-estimateeffort. Source documents: [paths]. Estimate the named project in optimistic/most-likely/pessimistic person-days, PERT expected value, confidence, and major risk drivers. Do not use conclusions from other estimators. Do not price the work.
+Use $codex-effort-estimator with references/wbs-pass.md only for the method instructions. Source documents: [paths]. Estimate the named project in person-days using WBS low/likely/high ranges. Return WBS table, assumptions, exclusions, risks, confidence, and what would materially change the estimate. Do not use conclusions from other estimators. Do not price the work.
 ```
 
 ```text
-Use $codex-effort-estimator references/public-sector-business-systems.md as a specialist public-sector/business-system review pass. Source documents: [paths]. Review public-sector deliverables, Excel/PDF/report fidelity, CSV/encoding, acceptance, training, handoff, and procurement risks. Return coverage notes, missing-or-thin areas, risk-range implications, and only optional additive adjustment candidates where they are not already covered by WBS/PERT. Do not use conclusions from other estimators. Do not price the work.
+Use $codex-effort-estimator with references/pert-pass.md only for the method instructions. Source documents: [paths]. Estimate the named project in optimistic/most-likely/pessimistic person-days, PERT expected value, confidence, and major risk drivers. Do not use conclusions from other estimators. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/analogy-calibration-pass.md only for the method instructions. Source documents: [paths]. Historical anchors: [paths or raw facts]. Compare the current scope against comparable past work, explain differences, and return calibration factors or adjustment candidates. Do not replace WBS/PERT with an unexplained average. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/discovery-pass.md only for the method instructions. Source documents: [paths]. The implementation scope is not yet stable. Estimate discovery, requirements definition, prototype, data/report investigation, stakeholder review, and decision work in person-days. Return what must be resolved before implementation estimating. Do not pretend the implementation estimate is precise.
+```
+
+```text
+Use $codex-effort-estimator with references/public-review-pass.md and references/public-sector-business-systems.md only for the method instructions. Source documents: [paths]. Review public-sector deliverables, Excel/PDF/report fidelity, CSV/encoding, acceptance, training, handoff, and procurement risks. Return coverage notes, missing-or-thin areas, risk-range implications, and only optional additive adjustment candidates where they are not already covered by WBS/PERT. Do not use conclusions from other estimators. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/repo-cost-pass.md only for the method instructions. Repository path: [path]. Estimate rebuild or completion effort in person-days. Return measured repository facts, low/base/high effort, assumptions, exclusions, risks, confidence, and what would materially change the estimate. Do not use conclusions from other estimators. Do not price the work unless asked.
 ```
 
 ### Parent Synthesis
@@ -128,6 +154,9 @@ The parent should report:
 - Method results side by side.
 - Agreement and disagreement.
 - Scope or assumption differences causing gaps.
+- Sizing facts separately from effort estimates, including count confidence and unresolved count ambiguity.
+- Discovery effort separately from implementation effort when requirements are not stable enough for delivery estimating.
+- Analogy calibration separately from raw WBS/PERT, including which historical differences justify any adjustment.
 - For specialist review passes, separate coverage audit from arithmetic. Mark each finding as already covered, missing/thin, or risk-only.
 - Do not mechanically add a public-sector/report/acceptance adjustment on top of WBS or PERT when those methods already include the same work.
 - Apply only the non-overlapping missing/thin portion as an adjustment; use overlapping high-uncertainty findings to widen the range or explain the high-risk scenario.
@@ -155,14 +184,23 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 ## Guardrails
 
 - Do not present estimates as precise when requirements are incomplete.
-- Do not import external skill conclusions blindly; restate the method and reconcile conflicts.
+- Do not import external skill conclusions into this workflow; keep method passes self-contained unless the user explicitly asks for comparison.
 - Do not include rates, currency, or price unless the user asks or provides unit prices.
 - Do not treat generated/vendor code, sample data, or bundled templates as full custom-build effort without saying why.
+- Do not let analogy calibration override current scope evidence without explaining the comparable project, differences, and confidence.
+- Do not produce implementation-only precision when the proper answer is a discovery estimate plus confirmation questions.
 - For public-sector or RFP work, include deliverables, review gates, training, manual creation, acceptance testing, and change-management assumptions.
 
 ## References
 
 - `references/methods.md`: estimation methods, range logic, and risk adjustment.
+- `references/sizing-pass.md`: scope counting instructions for screens, reports, data, integrations, workflows, roles, and deliverables.
+- `references/wbs-pass.md`: method-specific instructions for WBS bottom-up subagent passes.
+- `references/pert-pass.md`: method-specific instructions for PERT subagent passes.
+- `references/analogy-calibration-pass.md`: historical comparison and calibration instructions.
+- `references/discovery-pass.md`: discovery and requirements-uncertainty estimate instructions.
+- `references/public-review-pass.md`: method-specific instructions for public-sector/report/acceptance coverage review.
+- `references/repo-cost-pass.md`: method-specific instructions for repository rebuild or completion estimates.
 - `references/public-sector-business-systems.md`: WBS and risk factors for government/business systems, especially document and Excel-heavy work.
 - `references/output-template.md`: concise output formats for estimates and quote support.
 - `references/spreadsheet-output.md`: workbook structure for detailed estimate spreadsheets with method-specific sheets, phase breakdowns, assumptions, risks, and verification expectations.
