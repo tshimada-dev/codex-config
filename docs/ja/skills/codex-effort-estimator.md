@@ -56,6 +56,10 @@ Excel workbook は、非 trivial な見積もりの標準成果物として扱�
 
 PERT の集計では、各 task の期待値を合計し、レンジは端点の単純合計ではなく分散加算で求めます。標準では `total expected ± 1.645 * sqrt(sum(variance))` を 90% confidence range として扱います。独立 PERT pass を skip しても、WBS に low / most likely / high がある場合は `WBS-derived variance aggregation` として同じ集計を行います。ただしこれは WBS 不確実性の再表現であり、独立した第三の見積もり手法としては数えません。WBS の `Likely` は PERT の `Most likely` と同じ中心値を意味します。
 
+## Reference 日本語訳
+
+各 reference の日本語参考訳は [references/](codex-effort-estimator/references/) に置いています。英語版が canonical であり、日本語版は `source` と `source_commit` で対応元を追跡します。
+
 ## 注意
 
 - 不完全な要件に対して、過度に精密な数字を出さない。
