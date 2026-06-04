@@ -14,7 +14,8 @@ Estimate human engineering effort in person-days. Do not estimate price, rates, 
 4. Estimate each line with low / likely / high person-days.
 5. Include PM, requirements, design, implementation, reports/output, testing, acceptance support, manuals/training, deployment, and handoff when they are part of the delivery.
 6. Apply risk at the WBS line or total level only when it is traceable to source evidence.
-7. State confidence and the facts that would materially change the estimate.
+7. If AI coding assistance is explicitly in scope, keep raw human effort values but label which WBS lines are routine coding, code-adjacent, or non-reducible for downstream adjustment.
+8. State confidence and the facts that would materially change the estimate.
 
 ## WBS Line Guidance
 
@@ -40,6 +41,7 @@ Return:
 - Source files inspected.
 - Scope and exclusions.
 - WBS table with `Component`, `Basis`, `Low`, `Likely`, `High`, and `Notes`.
+- AI-reducibility notes when AI coding assistance is explicitly assumed.
 - Total low / likely / high person-days.
 - Main assumptions.
 - Main risks and range drivers.

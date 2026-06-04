@@ -1,4 +1,4 @@
 interface:
   display_name: "Codex Effort Estimator"
   short_description: "Estimate software effort with ranges and risks"
-  default_prompt: "Use $codex-effort-estimator to estimate this software project from the available requirements, code, documents, or backlog. Produce assumptions, ranges, risks, exclusions, and a concise stakeholder-ready summary."
+  default_prompt: "Use $codex-effort-estimator to estimate this software project from the available requirements, code, documents, or backlog. Produce assumptions, ranges, risks, exclusions, a concise stakeholder-ready summary, and a fixed-format estimate workbook unless text-only output or a quick gut-check is requested."

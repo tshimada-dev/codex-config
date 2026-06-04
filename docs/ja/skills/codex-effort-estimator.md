@@ -14,7 +14,7 @@ canonical: false
 
 ## 使い方
 
-依頼内容を見積もりタイプに分類し、このスキル内の reference を使って見積もります。外部の見積もり Skill は前提にせず、sizing、WBS、PERT、analogy calibration、discovery、公共・帳票 review、repository rebuild/completion の各手法を同一 Skill 内の独立した reference として扱います。
+依頼内容を見積もりタイプに分類し、このスキル内の reference を使って見積もります。外部の見積もり Skill は前提にせず、sizing、WBS、PERT、analogy calibration、discovery、AI coding assistance adjustment、公共・帳票 review、repository rebuild/completion の各手法を同一 Skill 内の独立した reference として扱います。
 
 ## 基本 Workflow
 
@@ -36,6 +36,7 @@ subagent 利用の目的は並行作業ではなく、見積もり観点の独�
 - PERT pass: `references/pert-pass.md`
 - Analogy calibration pass: `references/analogy-calibration-pass.md`
 - Discovery pass: `references/discovery-pass.md`
+- AI coding assistance adjustment pass: `references/ai-coding-assistance-adjustment.md`
 - Public-sector/business-system review pass: `references/public-review-pass.md` と `references/public-sector-business-systems.md`
 - Repository rebuild/completion pass: `references/repo-cost-pass.md`
 
@@ -47,7 +48,9 @@ Sizing は画面、帳票、CSV、データ、連携、deliverables などの規
 
 ## Excel 出力
 
-ユーザーが Excel workbook を求める場合は `references/spreadsheet-output.md` を読み、method ごとの sheet、統合 summary、WBS、assumptions、risks、verification sheet を作成します。公共・帳票 review のような補正候補は、WBS/PERT などの総工数見積と同じ比較表に置かず、coverage/risk review または adjustment candidate として分けて表示します。
+Excel workbook は、非 trivial な見積もりの標準成果物として扱います。ユーザーが text-only を求めた場合、または quick gut-check の場合だけ省略します。作成時は `references/spreadsheet-output.md` と `references/workbook-format.md` を読み、固定の sheet 名、sheet 順、列構成、色、数値形式に従って作成します。公共・帳票 review のような補正候補は、WBS/PERT などの総工数見積と同じ比較表に置かず、coverage/risk review または adjustment candidate として分けて表示します。
+
+ユーザーが AI coding assistance を前提として明示した場合は、raw human baseline と AI-assisted adjusted range を分けて示します。補正は実装・定型テスト・雛形生成など coding-heavy な工程に限定し、requirements、stakeholder review、acceptance、帳票目視 QA、data validation、deployment coordination、不明な domain decision は安易に削減しません。
 
 ## 注意
 

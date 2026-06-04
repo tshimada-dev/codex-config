@@ -12,6 +12,7 @@ Use this reference for software effort estimation when the input is requirements
 | Similar past work exists | Analogy calibration after WBS/PERT, then adjust for differences |
 | Existing codebase is the target | Repository inventory plus rebuild/completion model |
 | Requirements are unclear | Discovery estimate first, implementation estimate second |
+| AI coding assistance is explicitly assumed | Raw human estimate first, then phase-specific AI coding assistance adjustment |
 
 ## Three-Point Estimate
 
@@ -46,6 +47,12 @@ Apply multipliers after estimating the base WBS.
 
 Do not stack many multipliers mechanically. Explain the dominant risk drivers and use a single combined adjustment when that is clearer.
 
+## AI Coding Assistance
+
+Apply AI coding assistance only when the user explicitly includes that assumption. Start with the raw human WBS/PERT estimate, then adjust implementation-heavy phases using `ai-coding-assistance-adjustment.md`.
+
+Do not reduce requirements, stakeholder review, acceptance, report visual QA, data validation, deployment coordination, or unresolved domain decisions merely because coding is AI-assisted.
+
 ## Calibration Checks
 
 Before finalizing:
@@ -58,3 +65,4 @@ Before finalizing:
 - Quote ranges should widen when requirements are document-derived and not yet confirmed by workshops.
 - If similar past work exists, explain whether it validates, shifts, widens, or is rejected as an anchor.
 - If requirements are unclear, produce a discovery estimate instead of pretending implementation scope is stable.
+- If AI coding assistance is assumed, show both baseline and adjusted effort so the productivity assumption remains auditable.

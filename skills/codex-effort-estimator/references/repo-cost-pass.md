@@ -19,7 +19,8 @@ Estimate human engineering effort in person-days. Do not estimate market price o
    - Data model, migration, integrations, and external services.
    - Tests, QA, acceptance, deployment, docs, and handoff.
    - Hardening gaps such as security, observability, CI/CD, configuration, and operations.
-6. Use low / base / high person-day ranges and explain the dominant drivers.
+6. If AI coding assistance is explicitly in scope, keep raw human effort values but label which areas are routine coding, code-adjacent, or non-reducible for downstream adjustment.
+7. Use low / base / high person-day ranges and explain the dominant drivers.
 
 ## Suggested Evidence
 
@@ -42,6 +43,7 @@ Return:
 - Inference table with architecture, maturity, risks, and gaps.
 - Effort table with `Area`, `Basis`, `Low`, `Base`, `High`, and `Notes`.
 - Total low / base / high person-days.
+- AI-reducibility notes when AI coding assistance is explicitly assumed.
 - Assumptions and exclusions.
 - Confidence level.
 - What would materially change the estimate.

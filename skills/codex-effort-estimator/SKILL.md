@@ -19,6 +19,7 @@ Classify the request before estimating:
 | Task backlog/GitHub issue estimate | Use `references/pert-pass.md` when tasks are already decomposed enough for three-point ranges; otherwise decompose first with WBS. |
 | Similar past work exists | Use `references/analogy-calibration-pass.md` after WBS/PERT to compare against historical actuals or prior estimates and explain variance. |
 | Requirements are too unclear for implementation estimating | Use `references/discovery-pass.md` to estimate discovery, requirements definition, prototype, data/report investigation, and decision work before implementation. |
+| User explicitly assumes AI coding assistance | Use `references/ai-coding-assistance-adjustment.md` during parent synthesis or as an explicit adjustment pass. Adjust implementation-heavy work, not stakeholder, acceptance, or uncertainty work. |
 | AI-agent execution time estimate | Use a separate agent-work estimation approach if available; do not convert human delivery estimates directly into agent wall-clock time. |
 
 If multiple paths apply, run the relevant local reference passes first and use this skill to normalize and reconcile the final answer.
@@ -60,12 +61,13 @@ If multiple paths apply, run the relevant local reference passes first and use t
    - Use PERT when a three-point model is useful: expected = `(O + 4M + P) / 6`.
    - Use discovery estimates instead of implementation estimates when the source material is not sufficient to define implementation scope.
    - Use analogy calibration when comparable historical work is available; report calibration separately from raw WBS/PERT.
+   - When the user explicitly says AI coding assistance is assumed, apply `references/ai-coding-assistance-adjustment.md` after raw WBS/PERT so routine implementation is not overstated.
    - Apply risk multipliers only after base work is decomposed.
    - Keep contingency visible instead of hiding it inside every line.
 
 6. Normalize the output:
    - Use `references/output-template.md` for customer-facing or management-facing summaries.
-   - If the user asks for an Excel workbook, read `references/spreadsheet-output.md` and use the `spreadsheets` skill/workflow to create and verify the `.xlsx`.
+   - Create an Excel workbook by default for non-trivial estimates. Read `references/spreadsheet-output.md` and `references/workbook-format.md`, then use the `spreadsheets` skill/workflow to create and verify the `.xlsx`, unless the user asks for text only or the estimate is a quick gut-check.
    - Include evidence, assumptions, exclusions, risk drivers, confirmation questions, and a recommended quote range.
 
 ## Multi-Agent Orchestration
@@ -116,6 +118,7 @@ For specialist passes, name only the specialization and source documents. Let th
 | PERT pass | Tasks can be estimated with three-point ranges | Use `references/pert-pass.md`. Produce optimistic/most-likely/pessimistic estimates, PERT expected value, and confidence notes. |
 | Analogy calibration pass | Comparable past projects, actuals, or prior estimates are available | Use `references/analogy-calibration-pass.md`. Compare WBS/PERT against historical anchors and explain adjustment candidates without hiding variance. |
 | Discovery pass | Requirements are too unclear for implementation estimating | Use `references/discovery-pass.md`. Estimate discovery/requirements work and identify decisions needed before implementation estimating. |
+| AI coding assistance adjustment pass | The user explicitly says AI coding assistance is assumed | Use `references/ai-coding-assistance-adjustment.md`. Adjust raw human WBS/PERT by phase and explain which work is or is not reducible. |
 | Public-sector/business-system review pass | Government, RFP, Excel/PDF, CSV, training, acceptance, or formal deliverables matter | Use `references/public-review-pass.md` and `references/public-sector-business-systems.md` as a risk-review and coverage-audit pass. Identify which public/report/acceptance factors are already included in WBS or PERT, which are missing or thin, and which should only widen the risk range. Do not treat this pass as a mechanical additive estimate unless the assignment explicitly asks for an additive-only adjustment. |
 | Repository cost pass | Existing repository or rebuild/completion value is in scope | Use `references/repo-cost-pass.md`. Report measured facts separately from inference. |
 
@@ -144,6 +147,10 @@ Use $codex-effort-estimator with references/discovery-pass.md only for the metho
 ```
 
 ```text
+Use $codex-effort-estimator with references/ai-coding-assistance-adjustment.md only for the method instructions. Raw estimate artifact: [path or pasted table]. The user explicitly assumes AI coding assistance. Adjust the estimate by phase, reducing routine implementation where appropriate while preserving requirements, review, acceptance, data/report validation, and coordination effort. Return baseline, adjusted range, multiplier rationale, non-reducible work, and confidence.
+```
+
+```text
 Use $codex-effort-estimator with references/public-review-pass.md and references/public-sector-business-systems.md only for the method instructions. Source documents: [paths]. Review public-sector deliverables, Excel/PDF/report fidelity, CSV/encoding, acceptance, training, handoff, and procurement risks. Return coverage notes, missing-or-thin areas, risk-range implications, and only optional additive adjustment candidates where they are not already covered by WBS/PERT. Do not use conclusions from other estimators. Do not price the work.
 ```
 
@@ -161,6 +168,7 @@ The parent should report:
 - Sizing facts separately from effort estimates, including count confidence and unresolved count ambiguity.
 - Discovery effort separately from implementation effort when requirements are not stable enough for delivery estimating.
 - Analogy calibration separately from raw WBS/PERT, including which historical differences justify any adjustment.
+- AI-assisted adjustment separately from the raw human estimate when the user explicitly assumes AI coding assistance. Show which phases changed and which did not.
 - For specialist review passes, separate coverage audit from arithmetic. Mark each finding as already covered, missing/thin, or risk-only.
 - Do not mechanically add a public-sector/report/acceptance adjustment on top of WBS or PERT when those methods already include the same work.
 - Apply only the non-overlapping missing/thin portion as an adjustment; use overlapping high-uncertainty findings to widen the range or explain the high-risk scenario.
@@ -193,6 +201,8 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 - Do not treat generated/vendor code, sample data, or bundled templates as full custom-build effort without saying why.
 - Do not let analogy calibration override current scope evidence without explaining the comparable project, differences, and confidence.
 - Do not produce implementation-only precision when the proper answer is a discovery estimate plus confirmation questions.
+- Do not apply AI coding assistance reductions unless the user explicitly says that assumption is in scope.
+- Do not reduce requirements, stakeholder review, acceptance, report visual QA, data validation, deployment coordination, or unresolved-domain-risk work just because coding is AI-assisted.
 - For public-sector or RFP work, include deliverables, review gates, training, manual creation, acceptance testing, and change-management assumptions.
 
 ## References
@@ -203,8 +213,10 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 - `references/pert-pass.md`: method-specific instructions for PERT subagent passes.
 - `references/analogy-calibration-pass.md`: historical comparison and calibration instructions.
 - `references/discovery-pass.md`: discovery and requirements-uncertainty estimate instructions.
+- `references/ai-coding-assistance-adjustment.md`: phase-specific adjustment rules when AI coding assistance is explicitly assumed.
 - `references/public-review-pass.md`: method-specific instructions for public-sector/report/acceptance coverage review.
 - `references/repo-cost-pass.md`: method-specific instructions for repository rebuild or completion estimates.
 - `references/public-sector-business-systems.md`: WBS and risk factors for government/business systems, especially document and Excel-heavy work.
 - `references/output-template.md`: concise output formats for estimates and quote support.
 - `references/spreadsheet-output.md`: workbook structure for detailed estimate spreadsheets with method-specific sheets, phase breakdowns, assumptions, risks, and verification expectations.
+- `references/workbook-format.md`: fixed workbook layout, sheet names, colors, widths, number formats, and QA rules to keep Excel output consistent.

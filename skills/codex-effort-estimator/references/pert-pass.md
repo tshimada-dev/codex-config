@@ -23,7 +23,8 @@ standard_deviation = (pessimistic - optimistic) / 6
 
 5. Sum optimistic, most likely, pessimistic, and expected values.
 6. Identify dependency, review-wait, data-quality, integration, report-fidelity, and acceptance risks.
-7. State confidence and the facts that would materially change the estimate.
+7. If AI coding assistance is explicitly in scope, keep raw human effort values but label which tasks are routine coding, code-adjacent, or non-reducible for downstream adjustment.
+8. State confidence and the facts that would materially change the estimate.
 
 ## Output Schema
 
@@ -32,6 +33,7 @@ Return:
 - Source files inspected.
 - Task table with `Task`, `Basis`, `Optimistic`, `Most likely`, `Pessimistic`, `Expected`, and `Notes`.
 - Total optimistic / most likely / pessimistic / expected person-days.
+- AI-reducibility notes when AI coding assistance is explicitly assumed.
 - Optional standard deviation or confidence band when useful.
 - Assumptions and exclusions.
 - Major risk drivers.

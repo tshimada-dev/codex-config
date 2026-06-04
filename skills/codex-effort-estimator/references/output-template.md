@@ -12,6 +12,7 @@ Use this structure for concise estimate deliverables.
 - Confidence: High / Medium / Low
 - Basis: [documents / backlog / repository / interviews]
 - Main drivers: [top 3]
+- Workbook: [path], unless text-only or quick gut-check output was requested
 ```
 
 ## WBS Table
@@ -37,6 +38,13 @@ Always include:
 - Risks and contingency
 - Open questions that could change the estimate
 - Recommended next step
+
+When AI coding assistance is explicitly assumed, also include:
+
+- Raw human baseline
+- AI-assisted adjusted range
+- Which phases were reduced
+- Which phases were not reduced
 
 ## Tone
 
