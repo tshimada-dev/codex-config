@@ -102,7 +102,7 @@ If a pass is skipped, the final synthesis must make the skip visible. A silent o
 
 6. Normalize the output:
    - Use `references/output-template.md` for customer-facing or management-facing summaries.
-   - Create an Excel workbook by default for non-trivial estimates. Read `references/spreadsheet-output.md` and `references/workbook-format.md`, then use the `spreadsheets` skill/workflow to create and verify the `.xlsx`, unless the user asks for text only or the estimate is a quick gut-check.
+   - Create an Excel workbook by default for non-trivial estimates. Read `references/spreadsheet-output.md` and `references/workbook-format.md`, then use the `spreadsheets` skill/workflow to create and verify the `.xlsx`, unless the user asks for text only or the estimate is a quick gut-check. After generating a local workbook, use `scripts/format_estimate_workbook.py` so sheet-specific widths and styles are applied deterministically.
    - Include evidence, assumptions, exclusions, risk drivers, confirmation questions, and a recommended quote range.
 
 ## Range Synthesis
@@ -287,3 +287,4 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 - `references/workbook-format.md`: fixed workbook layout, sheet names, colors, widths, number formats, and QA rules to keep Excel output consistent.
 - `references/three-point-aggregation-golden.md`: deterministic golden case for three-point variance aggregation.
 - `references/repetition-and-reuse.md`: economy-of-scale rules for repeated variants and shared skeletons, single-counting of risk, and the top-down per-unit cross-check.
+- `scripts/format_estimate_workbook.py`: deterministic post-processor for generated `.xlsx` estimate workbooks.

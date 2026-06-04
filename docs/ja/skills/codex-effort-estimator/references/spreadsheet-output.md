@@ -16,6 +16,14 @@ non-trivial な見積もりでは workbook を default で作成します。ユ�
 
 常に `workbook-format.md` を適用します。ユーザーが明示的に別 format を求めない限り、sheet names、order、colors、header rows、number formats、column structure を即興で変えないでください。
 
+local `.xlsx` file が生成された場合は、delivery 前の deterministic post-processing step として `scripts/format_estimate_workbook.py` を実行します。まず formatted copy を書き出す形を優先します。
+
+```powershell
+python skills/codex-effort-estimator/scripts/format_estimate_workbook.py path\to\estimate.xlsx --output path\to\estimate_formatted.xlsx
+```
+
+generated workbook を上書きする意図がある場合だけ `--in-place` を使います。この script は formatter と validator であり、estimation、range synthesis、visual review の代替として扱ってはいけません。
+
 ## Required Workbook Shape
 
 substantial estimates では `workbook-format.md` の standard workbook shape を作成します。各 sheet の概念上の目的は次のとおりです。
@@ -135,6 +143,7 @@ AI coding assistance adjustment では次を示します。
 deliver 前に確認します。
 
 - workbook が spreadsheet tooling 経由で開けること。
+- local Python と `openpyxl` が利用可能な場合、生成された `.xlsx` に `scripts/format_estimate_workbook.py` を実行すること。
 - sheet names と order が `workbook-format.md` と一致すること。
 - key summary と synthesis ranges を inspect すること。
 - `#REF!`、`#VALUE!`、`#DIV/0!`、`#NAME?`、`#N/A` などの formula errors を scan すること。

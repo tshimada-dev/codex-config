@@ -54,6 +54,8 @@ scope に繰り返しの variant（複数地区・支店・似た帳票や画面
 
 Excel workbook は、非 trivial な見積もりの標準成果物として扱います。ユーザーが text-only を求めた場合、または quick gut-check の場合だけ省略します。作成時は `references/spreadsheet-output.md` と `references/workbook-format.md` を読み、固定の sheet 名、sheet 順、列構成、色、数値形式に従って作成します。公共・帳票 review のような補正候補は、WBS/PERT などの総工数見積と同じ比較表に置かず、coverage/risk review または adjustment candidate として分けて表示します。
 
+local `.xlsx` を生成した場合は、delivery 前に `scripts/format_estimate_workbook.py` を後処理として使い、sheet ごとの列幅、style、基本 QA を deterministic に適用します。この script は見積もりや range synthesis の代替ではなく、formatting と validation の補助です。
+
 ユーザーが AI coding assistance を前提として明示した場合は、raw human baseline と AI-assisted adjusted range を分けて示します。補正は実装・定型テスト・雛形生成など coding-heavy な工程に限定し、requirements、stakeholder review、acceptance、帳票目視 QA、data validation、deployment coordination、不明な domain decision は安易に削減しません。
 
 PERT の集計では、各 task の期待値を合計し、レンジは端点の単純合計ではなく分散加算で求めます。標準では `total expected ± 1.645 * sqrt(sum(variance))` を 90% confidence range として扱います。独立 PERT pass を skip しても、WBS に low / most likely / high がある場合は `WBS-derived variance aggregation` として同じ集計を行います。ただしこれは WBS 不確実性の再表現であり、独立した第三の見積もり手法としては数えません。WBS の `Likely` は PERT の `Most likely` と同じ中心値を意味します。

@@ -10,6 +10,14 @@ Create a workbook by default for non-trivial estimates. Skip it only when the us
 
 Always apply `workbook-format.md`. Do not improvise sheet names, order, colors, header rows, number formats, or column structure unless the user explicitly asks for a different format.
 
+When a local `.xlsx` file has been generated, run `scripts/format_estimate_workbook.py` as a deterministic post-processing step before delivery. Prefer writing a formatted copy first:
+
+```powershell
+python skills/codex-effort-estimator/scripts/format_estimate_workbook.py path\to\estimate.xlsx --output path\to\estimate_formatted.xlsx
+```
+
+Use `--in-place` only when overwriting the generated workbook is intentional. The script is a formatter and validator; it must not be treated as a replacement for estimating, range synthesis, or visual review.
+
 ## Required Workbook Shape
 
 For substantial estimates, create the standard workbook shape from `workbook-format.md`. The conceptual sheet purposes are:
@@ -129,6 +137,7 @@ For AI coding assistance adjustment, show:
 Before delivering:
 
 - Verify the workbook opens through the spreadsheet tooling.
+- Run `scripts/format_estimate_workbook.py` on the generated `.xlsx` when local Python and `openpyxl` are available.
 - Verify sheet names and order match `workbook-format.md`.
 - Inspect the key summary and synthesis ranges.
 - Scan for formula errors such as `#REF!`, `#VALUE!`, `#DIV/0!`, `#NAME?`, and `#N/A`.
