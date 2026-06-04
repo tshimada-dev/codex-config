@@ -37,9 +37,10 @@ If multiple paths apply, run the relevant local reference passes first and use t
    - When counts matter, use `references/sizing-pass.md` before estimating so WBS/PERT lines are grounded in visible size signals.
 
 3. Decide whether to delegate:
-   - For small or quick estimates, proceed in one agent.
-   - For broad, high-stakes, document-heavy, backlog-heavy, or repository-backed estimates, use `Multi-Agent Orchestration` below when subagents are available.
-   - If subagents are unavailable, apply the same methods sequentially in the parent agent and say so.
+   - Check whether subagents are available before running method passes. This is a priority check, not an optional optimization.
+   - When subagents are available, delegate each applicable method pass to a separate subagent regardless of estimate size.
+   - Use subagents primarily to preserve independence between estimation viewpoints; parallel execution is useful but not the reason for delegation.
+   - If subagents are unavailable, apply the same method passes sequentially in the parent agent and say so.
 
 4. Decompose into WBS:
    - Management and governance
@@ -69,11 +70,14 @@ If multiple paths apply, run the relevant local reference passes first and use t
 
 ## Multi-Agent Orchestration
 
-When subagents are available and the estimate is substantial, assign one subagent per local estimation reference. Treat each subagent output as an independent observation, not a vote.
+Check subagent availability before running method passes. When subagents are available, assign one subagent per applicable local estimation reference, even for small estimates. Treat each subagent output as an independent observation, not a vote.
+
+The purpose of delegation in this skill is viewpoint independence and anchoring control. Parallel execution is optional.
 
 ### Parent Responsibilities
 
 - Define the shared scope, source files, output unit, and assumptions before delegation.
+- Determine whether subagents can be spawned in the current environment, such as through `spawn_agent` or an equivalent delegation tool, before doing the method work locally.
 - Give each subagent only the source material and method-specific task it needs.
 - When the tool supports direct file/context selection, pass only the named local reference file(s), source documents, unit, and output schema to the subagent.
 - If the subagent must load this skill, instruct it to follow only the named reference file(s) for method behavior and to ignore parent synthesis guidance until it returns its method output.

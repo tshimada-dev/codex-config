@@ -20,14 +20,14 @@ canonical: false
 
 1. scope、out of scope、不明点、対象読者、単位を確認する。
 2. document、repository、issue backlog などの根拠を収集する。
-3. 規模が大きい場合は、手法ごとに subagent を分ける。
+3. 手法 pass を実行する前に subagent が利用可能かを最優先で確認し、利用可能なら規模に関係なく手法ごとに subagent を分ける。
 4. WBS に分解する。
 5. low / base / high、または PERT で見積もる。
 6. 前提、除外、リスク、信頼度、確認事項を含めて要約する。
 
 ## Subagent 統括
 
-subagent を使う場合、親 agent は scope、source files、output unit、output schema、使用する local reference だけを渡します。tool が直接 file/context を選べる場合は、指定した reference と source document だけを渡します。subagent がこの Skill 本文を読む必要がある場合も、手法としては指定 reference だけに従わせ、親の推測、過去の見積もり、期待するレンジ、他の estimator の結論は渡しません。
+subagent 利用の目的は並行作業ではなく、見積もり観点の独立性と anchoring の抑制です。親 agent は手法 pass を始める前に `spawn_agent` などの delegation tool が利用可能かを確認し、利用可能なら対象規模に関係なく手法別 subagent に委譲します。subagent を使う場合、親 agent は scope、source files、output unit、output schema、使用する local reference だけを渡します。tool が直接 file/context を選べる場合は、指定した reference と source document だけを渡します。subagent がこの Skill 本文を読む必要がある場合も、手法としては指定 reference だけに従わせ、親の推測、過去の見積もり、期待するレンジ、他の estimator の結論は渡しません。
 
 標準の delegate は以下です。
 
