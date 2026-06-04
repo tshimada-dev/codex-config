@@ -2,6 +2,13 @@
 
 Use this reference for an independent three-point estimate when tasks or deliverables can be decomposed into estimateable units.
 
+Keep two concepts separate:
+
+- Independent PERT pass: a method pass that produces its own task-level three-point estimate.
+- Variance aggregation: a calculation that can be applied to any existing low / most likely / high data, including WBS rows.
+
+If this independent PERT pass is skipped but WBS rows have three-point values, still apply variance aggregation in parent synthesis and label it `WBS-derived variance aggregation`. Do not count that derived CI as a separate independent estimate.
+
 ## Scope
 
 Estimate human engineering effort in person-days. Do not estimate price, rates, or AI-agent wall-clock time unless explicitly asked.

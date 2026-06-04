@@ -54,7 +54,7 @@ Excel workbook は、非 trivial な見積もりの標準成果物として扱�
 
 ユーザーが AI coding assistance を前提として明示した場合は、raw human baseline と AI-assisted adjusted range を分けて示します。補正は実装・定型テスト・雛形生成など coding-heavy な工程に限定し、requirements、stakeholder review、acceptance、帳票目視 QA、data validation、deployment coordination、不明な domain decision は安易に削減しません。
 
-PERT の集計では、各 task の期待値を合計し、レンジは端点の単純合計ではなく分散加算で求めます。標準では `total expected ± 1.645 * sqrt(sum(variance))` を 90% confidence range として扱います。WBS の `Likely` は PERT の `Most likely` と同じ中心値を意味します。
+PERT の集計では、各 task の期待値を合計し、レンジは端点の単純合計ではなく分散加算で求めます。標準では `total expected ± 1.645 * sqrt(sum(variance))` を 90% confidence range として扱います。独立 PERT pass を skip しても、WBS に low / most likely / high がある場合は `WBS-derived variance aggregation` として同じ集計を行います。ただしこれは WBS 不確実性の再表現であり、独立した第三の見積もり手法としては数えません。WBS の `Likely` は PERT の `Most likely` と同じ中心値を意味します。
 
 ## 注意
 

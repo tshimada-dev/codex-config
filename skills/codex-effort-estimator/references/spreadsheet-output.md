@@ -20,7 +20,7 @@ For substantial estimates, create the standard workbook shape from `workbook-for
 | `01_工程別` | Phase-level breakdown across methods: PM, requirements, design, implementation, reports, testing, manuals/handoff. |
 | `02_規模根拠` | Source facts: function count, reports, imports, data volumes, integrations, environments, constraints. |
 | `03_WBS` | WBS bottom-up estimate lines. Keep the sheet and add an `適用なし` row if WBS was not run. |
-| `04_PERT` | PERT task estimates and expected values. Keep the sheet and add an `適用なし` row if PERT was not run. |
+| `04_PERT` | Independent PERT task estimates and expected values. If independent PERT was not run but WBS has three-point values, include a `WBS由来CI` block instead of ending with only `適用なし`. |
 | `05_類推補正` | Historical analogy and calibration when applicable. |
 | `06_Discovery` | Discovery estimate when implementation scope is unstable. |
 | `07_AI補正` | AI coding assistance adjustment when explicitly assumed. |
@@ -74,6 +74,13 @@ The synthesis sheet must also include a pass coverage table:
 |---|---|---|---|
 
 Use `run`, `skipped`, or `not applicable` in English outputs. For the default Japanese workbook, use `実行`, `スキップ`, or `非該当`. Do not omit a pass silently.
+
+The synthesis sheet must include range synthesis when any three-point data exists:
+
+| Source | Most likely total | Expected total | Total SD | 90% CI | Endpoint scenario | Interpretation |
+|---|---:|---:|---:|---|---|---|
+
+If the source is WBS, label it `WBS-derived variance aggregation` or `WBS由来CI`, and do not present it as an independent method result.
 
 For PERT, show:
 

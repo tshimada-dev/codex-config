@@ -30,7 +30,7 @@ standard_deviation = (pessimistic - optimistic) / 6
 variance = standard_deviation ^ 2
 ```
 
-Use the PERT expected value for planning. For aggregate ranges, sum expected values and aggregate variance:
+Use the expected value for planning. For aggregate ranges, sum expected values and aggregate variance:
 
 ```text
 total_expected = sum(expected)
@@ -39,6 +39,19 @@ confidence_interval = total_expected +/- z * total_standard_deviation
 ```
 
 Use `z = 1.282` for about 80% confidence, `z = 1.645` for about 90%, and `z = 1.960` for about 95%. Do not present `sum(optimistic)` and `sum(pessimistic)` as the normal aggregate range unless you explicitly mean a fully correlated best/worst-case scenario.
+
+## Range Synthesis
+
+Apply this calculation to any low / most likely / high data, even when the independent PERT pass was skipped. WBS three-point rows can and should be aggregated with the same variance formula.
+
+Report two different ranges when three-point data exists:
+
+| Range | Formula | Meaning |
+|---|---|---|
+| Variance aggregation CI | `sum(expected) +/- z * sqrt(sum(variance))` | Probabilistic range assuming at least partial independence across line items. |
+| Endpoint scenario | `sum(low) - sum(high)` | Fully correlated all-best/all-worst scenario. Useful for stress framing, not the default planning range. |
+
+When using WBS rows as the source, label the output `WBS-derived variance aggregation`. It is not a separate independent estimate and must not be counted as another method vote. Use the expected total as the planning center; if it differs from the most-likely total, explain the gap as skew or tail risk.
 
 ## Risk Multipliers
 
@@ -74,6 +87,7 @@ Do not reduce requirements, stakeholder review, acceptance, report visual QA, da
 Before finalizing:
 
 - Sizing facts should be visible when scope can be counted; avoid estimating from prose alone when counts are extractable.
+- Any available three-point data should have range synthesis; do not leave the planning range as endpoint sums by default.
 - No large line item should hide multiple unrelated features.
 - Management, testing, documentation, and acceptance support should not be omitted.
 - Calendar duration should account for review waits, not only person-days.

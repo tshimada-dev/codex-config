@@ -44,7 +44,7 @@ Use these exact sheet names. Keep the numeric prefixes stable. Do not renumber s
 | 1 | `01_工程別` | Yes | Phase-level totals and final adjusted values. |
 | 2 | `02_規模根拠` | Yes | Counted scope facts and sizing confidence. |
 | 3 | `03_WBS` | Yes | WBS bottom-up estimate lines. |
-| 4 | `04_PERT` | Yes | PERT task estimates and expected values. |
+| 4 | `04_PERT` | Yes | Independent PERT task estimates and expected values, or WBS-derived variance aggregation when independent PERT was skipped. |
 | 5 | `05_類推補正` | Optional | Historical analogy and calibration. |
 | 6 | `06_Discovery` | Optional | Discovery estimate when implementation scope is unstable. |
 | 7 | `07_AI補正` | Optional | AI coding assistance adjustment when explicitly assumed. |
@@ -56,6 +56,8 @@ Use these exact sheet names. Keep the numeric prefixes stable. Do not renumber s
 For high-stakes estimates, include optional sheets that were considered but not applicable with a short `適用なし` row rather than silently changing the workbook structure. For quick internal estimates, optional sheets may be omitted, but required sheets and their order stay fixed.
 
 If a required method sheet such as `03_WBS` or `04_PERT` was not run, keep the sheet and add one visible `適用なし` row with the reason. Do not leave required sheets blank.
+
+Exception: if independent PERT was not run but WBS has low / most likely / high values, `04_PERT` must include a `WBS由来CI` block. This block is a calculation from WBS rows, not an independent PERT estimate.
 
 Number gaps from omitted optional sheets are intentional. For example, a workbook may show `00_サマリー`, `01_工程別`, `02_規模根拠`, `03_WBS`, `04_PERT`, `10_親統合`, `11_前提リスク` when optional sheets are not applicable.
 
@@ -136,6 +138,12 @@ Variance formula example: `=G5^2` when SD is column G.
 
 For totals, sum `期待値` and `分散`, then calculate aggregate SD with `=SQRT(SUM([variance range]))`. Show the stakeholder confidence interval as `total expected +/- z * aggregate SD`; use `z=1.645` for the default 90% range. Do not use simple sums of optimistic and pessimistic columns as the normal total range.
 
+When independent PERT was skipped and WBS three-point rows exist, add a `WBS由来CI` table with:
+
+`Source`, `Most likely total`, `Expected total`, `Total SD`, `90% CI Low`, `90% CI High`, `Endpoint Low`, `Endpoint High`, `Interpretation`
+
+Use WBS row low / most likely / high values as the source. Mark the table as `derived from WBS; not an independent method`.
+
 ### `05_類推補正`
 
 Columns:
@@ -182,6 +190,10 @@ Then include the reconciliation table:
 
 `論点`, `WBS/PERTとの差`, `親判断`, `Final Low`, `Final Base`, `Final High`, `根拠`
 
+Also include a range synthesis table whenever three-point data exists:
+
+`Source`, `Most likely total`, `Expected total`, `Total SD`, `90% CI Low`, `90% CI High`, `Endpoint scenario`, `Interpretation`
+
 ### `11_前提リスク`
 
 Use separate tables with the same columns:
@@ -216,6 +228,7 @@ Before delivery, verify:
 - `10_親統合` includes a pass coverage table for every standard delegate with run/skip reason.
 - Totals and PERT expected values use formulas.
 - PERT total range uses variance aggregation, not simple endpoint sums.
+- WBS three-point data produces WBS-derived variance aggregation even when independent PERT was skipped.
 - Baseline and AI-assisted values are separate when AI assistance is assumed.
 - Public/report review findings are not displayed as comparable total estimates unless explicitly additive.
 - No formula errors: `#REF!`, `#VALUE!`, `#DIV/0!`, `#NAME?`, `#N/A`.

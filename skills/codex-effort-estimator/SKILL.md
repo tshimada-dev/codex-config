@@ -46,7 +46,7 @@ Before running method passes, create a coverage checklist from the table below. 
 |---|---|---|
 | Sizing | Scope has countable screens, reports, imports, exports, entities, workflows, roles, integrations, environments, or deliverables | Source is too small or abstract to count; record what could not be counted. |
 | WBS | Scope is broad, document-driven, RFP-driven, or feature/project oriented | PERT or repo-cost is the sole appropriate effort method and WBS would duplicate it without adding structure. |
-| PERT | Tasks are decomposed enough for three-point estimates | Tasks are not decomposed enough; record that WBS or discovery is used instead. |
+| PERT | Tasks are decomposed enough for an independent three-point estimate | Tasks are not decomposed enough; record that WBS or discovery is used instead. Skipping the independent PERT pass does not skip variance aggregation: if WBS lines have low / most likely / high values, apply range synthesis to those WBS three-point values and label it `WBS-derived variance aggregation`. |
 | Repository cost | Existing repository rebuild, replacement, completion, or production-hardening effort is in scope | No repository or codebase is in scope. |
 | Discovery | Requirements, data, reports, integrations, acceptance criteria, or constraints are too unclear for implementation estimating | Implementation scope is stable enough for WBS/PERT/repo-cost. |
 | Analogy calibration | Comparable historical actuals, prior estimates, or productivity baselines exist | No credible anchor exists; state that no baseline is available. |
@@ -91,6 +91,7 @@ If a pass is skipped, the final synthesis must make the skip visible. A silent o
 5. Estimate:
    - Prefer low / base / high ranges.
    - Use PERT when a three-point model is useful: expected = `(O + 4M + P) / 6`.
+   - Always run `Range Synthesis` when any WBS, PERT, or repository effort lines contain low / most likely / high three-point values.
    - Use discovery estimates instead of implementation estimates when the source material is not sufficient to define implementation scope.
    - Use analogy calibration when comparable historical work is available; report calibration separately from raw WBS/PERT.
    - When the user explicitly says AI coding assistance is assumed, apply `references/ai-coding-assistance-adjustment.md` after raw WBS/PERT so routine implementation is not overstated.
@@ -101,6 +102,30 @@ If a pass is skipped, the final synthesis must make the skip visible. A silent o
    - Use `references/output-template.md` for customer-facing or management-facing summaries.
    - Create an Excel workbook by default for non-trivial estimates. Read `references/spreadsheet-output.md` and `references/workbook-format.md`, then use the `spreadsheets` skill/workflow to create and verify the `.xlsx`, unless the user asks for text only or the estimate is a quick gut-check.
    - Include evidence, assumptions, exclusions, risk drivers, confirmation questions, and a recommended quote range.
+
+## Range Synthesis
+
+Range synthesis is mandatory whenever three-point effort data exists. It is a calculation step, not an independent estimation method.
+
+For every low / most likely / high line, calculate:
+
+```text
+expected = (low + 4 * most_likely + high) / 6
+standard_deviation = (high - low) / 6
+variance = standard_deviation ^ 2
+```
+
+Then calculate:
+
+```text
+total_expected = sum(expected)
+total_standard_deviation = sqrt(sum(variance))
+confidence_interval = total_expected +/- z * total_standard_deviation
+```
+
+Use `z = 1.645` for the default 90% stakeholder confidence range. Also show the endpoint scenario `sum(low) - sum(high)` as a fully correlated best/worst-case scenario when useful, but do not use endpoint sums as the default probabilistic range.
+
+If the source three-point data came from WBS, label the result `WBS-derived variance aggregation`. Do not count it as another independent estimate in method voting or method comparison; it is a probabilistic re-expression of the WBS uncertainty. When the most-likely total differs from the expected total, use the expected total as the planning center and explain the difference as skew or tail risk.
 
 ## Multi-Agent Orchestration
 
@@ -197,6 +222,7 @@ The parent should report:
 
 - Pass coverage checklist with `run`, `skipped`, or `not applicable` for every standard delegate, including reasons.
 - Method results side by side.
+- Range synthesis for any available three-point data, including WBS-derived variance aggregation when independent PERT was skipped.
 - Agreement and disagreement.
 - Scope or assumption differences causing gaps.
 - Sizing facts separately from effort estimates, including count confidence and unresolved count ambiguity.
@@ -254,3 +280,4 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 - `references/output-template.md`: concise output formats for estimates and quote support.
 - `references/spreadsheet-output.md`: workbook structure for detailed estimate spreadsheets with method-specific sheets, phase breakdowns, assumptions, risks, and verification expectations.
 - `references/workbook-format.md`: fixed workbook layout, sheet names, colors, widths, number formats, and QA rules to keep Excel output consistent.
+- `references/three-point-aggregation-golden.md`: deterministic golden case for three-point variance aggregation.
