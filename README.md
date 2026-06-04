@@ -116,19 +116,27 @@ gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scop
 外部依存スキルをまとめて導入する場合:
 
 ```powershell
-.\scripts\install-estimation-skills.ps1
+.\scripts\install-estimation-skills.ps1 -AcceptThirdPartySkillRisk
 ```
 
 既存の導入済みスキルを置き換える場合:
 
 ```powershell
-.\scripts\install-estimation-skills.ps1 -Overwrite
+.\scripts\install-estimation-skills.ps1 -AcceptThirdPartySkillRisk -Overwrite -Backup
 ```
 
 このスクリプトは、上流リポジトリの固定コミットから
 `development-estimation`、`plan-estimateeffort`、`cost-estimate` を導入します。
 `development-estimation` は上流の参照ファイルが欠けているため、必要最小限の
 `references/estimate.md` をローカルで補います。
+
+外部依存スキルは Codex が読む第三者の instruction です。installer は以下を行います。
+
+- 40 文字の git commit SHA だけを受け付け、branch/tag/short ref を拒否する。
+- ダウンロードした `SKILL.md` を簡易監査し、危険な実行・削除・secret・remote 変更指示を拒否する。
+- 外部 `agents/openai.yaml` は取得せず、ローカルで最小 metadata を生成する。
+- 取得元 URL、ref、downloaded/installed SHA256 を `$CODEX_HOME\skills\.codex-estimation-skill-dependencies.json` に記録する。
+- `-Overwrite` 時は対象 skill path が `$CODEX_HOME\skills` 配下であることを確認し、`-Backup` 指定時は置換前に退避する。
 
 ## 運用方針
 

@@ -15,7 +15,7 @@ For substantial estimates, create these sheets unless the user asks for a simple
 | `サマリー` or `Summary` | Final recommended range, planning center, confidence, and method comparison. |
 | `工程別サマリー` or `Phase Summary` | Phase-level breakdown across methods: PM, requirements, design, implementation, reports, testing, manuals/handoff. |
 | `規模根拠` or `Sizing Basis` | Source facts: function count, reports, imports, data volumes, integrations, environments, constraints. |
-| Method detail sheets | One sheet per method, for example WBS bottom-up, PERT, public-sector/report adjustment, repository cost estimate. |
+| Method detail sheets | One sheet per method, for example WBS bottom-up, PERT, public-sector/report review, repository cost estimate. |
 | `親統合` or `Synthesis` | Parent reconciliation: method differences, final range, implementation-only range, high-risk range. |
 | `前提・除外・リスク` or `Assumptions Risks` | Assumptions, exclusions, risks, and confirmation questions. |
 
@@ -33,14 +33,14 @@ Default phases:
 - Testing/acceptance
 - Training/manuals/delivery/handoff
 
-A phase summary should include method center values by phase, for example WBS likely, PERT most-likely, adjustment-pass center, and parent final standard.
+A phase summary should include total-estimate method center values by phase, for example WBS likely, PERT most-likely, and parent final standard. If a specialist pass is a coverage/risk review rather than a total estimate, label it clearly as review coverage, risk range driver, or adjustment candidate.
 
 | Column | Meaning |
 |---|---|
 | Phase | Work phase or delivery area. |
 | WBS likely | WBS method central value. |
 | PERT most likely | PERT method central value. |
-| Adjustment center | Public-sector/report/repository adjustment central value, when used. |
+| Review/adjustment candidate | Public-sector/report/repository review finding, risk driver, or non-overlapping adjustment candidate. Do not present it as a comparable total estimate unless it is actually a total estimate. |
 | Parent final standard | Final parent synthesis central value. |
 | Notes | Basis, assumptions, or risk driver. |
 
@@ -68,10 +68,13 @@ For WBS, show:
 - low/likely/high
 - total formulas
 
-For adjustment passes, show either:
+For review or adjustment passes, separate them from total-estimate methods unless they are intentionally total estimates. Show:
 
-- additive adjustment ranges, or
-- adjusted low/base/high range
+- coverage findings: already covered / missing or thin / risk-only
+- additive adjustment candidates only when they are non-overlapping
+- adjusted low/base/high range only when the pass explicitly produced a full adjusted total
+
+Do not place a public-sector/report review beside WBS and PERT as if all three are comparable total estimates when the review output is only an adjustment candidate.
 
 ## Workbook Quality
 

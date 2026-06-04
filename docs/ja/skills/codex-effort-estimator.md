@@ -33,14 +33,16 @@ subagent を使う場合、親 agent は scope、source files、output unit、ou
 
 - WBS bottom-up pass
 - PERT pass
-- Public-sector/business-system pass
+- Public-sector/business-system review pass
 - Repository cost pass
 
 親 agent は各手法の差分を比較し、前提や scope の違いを明示したうえで、最終レンジと planning center をまとめます。
 
+公共・帳票・受入などの specialist pass は、原則として単純加算する補正値ではなく、WBS/PERT の coverage audit として扱います。親 agent は findings を `already covered`、`missing/thin`、`risk-only` に分け、既に WBS/PERT に含まれる作業は二重計上しません。未織り込み部分だけを調整し、不確実性が高いだけの項目は high range や high-risk scenario に反映します。
+
 ## Excel 出力
 
-ユーザーが Excel workbook を求める場合は `references/spreadsheet-output.md` を読み、method ごとの sheet、統合 summary、WBS、assumptions、risks、verification sheet を作成します。
+ユーザーが Excel workbook を求める場合は `references/spreadsheet-output.md` を読み、method ごとの sheet、統合 summary、WBS、assumptions、risks、verification sheet を作成します。公共・帳票 review のような補正候補は、WBS/PERT などの総工数見積と同じ比較表に置かず、coverage/risk review または adjustment candidate として分けて表示します。
 
 ## 注意
 

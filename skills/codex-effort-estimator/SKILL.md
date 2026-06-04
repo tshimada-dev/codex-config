@@ -102,7 +102,7 @@ For specialist passes, name only the specialization and source documents. Let th
 |---|---|---|
 | WBS bottom-up pass | General feature/project or document-driven scope | Use `development-estimation` if installed, otherwise use `references/methods.md`. Produce WBS low/likely/high effort, assumptions, risks, and confidence. |
 | PERT pass | Tasks can be estimated with three-point ranges | Use `plan-estimateeffort` if installed, otherwise use PERT in `references/methods.md`. Produce optimistic/most-likely/pessimistic estimates and confidence notes. |
-| Public-sector/business-system pass | Government, RFP, Excel/PDF, CSV, training, acceptance, or formal deliverables matter | Use this skill with `references/public-sector-business-systems.md` to apply report, data, testing, and handoff adjustments. |
+| Public-sector/business-system review pass | Government, RFP, Excel/PDF, CSV, training, acceptance, or formal deliverables matter | Use this skill with `references/public-sector-business-systems.md` as a risk-review and coverage-audit pass. Identify which public/report/acceptance factors are already included in WBS or PERT, which are missing or thin, and which should only widen the risk range. Do not treat this pass as a mechanical additive estimate unless the assignment explicitly asks for an additive-only adjustment. |
 | Repository cost pass | Existing repository or rebuild/completion value is in scope | Use `cost-estimate` if installed, otherwise inventory repository facts and state the fallback. Report measured facts separately from inference. |
 
 ### Delegate Prompt Shape
@@ -118,7 +118,7 @@ Use $plan-estimateeffort. Source documents: [paths]. Estimate the named project 
 ```
 
 ```text
-Use $codex-effort-estimator references/public-sector-business-systems.md as a specialist adjustment pass. Source documents: [paths]. Estimate the named project in person-days and return adjustment recommendations, assumptions, risks, and rationale. Do not use conclusions from other estimators. Do not price the work.
+Use $codex-effort-estimator references/public-sector-business-systems.md as a specialist public-sector/business-system review pass. Source documents: [paths]. Review public-sector deliverables, Excel/PDF/report fidelity, CSV/encoding, acceptance, training, handoff, and procurement risks. Return coverage notes, missing-or-thin areas, risk-range implications, and only optional additive adjustment candidates where they are not already covered by WBS/PERT. Do not use conclusions from other estimators. Do not price the work.
 ```
 
 ### Parent Synthesis
@@ -128,11 +128,29 @@ The parent should report:
 - Method results side by side.
 - Agreement and disagreement.
 - Scope or assumption differences causing gaps.
+- For specialist review passes, separate coverage audit from arithmetic. Mark each finding as already covered, missing/thin, or risk-only.
+- Do not mechanically add a public-sector/report/acceptance adjustment on top of WBS or PERT when those methods already include the same work.
+- Apply only the non-overlapping missing/thin portion as an adjustment; use overlapping high-uncertainty findings to widen the range or explain the high-risk scenario.
 - Final recommended range and planning center.
 - A lower "implementation-only" range if materially different from the full delivery range.
 - Confirmation questions that could narrow the range.
 
 If method outputs conflict, prefer the estimate whose assumptions best match the user's target deliverable. Keep outliers visible when they represent real delivery risk.
+
+### Adjustment Review Rule
+
+Treat public-sector, report-fidelity, acceptance, training, and handoff passes as review passes by default, not as automatic adders.
+
+Use this reconciliation pattern:
+
+| Review finding | Parent action |
+|---|---|
+| Already represented in WBS/PERT | Do not add again; cite it as validation or confidence support. |
+| Missing or clearly thin in WBS/PERT | Add only that non-overlapping portion, or shift the planning center upward. |
+| Included but highly uncertain | Widen the high end of the range or define a high-risk scenario. |
+| Depends on an unresolved requirement | Keep as an assumption or confirmation question instead of hiding it in the base estimate. |
+
+When reporting, use labels such as `public/report risk review`, `coverage audit`, `adjustment candidate`, or `risk-range driver`. Avoid labels that imply direct summation unless the numbers are intentionally additive and non-overlapping.
 
 ## Guardrails
 
