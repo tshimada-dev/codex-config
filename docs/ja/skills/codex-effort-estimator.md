@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/SKILL.md
-source_commit: e96e2a4a183cc6d6c911b6a2aa222c8ec5a1f13e
+source_commit: e535debff08e37bf3540fa3677f8a8e610fcfb8f
 canonical: false
 ---
 
@@ -48,6 +48,8 @@ Sizing は画面、帳票、CSV、データ、連携、deliverables などの規
 
 公共・帳票・受入などの specialist pass は、原則として単純加算する補正値ではなく、WBS/PERT の coverage audit として扱います。親 agent は findings を `already covered`、`missing/thin`、`risk-only` に分け、既に WBS/PERT に含まれる作業は二重計上しません。未織り込み部分だけを調整し、不確実性が高いだけの項目は high range や high-risk scenario に反映します。
 
+scope に繰り返しの variant（複数地区・支店・似た帳票や画面）や共有 skeleton がある場合は、`references/repetition-and-reuse.md` を適用します。数えた artifact を bespoke build として積み上げず、framework を一度作り安い variant を足す形で見積もり、skeleton を再利用する feature は割引き、risk は1回だけ計上し、bottom-up total を top-down の per-unit anchor と突合します。これは数えた件数からの bottom-up が成果物の多い案件で系統的に上振れするのを防ぐためです。
+
 ## Excel 出力
 
 Excel workbook は、非 trivial な見積もりの標準成果物として扱います。ユーザーが text-only を求めた場合、または quick gut-check の場合だけ省略します。作成時は `references/spreadsheet-output.md` と `references/workbook-format.md` を読み、固定の sheet 名、sheet 順、列構成、色、数値形式に従って作成します。公共・帳票 review のような補正候補は、WBS/PERT などの総工数見積と同じ比較表に置かず、coverage/risk review または adjustment candidate として分けて表示します。
@@ -66,3 +68,6 @@ PERT の集計では、各 task の期待値を合計し、レンジは端点の
 - 外部スキルの結論をこの workflow に混ぜない。比較が必要な場合は、ユーザーが明示したときだけ別扱いにする。
 - 単価や金額は、ユーザーが求めた場合だけ扱う。
 - 公共・RFP 案件では、deliverables、review gates、training、manual、acceptance testing、handoff を含める。
+- 繰り返しの variant（地区・支店・似た帳票や画面）を完全に独立したフルビルドとして見積もらない。共有 framework を一度作り、安い variant を足す形にし、variant factor を明記する。
+- 同じ risk を複数回計上しない。three-point の high に既に risk が含まれるなら、同じ不確実性に対して別個の reserve line を足し、かつ相関 endpoint-sum の high を見出しにする、という重複をしない。
+- 未較正の bottom-up total を anchored であるかのように出さない。top-down の per-unit と突合し、measured productivity baseline が無い場合はそう述べる。

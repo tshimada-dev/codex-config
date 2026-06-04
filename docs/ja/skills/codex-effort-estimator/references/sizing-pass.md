@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/sizing-pass.md
-source_commit: 2e9aea31a66c2e07356bdcfd832d45ef5182b54b
+source_commit: e535debff08e37bf3540fa3677f8a8e610fcfb8f
 canonical: false
 ---
 
@@ -25,7 +25,8 @@ sizing facts、ambiguity、confidence を返します。明示的に求められ
 3. 各 count を `explicit`、`inferred`、`sample-only`、`unknown` として mark する。
 4. duplicate names、ambiguous terms、sample-vs-production gaps、hidden variants を特定する。
 5. counts を WBS-friendly sizing buckets に group 化する。
-6. どの counts が WBS、PERT、public/report review、repository estimates を drive するかを示す。
+6. 繰り返し group を特定する: 地区・支店・部署をまたいで繰り返す、または template/skeleton を共有する artifact。各 group について instance 数と representative unit を記録し、その count は bespoke な per-item 掛け算ではなく economy-of-scale 見積（framework once plus variants）の入力であることを明記する。`references/repetition-and-reuse.md` を参照。
+7. どの counts が WBS、PERT、public/report review、repository estimates を drive するかを示す。
 
 ## Output Schema
 
@@ -33,6 +34,7 @@ sizing facts、ambiguity、confidence を返します。明示的に求められ
 
 - 調査した source files。
 - `Signal`, `Count`, `Evidence`, `Certainty`, `Notes` を含む sizing table。
+- instance 数と representative unit を持つ繰り返し group（economy-of-scale 見積用に明記）。
 - ambiguous or missing counts。
 - WBS/PERT input recommendations。
 - Confidence level。

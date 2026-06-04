@@ -19,7 +19,8 @@ Return sizing facts, ambiguity, and confidence. Do not estimate total effort unl
 3. Mark each count as `explicit`, `inferred`, `sample-only`, or `unknown`.
 4. Identify duplicate names, ambiguous terms, sample-vs-production gaps, and hidden variants.
 5. Group counts into WBS-friendly sizing buckets.
-6. State which counts should drive WBS, PERT, public/report review, or repository estimates.
+6. Identify repetition groups: artifacts that repeat across regions, branches, departments, or share a template or skeleton. For each group, record the instance count and a representative unit, and flag that the count feeds an economy-of-scale estimate (framework once plus variants), not a bespoke per-item multiplication. See `references/repetition-and-reuse.md`.
+7. State which counts should drive WBS, PERT, public/report review, or repository estimates.
 
 ## Output Schema
 
@@ -27,6 +28,7 @@ Return:
 
 - Source files inspected.
 - Sizing table with `Signal`, `Count`, `Evidence`, `Certainty`, and `Notes`.
+- Repetition groups with instance count and representative unit, flagged for economy-of-scale estimating.
 - Ambiguous or missing counts.
 - WBS/PERT input recommendations.
 - Confidence level.

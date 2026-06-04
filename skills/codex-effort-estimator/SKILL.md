@@ -67,6 +67,7 @@ If a pass is skipped, the final synthesis must make the skip visible. A silent o
    - For repos: count non-generated code and identify architecture, tests, integrations, operational maturity, and missing production work.
    - For issues/backlogs: normalize tasks, dependencies, acceptance criteria, and confidence.
    - When counts matter, use `references/sizing-pass.md` before estimating so WBS/PERT lines are grounded in visible size signals.
+   - When scope has repeated variants (regions, branches, similar reports/screens) or shared skeletons, group them and use `references/repetition-and-reuse.md`; counted artifacts are not the same as build scope.
 
 3. Decide whether to delegate:
    - Build the pass coverage checklist first, selecting all applicable passes from the decision path and coverage gate.
@@ -97,6 +98,7 @@ If a pass is skipped, the final synthesis must make the skip visible. A silent o
    - When the user explicitly says AI coding assistance is assumed, apply `references/ai-coding-assistance-adjustment.md` after raw WBS/PERT so routine implementation is not overstated.
    - Apply risk multipliers only after base work is decomposed.
    - Keep contingency visible instead of hiding it inside every line.
+   - For repeated variants or shared skeletons, apply `references/repetition-and-reuse.md`: estimate the framework once plus reduced-cost variants, discount reused skeletons, count risk only once, and cross-check the bottom-up total against a top-down per-unit anchor.
 
 6. Normalize the output:
    - Use `references/output-template.md` for customer-facing or management-facing summaries.
@@ -259,6 +261,9 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 - Do not import external skill conclusions into this workflow; keep method passes self-contained unless the user explicitly asks for comparison.
 - Do not include rates, currency, or price unless the user asks or provides unit prices.
 - Do not treat generated/vendor code, sample data, or bundled templates as full custom-build effort without saying why.
+- Do not estimate repeated variants (regions, branches, similar reports/screens) as fully independent builds; estimate a shared framework once plus reduced-cost variants, and state the variant factor.
+- Do not count the same risk more than once; if three-point high values already embed risk, do not also add a separate reserve line and headline the correlated endpoint-sum high for the same uncertainty.
+- Do not present an uncalibrated bottom-up total as anchored; cross-check it against a top-down per-unit figure and say when no measured productivity baseline exists.
 - Do not let analogy calibration override current scope evidence without explaining the comparable project, differences, and confidence.
 - Do not produce implementation-only precision when the proper answer is a discovery estimate plus confirmation questions.
 - Do not apply AI coding assistance reductions unless the user explicitly says that assumption is in scope.
@@ -281,3 +286,4 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 - `references/spreadsheet-output.md`: workbook structure for detailed estimate spreadsheets with method-specific sheets, phase breakdowns, assumptions, risks, and verification expectations.
 - `references/workbook-format.md`: fixed workbook layout, sheet names, colors, widths, number formats, and QA rules to keep Excel output consistent.
 - `references/three-point-aggregation-golden.md`: deterministic golden case for three-point variance aggregation.
+- `references/repetition-and-reuse.md`: economy-of-scale rules for repeated variants and shared skeletons, single-counting of risk, and the top-down per-unit cross-check.
