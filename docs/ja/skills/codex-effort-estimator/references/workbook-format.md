@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/workbook-format.md
-source_commit: e96e2a4a183cc6d6c911b6a2aa222c8ec5a1f13e
+source_commit: 5dfe2beb76174787c4b5c2334564ad0caf522e02
 canonical: false
 ---
 
