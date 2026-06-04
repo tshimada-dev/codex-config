@@ -11,11 +11,13 @@ Estimate human engineering effort in person-days. Do not estimate price, rates, 
 1. List the source files or text blocks inspected.
 2. Identify in-scope deliverables, explicit exclusions, and unknowns.
 3. Break work into WBS lines that are small enough to estimate without hiding unrelated features.
-4. Estimate each line with low / most likely / high person-days. In WBS output, `Likely` means the same central estimate as PERT `Most likely`, not a median or probability-weighted expected value.
-5. Include PM, requirements, design, implementation, reports/output, testing, acceptance support, manuals/training, deployment, and handoff when they are part of the delivery.
-6. Apply risk at the WBS line or total level only when it is traceable to source evidence.
-7. If AI coding assistance is explicitly in scope, keep raw human effort values but label which WBS lines are routine coding, code-adjacent, or non-reducible for downstream adjustment.
-8. State confidence and the facts that would materially change the estimate.
+4. For repeated variants (regions, branches, similar reports/screens) and shared skeletons, apply `references/repetition-and-reuse.md`: estimate a framework line once plus reduced-cost variant lines, and discount features that reuse an established skeleton. Do not estimate each counted artifact as a bespoke build, and do not split one feature into several full-cost lines that re-estimate the same shared work.
+5. Estimate each line with low / most likely / high person-days. In WBS output, `Likely` means the same central estimate as PERT `Most likely`, not a median or probability-weighted expected value.
+6. Include PM, requirements, design, implementation, reports/output, testing, acceptance support, manuals/training, deployment, and handoff when they are part of the delivery.
+7. Apply risk at the WBS line or total level only when it is traceable to source evidence. Count each risk once: if line `high` values already embed the risk, do not also add a separate reserve line for the same uncertainty.
+8. Cross-check the bottom-up total against a top-down per-unit anchor (person-days per report, screen, workflow, or function point). If the implied per-unit cost is well above a credible anchor, re-examine the largest repeated groups for under-applied economy of scale before finalizing.
+9. If AI coding assistance is explicitly in scope, keep raw human effort values but label which WBS lines are routine coding, code-adjacent, or non-reducible for downstream adjustment.
+10. State confidence and the facts that would materially change the estimate.
 
 ## WBS Line Guidance
 

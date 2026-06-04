@@ -74,6 +74,9 @@ Do not stack many multipliers mechanically. Explain the dominant risk drivers an
 - For three-point estimates, pessimistic should usually be about 1.5-3.0x optimistic. Values outside that range are allowed, but require a note explaining the asymmetric risk.
 - For very small tasks, avoid false precision; group related tasks when decimals imply more accuracy than the source supports.
 - If one line item is more than 25-30% of the total, split it or explain why it cannot be decomposed.
+- For repeated variants (regions, branches, similar reports/screens), confirm the estimate uses `framework once plus variants`, not a bespoke count multiplication. Counted artifacts drift high when each is priced as a full build; see `references/repetition-and-reuse.md`.
+- Count each risk once. If line `high` values already embed pessimistic risk, do not also stack a separate reserve line and the correlated endpoint-sum high for the same uncertainty.
+- Cross-check the bottom-up total against a top-down per-unit figure. A per-unit cost well above a credible anchor signals under-applied economy of scale or reuse.
 - If organization-specific actual productivity is available, such as person-days per screen, report, integration, CRUD module, or KLOC, use it as calibration evidence. If no baseline exists, state that the estimate relies on document-derived judgment rather than measured organizational productivity.
 
 ## AI Coding Assistance
@@ -89,6 +92,7 @@ Before finalizing:
 - Sizing facts should be visible when scope can be counted; avoid estimating from prose alone when counts are extractable.
 - Any available three-point data should have range synthesis; do not leave the planning range as endpoint sums by default.
 - No large line item should hide multiple unrelated features.
+- Repeated variants and reused skeletons should be priced with economy of scale, and the bottom-up total should pass a top-down per-unit cross-check.
 - Management, testing, documentation, and acceptance support should not be omitted.
 - Calendar duration should account for review waits, not only person-days.
 - Confidence should drop when source documents are samples rather than final specifications.
