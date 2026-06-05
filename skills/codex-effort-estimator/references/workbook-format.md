@@ -118,6 +118,8 @@ Columns:
 
 `AI削減区分` values: `定型実装`, `コード隣接`, `削減不可`, `対象外`.
 
+For repeated variants and shared skeletons (see `references/repetition-and-reuse.md`), do not collapse the group into one large line and do not split it into many full-cost lines. Use a `framework` line plus reduced-cost `variant` lines, and record the instance count and the variant factor in `根拠` or `メモ` (for example, `framework + 4 variants ×0.2`). Keep risk counted once: if `High` already embeds the risk, do not add a separate reserve line for the same uncertainty.
+
 ### `04_PERT`
 
 Columns:
@@ -193,6 +195,12 @@ Then include the reconciliation table:
 Also include a range synthesis table whenever three-point data exists:
 
 `Source`, `Most likely total`, `Expected total`, `Total SD`, `90% CI Low`, `90% CI High`, `Endpoint scenario`, `Interpretation`
+
+When scope contains repeated variants or shared skeletons, include a top-down cross-check table so the economy-of-scale reconciliation is auditable:
+
+`観点`, `Bottom-up per-unit`, `Anchor`, `差`, `判断`, `根拠`
+
+`判断` values: `整合`, `繰り返し/再利用で下方調整`, `根拠付きで高位維持`. State the per-unit basis (per report, screen, workflow, or function point) and whether a measured productivity baseline exists. See `references/repetition-and-reuse.md`.
 
 ### `11_前提リスク`
 
