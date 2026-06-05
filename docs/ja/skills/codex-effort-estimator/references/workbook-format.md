@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/workbook-format.md
-source_commit: 5dfe2beb76174787c4b5c2334564ad0caf522e02
+source_commit: c689b105822474ff84cd516f33c664c4ed7d4cfa
 canonical: false
 ---
 
@@ -124,6 +124,8 @@ Columns:
 
 `AI削減区分` values: `定型実装`, `コード隣接`, `削減不可`, `対象外`.
 
+繰り返しの variant と共有 skeleton（`references/repetition-and-reuse.md` 参照）は、1本の大きな line にまとめず、また多数のフルコスト line に割らないでください。`framework` line と安い `variant` line に分け、instance 数と variant factor を `根拠` または `メモ` に記録します（例: `framework + 4 variants ×0.2`）。risk は1回だけ計上し、`High` が既に risk を含むなら同じ不確実性に別個の reserve line を足しません。
+
 ### `04_PERT`
 
 Columns:
@@ -199,6 +201,12 @@ pass coverage table から始めます。
 three-point data が存在するときは、range synthesis table も含めます。
 
 `Source`, `Most likely total`, `Expected total`, `Total SD`, `90% CI Low`, `90% CI High`, `Endpoint scenario`, `Interpretation`
+
+scope に繰り返しの variant や共有 skeleton がある場合は、economy-of-scale の突合を監査可能にするため top-down cross-check table も含めます。
+
+`観点`, `Bottom-up per-unit`, `Anchor`, `差`, `判断`, `根拠`
+
+`判断` values: `整合`, `繰り返し/再利用で下方調整`, `根拠付きで高位維持`。per-unit の基準（report/screen/workflow/function point あたり）と、measured productivity baseline の有無を明記します。`references/repetition-and-reuse.md` 参照。
 
 ### `11_前提リスク`
 
