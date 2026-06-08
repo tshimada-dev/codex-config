@@ -50,7 +50,7 @@ Use these exact presentation sheet names after formatting. The numeric prefixes 
 | 7 | `07_FP` | Optional | Function point estimate. |
 | 8 | `08_UCP` | Optional | Use case points estimate. |
 | 9 | `09_トップダウン` | Optional | Direct whole-project three-point anchor. |
-| 10 | `10_AI補正` | Optional | AI coding assistance adjustment when explicitly assumed. |
+| 10 | `10_AI補正` | Optional | Line-level AI coding assistance adjustment from WBS `AI削減区分` and fixed coefficients. |
 | 11 | `11_公共レビュー` | Optional | Public-sector/report/acceptance coverage review. |
 | 12 | `12_リスクモデル` | Optional | Risk-adjusted scenario or Monte Carlo-style model. |
 | 13 | `13_制約` | Optional | Constraint/capacity feasibility envelope. |
@@ -127,7 +127,7 @@ Columns:
 
 `分類`, `作業`, `根拠`, `Low`, `Most likely`, `High`, `AI削減区分`, `メモ`
 
-`AI削減区分` values: `定型実装`, `コード隣接`, `削減不可`, `対象外`.
+`AI削減区分` values: `定型実装`, `コード隣接`, `複雑実装`, `検証重`, `削減不可`, `対象外`.
 
 For repeated variants and shared skeletons (see `references/repetition-and-reuse.md`), do not collapse the group into one large line and do not split it into many full-cost lines. Use a `framework` line plus reduced-cost `variant` lines, and record the instance count and the variant factor in `根拠` or `メモ` (for example, `framework + 4 variants ×0.2`). Keep risk counted once: if `High` already embeds the risk, do not add a separate reserve line for the same uncertainty.
 
@@ -217,9 +217,25 @@ Include delivery class and dominant effort drivers. The total row should calcula
 
 Columns:
 
-`分類`, `工程`, `ベースライン`, `倍率`, `補正後`, `削減可否`, `根拠`
+`WBS分類`, `WBS作業`, `AI削減区分`, `Raw Low`, `Raw Base`, `Raw High`, `固定倍率`, `Adjusted Low`, `Adjusted Base`, `Adjusted High`, `Base差分`, `判断者`, `係数権限`, `根拠`
 
-Keep `ベースライン` and `補正後` side by side. Do not overwrite the raw estimate.
+Build this sheet from `03_WBS` rows, not from phase totals. Keep raw baseline and adjusted values side by side. Do not overwrite raw WBS cells.
+
+The authority split must be visible:
+
+- `判断者`: normally `WBS作成者`, because line context determines reducibility.
+- `係数権限`: `固定係数（参照定数）`, because `references/ai-coding-assistance-adjustment.md` owns multiplier values.
+
+Apply only the documented fixed coefficients:
+
+| AI削減区分 | 固定倍率 |
+|---|---:|
+| `定型実装` | `0.70` |
+| `コード隣接` | `0.85` |
+| `複雑実装` | `0.90` |
+| `検証重` | `0.95` |
+| `削減不可` | `1.00` |
+| `対象外` | `1.00` |
 
 ### `11_公共レビュー`
 

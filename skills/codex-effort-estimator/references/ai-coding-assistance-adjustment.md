@@ -6,34 +6,52 @@ This adjusts human effort estimates. It is not an AI-agent wall-clock estimate.
 
 ## Principle
 
-Apply the adjustment after raw WBS/PERT. Keep the baseline visible, then show an AI-assisted range. Reduce routine coding work; preserve human-heavy coordination, validation, and uncertainty work.
+Apply the adjustment after raw WBS/PERT. Keep the raw baseline visible and frozen, then show an AI-assisted range. Reduce routine coding work; preserve human-heavy coordination, validation, and uncertainty work.
 
 Do not apply this adjustment just because Codex is helping with the estimate.
 
-## Phase Guidance
+## Authority Split
 
-| Phase or work type | Typical multiplier | Notes |
+Separate the two decisions:
+
+- Reducibility judgment: the WBS/PERT author decides this at line level, because they have the work context. They output `AI削減区分` and a short rationale per line.
+- Multiplier authority: this reference owns the fixed coefficients below. The AI adjustment pass must not choose a multiplier to hit a desired total, tune against parent synthesis, or overwrite raw baseline values.
+
+The adjustment is a dependent transformation of the raw estimate, not an independent estimating method.
+
+## Fixed Line-Level Coefficients
+
+Use these constants by `AI削減区分`. Do not substitute phase-wide discretionary factors.
+
+| AI削減区分 | Fixed multiplier | Use when |
 |---|---:|---|
-| Routine scaffolding, simple CRUD, boilerplate, mechanical refactor | 0.55-0.75 | Strong AI benefit when requirements and patterns are clear. |
-| Well-specified implementation and straightforward business logic | 0.65-0.85 | Benefit depends on testability and local conventions. |
-| Unit test drafting, fixtures, simple docs, migration scripts | 0.70-0.90 | Keep human review and test design visible. |
-| Complex business rules, legacy behavior matching, debugging | 0.80-1.00 | AI helps, but discovery and validation dominate. |
-| Integrations, security, deployment, performance, observability | 0.85-1.05 | Often constrained by environment and review cycles. |
-| Excel/PDF fidelity, data migration, old-vs-new comparison, visual QA | 0.90-1.10 | Coding may be faster, but validation loops remain; use above 1.0 when AI-generated output increases correction/review cycles. |
-| PM, requirements, stakeholder review, acceptance, training, handoff | 0.95-1.00 | Usually not meaningfully reduced by coding assistance. |
-| Unclear requirements or unresolved domain decisions | 1.00 | Use discovery instead of a coding reduction. |
+| `定型実装` | `0.70` | Routine scaffolding, simple CRUD, boilerplate, mechanical refactor, or well-patterned implementation. |
+| `コード隣接` | `0.85` | Well-specified implementation, straightforward business logic, simple tests/docs/scripts, or code-adjacent design work. |
+| `複雑実装` | `0.90` | Complex business rules, legacy behavior matching, debugging, integrations, security, deployment, performance, or observability. |
+| `検証重` | `0.95` | Excel/PDF fidelity, data migration, old-vs-new comparison, visual QA, acceptance evidence, or report validation. |
+| `削減不可` | `1.00` | PM, requirements, stakeholder review, acceptance, training, handoff, unresolved domain decisions, or coordination. |
+| `対象外` | `1.00` | Work outside the AI coding assistance assumption. |
 
-Choose the high end of a multiplier when the codebase is unfamiliar, tests are weak, requirements are ambiguous, or outputs require manual validation.
+Allowed aliases for legacy workbooks:
+
+| Alias | Treat as |
+|---|---|
+| `削減あり` | `コード隣接` |
+| `一部削減` | `コード隣接` |
+| `削減困難` | `削減不可` |
+| `削りすぎ注意` | `検証重` |
+
+If a line has an unknown `AI削減区分`, apply `1.00`, flag it as `要確認`, and do not invent a coefficient.
 
 ## Procedure
 
-1. Start from a raw WBS/PERT estimate or phase breakdown.
-2. Split work into reducible and non-reducible phases.
-3. If a WBS/PERT line mixes reducible and non-reducible work, split that line before applying multipliers. If it cannot be split from the evidence, use the more conservative multiplier and say why.
-4. Apply phase-specific multipliers only to reducible coding or code-adjacent work.
+1. Start from raw WBS/PERT line items with low / most likely / high values.
+2. Require each line to carry `AI削減区分` and a rationale. If a line mixes reducible and non-reducible work, split it before applying multipliers. If it cannot be split from the evidence, use the more conservative category and say why.
+3. Apply the fixed coefficient for each line's `AI削減区分` to low / most likely / high. Do not adjust the raw baseline cells.
+4. Aggregate adjusted lines to phase and total summaries after line-level multiplication.
 5. Keep risk and contingency visible. Do not hide unresolved requirements inside a productivity factor.
-6. Report both baseline and AI-assisted ranges.
-7. If the adjusted total is more than 35% lower than the baseline, explicitly flag the reduction and justify it from scope evidence. If it is more than 45% lower, require strong evidence such as highly repetitive CRUD, strong tests, clear patterns, and stable requirements; otherwise move the multiplier upward.
+6. Report both raw baseline and AI-assisted ranges, with base deltas visible.
+7. If the adjusted total is more than 35% lower than the baseline, explicitly flag the reduction and justify it from line-level scope evidence. If it is more than 45% lower, require strong evidence such as highly repetitive CRUD, strong tests, clear patterns, and stable requirements; otherwise move uncertain lines to a more conservative category.
 8. Explain the assumption: AI helps produce and revise code, while a human remains responsible for design decisions, review, integration, validation, and acceptance.
 
 ## Output Schema
@@ -41,7 +59,7 @@ Choose the high end of a multiplier when the codebase is unfamiliar, tests are w
 Return:
 
 - Raw baseline low / base / high person-days.
-- Adjustment table with `Phase`, `Baseline`, `Multiplier`, `Adjusted`, and `Rationale`.
+- Line-level adjustment table with `WBS分類`, `WBS作業`, `AI削減区分`, `Raw Low`, `Raw Base`, `Raw High`, `固定倍率`, `Adjusted Low`, `Adjusted Base`, `Adjusted High`, `Base差分`, `判断者`, `係数権限`, and `根拠`.
 - AI-assisted low / base / high person-days.
 - Non-reducible work.
 - Risks where AI assistance may not help.

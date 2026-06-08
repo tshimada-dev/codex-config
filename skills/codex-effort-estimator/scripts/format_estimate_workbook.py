@@ -95,6 +95,41 @@ PHASE_NOTES = {
     "研修/マニュアル/納品": ("一部削減", "ドラフト生成は効くが、顧客向け整備と納品確認は必要。", "03_WBS"),
 }
 
+AI_MULTIPLIERS = {
+    "定型実装": (
+        0.70,
+        "WBS作成者が削減可能と判定。係数は参照定数で固定し、補正パス側で値引き裁量を持たない。",
+    ),
+    "コード隣接": (
+        0.85,
+        "実装補助は効くが設計判断・レビュー・結合確認が残るため中程度の固定係数を適用。",
+    ),
+    "複雑実装": (
+        0.90,
+        "複雑な業務ルールやデバッグはAI支援より検証・判断が支配的なため保守的に適用。",
+    ),
+    "検証重": (
+        0.95,
+        "帳票忠実度、旧新比較、受入証跡など検証中心の作業はほぼ削らない。",
+    ),
+    "削減不可": (
+        1.00,
+        "要件、受入、調整、説明責任などAIコーディングで削らない作業。",
+    ),
+    "対象外": (
+        1.00,
+        "AI補正対象外。raw baselineをそのまま保持。",
+    ),
+}
+
+AI_TAG_ALIASES = {
+    "削減あり": "コード隣接",
+    "一部削減": "コード隣接",
+    "削減困難": "削減不可",
+    "削りすぎ注意": "検証重",
+    "非削減": "削減不可",
+}
+
 WIDTHS = {
     "00_結論": [24, 18, 42, 18, 28, 28],
     "01_内訳": [24, 15, 15, 13, 12, 16, 58, 24],
@@ -106,7 +141,7 @@ WIDTHS = {
     "07_FP": [24, 12, 12, 12, 58],
     "08_UCP": [24, 12, 12, 12, 58],
     "09_トップダウン": [24, 12, 12, 12, 12, 64],
-    "10_AI補正": [16, 30, 14, 11, 14, 14, 56],
+    "10_AI補正": [16, 34, 14, 11, 11, 11, 11, 12, 12, 12, 12, 18, 36, 54],
     "11_公共レビュー": [22, 58, 16, 54, 24],
     "12_リスクモデル": [28, 20, 62, 18],
     "13_制約": [24, 12, 22, 58],
@@ -167,6 +202,14 @@ NUMERIC_HEADERS = {
     "AI補助前WBS",
     "差分",
     "削減率",
+    "Raw Low",
+    "Raw Base",
+    "Raw High",
+    "固定倍率",
+    "Adjusted Low",
+    "Adjusted Base",
+    "Adjusted High",
+    "Base差分",
 }
 
 FORMULA_ERRORS = {"#REF!", "#VALUE!", "#DIV/0!", "#NAME?", "#N/A"}
@@ -241,6 +284,30 @@ def first_value(values: tuple[Any, ...], default: Any = None) -> Any:
     return values[0] if values else default
 
 
+def normalize_ai_tag(value: Any) -> str:
+    tag = text(value) or "対象外"
+    return AI_TAG_ALIASES.get(tag, tag)
+
+
+def ai_multiplier_for(tag: str) -> tuple[float, str]:
+    normalized = normalize_ai_tag(tag)
+    if normalized in AI_MULTIPLIERS:
+        return AI_MULTIPLIERS[normalized]
+    return (
+        1.00,
+        f"未定義のAI削減区分 `{tag}`。係数裁量を避けるため保守的に1.00を適用し、区分定義の確認を要求。",
+    )
+
+
+def find_header_row(ws: Any, required: set[str]) -> tuple[int | None, dict[str, int]]:
+    max_row, max_col = used_bounds(ws)
+    for row in range(1, min(max_row, 20) + 1):
+        headers = {text(ws.cell(row, col).value): col for col in range(1, max_col + 1)}
+        if required.issubset(set(headers)):
+            return row, headers
+    return None, {}
+
+
 def extract_summary_values(ws: Any | None) -> dict[str, tuple[Any, ...]]:
     values: dict[str, tuple[Any, ...]] = {}
     if ws is None:
@@ -305,6 +372,75 @@ def extract_phase_rows(ws: Any | None) -> list[list[Any]]:
         rate = diff / wbs if isinstance(diff, (int, float)) and wbs else None
         judgement, note, ref = PHASE_NOTES[phase]
         rows.append([phase, ai, wbs, diff, rate, judgement, note, ref])
+    return rows
+
+
+def extract_wbs_ai_rows(ws: Any | None) -> list[dict[str, Any]]:
+    if ws is None:
+        return []
+    header_row, headers = find_header_row(
+        ws,
+        {"分類", "作業", "Low", "Most likely", "High", "AI削減区分"},
+    )
+    if header_row is None:
+        return []
+
+    rows: list[dict[str, Any]] = []
+    max_row, _ = used_bounds(ws)
+    for row_idx in range(header_row + 1, max_row + 1):
+        category = text(ws.cell(row_idx, headers["分類"]).value)
+        task = text(ws.cell(row_idx, headers["作業"]).value)
+        if not category or category in {"合計", "Total", "WBS由来合計"}:
+            continue
+        low = ws.cell(row_idx, headers["Low"]).value
+        base = ws.cell(row_idx, headers["Most likely"]).value
+        high = ws.cell(row_idx, headers["High"]).value
+        if not any(isinstance(value, (int, float)) for value in (low, base, high)):
+            continue
+        raw_tag = text(ws.cell(row_idx, headers["AI削減区分"]).value)
+        tag = normalize_ai_tag(raw_tag)
+        multiplier, rationale = ai_multiplier_for(tag)
+        rows.append(
+            {
+                "category": category,
+                "task": task,
+                "tag": tag,
+                "raw_tag": raw_tag or tag,
+                "low": low,
+                "base": base,
+                "high": high,
+                "multiplier": multiplier,
+                "adjusted_low": low * multiplier if isinstance(low, (int, float)) else None,
+                "adjusted_base": base * multiplier if isinstance(base, (int, float)) else None,
+                "adjusted_high": high * multiplier if isinstance(high, (int, float)) else None,
+                "delta_base": (base * multiplier - base) if isinstance(base, (int, float)) else None,
+                "rationale": rationale,
+            }
+        )
+    return rows
+
+
+def phase_rows_from_ai_rows(ai_rows: list[dict[str, Any]]) -> list[list[Any]]:
+    by_category: dict[str, dict[str, float]] = {}
+    for row in ai_rows:
+        category = row["category"]
+        bucket = by_category.setdefault(category, {"raw": 0.0, "adjusted": 0.0})
+        if isinstance(row["base"], (int, float)):
+            bucket["raw"] += float(row["base"])
+        if isinstance(row["adjusted_base"], (int, float)):
+            bucket["adjusted"] += float(row["adjusted_base"])
+
+    rows: list[list[Any]] = []
+    for category, values in by_category.items():
+        raw = values["raw"]
+        adjusted = values["adjusted"]
+        diff = adjusted - raw
+        rate = diff / raw if raw else None
+        judgement, note, ref = PHASE_NOTES.get(
+            category,
+            ("確認", "WBS行のAI削減区分と固定係数から集計。", "03_WBS/10_AI補正"),
+        )
+        rows.append([category, adjusted, raw, diff, rate, judgement, note, ref])
     return rows
 
 
@@ -474,6 +610,110 @@ def rebuild_breakdown_sheet(ws: Any, phases: list[list[Any]]) -> None:
     ws.auto_filter.ref = f"A3:H{ws.max_row}"
 
 
+def rebuild_ai_adjustment_sheet(ws: Any, ai_rows: list[dict[str, Any]]) -> None:
+    st = base_styles()
+    clear_sheet(ws)
+    ws.sheet_view.showGridLines = False
+    ws.freeze_panes = "A5"
+    ws.merge_cells("A1:N1")
+    ws["A1"] = "AI補正 行レベル監査"
+    ws["A1"].fill = fill(COLORS["header"])
+    ws["A1"].font = st["title_font"]
+    ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+    ws["A2"] = "削減可否はWBS作成者が行ごとに判断し、倍率は参照定数を固定適用する。raw baselineは変更しない。"
+    ws["A2"].font = st["note_font"]
+    ws.merge_cells("A2:N2")
+    ws.append([])
+    ws.append(
+        [
+            "WBS分類",
+            "WBS作業",
+            "AI削減区分",
+            "Raw Low",
+            "Raw Base",
+            "Raw High",
+            "固定倍率",
+            "Adjusted Low",
+            "Adjusted Base",
+            "Adjusted High",
+            "Base差分",
+            "判断者",
+            "係数権限",
+            "根拠",
+        ]
+    )
+    for cell in ws[4]:
+        cell.fill = fill(COLORS["subtle_header"])
+        cell.font = st["header_font"]
+        cell.alignment = st["center"]
+        cell.border = st["header_border"]
+
+    for row in ai_rows:
+        next_row = ws.max_row + 1
+        ws.append(
+            [
+                row["category"],
+                row["task"],
+                row["tag"],
+                row["low"],
+                row["base"],
+                row["high"],
+                row["multiplier"],
+                f"=D{next_row}*G{next_row}",
+                f"=E{next_row}*G{next_row}",
+                f"=F{next_row}*G{next_row}",
+                f"=I{next_row}-E{next_row}",
+                "WBS作成者",
+                "固定係数（参照定数）",
+                row["rationale"],
+            ]
+        )
+
+    if ai_rows:
+        total_row = ws.max_row + 1
+        ws.append(
+            [
+                "合計",
+                "",
+                "",
+                f"=SUM(D5:D{total_row - 1})",
+                f"=SUM(E5:E{total_row - 1})",
+                f"=SUM(F5:F{total_row - 1})",
+                "",
+                f"=SUM(H5:H{total_row - 1})",
+                f"=SUM(I5:I{total_row - 1})",
+                f"=SUM(J5:J{total_row - 1})",
+                f"=SUM(K5:K{total_row - 1})",
+                "",
+                "固定係数",
+                "合計はWBS raw baselineとAI補正後を別掲する監査線。",
+            ]
+        )
+
+    for row in ws.iter_rows(min_row=5, max_row=ws.max_row, min_col=1, max_col=14):
+        for cell in row:
+            cell.font = st["body_font"]
+            cell.alignment = st["left"] if cell.column in (1, 2, 3, 12, 13, 14) else st["right"]
+            cell.border = st["border"]
+            if cell.column in (4, 5, 6, 8, 9, 10, 11):
+                cell.number_format = "0.0"
+            elif cell.column == 7:
+                cell.number_format = "0.00"
+        if row[0].value == "合計":
+            for cell in row:
+                cell.font = st["bold_font"]
+                cell.fill = fill(COLORS["total"])
+        elif row[2].value in {"削減不可", "対象外", "検証重"}:
+            row[2].fill = fill(COLORS["assumption"])
+        elif row[2].value == "定型実装":
+            row[2].fill = fill(COLORS["total"])
+        else:
+            row[2].fill = fill(COLORS["neutral"])
+
+    if ws.max_row >= 5:
+        ws.auto_filter.ref = f"A4:N{ws.max_row}"
+
+
 def renumber_and_order_sheets(wb: Any) -> None:
     by_label: dict[str, Any] = {}
     for ws in wb.worksheets:
@@ -496,6 +736,37 @@ def renumber_and_order_sheets(wb: Any) -> None:
     wb._sheets = ordered
 
 
+def likely_table_header_row(ws: Any) -> int:
+    max_row, max_col = used_bounds(ws)
+    header_terms = {
+        "分類",
+        "作業",
+        "工程",
+        "観点",
+        "Pass",
+        "Low",
+        "Base",
+        "High",
+        "Most likely",
+        "AI削減区分",
+        "WBS分類",
+        "Raw Base",
+    }
+    best_row = 1
+    best_score = -1
+    for row in range(1, min(max_row, 8) + 1):
+        values = [text(ws.cell(row, col).value) for col in range(1, max_col + 1)]
+        non_empty = sum(1 for value in values if value)
+        term_hits = sum(1 for value in values if value in header_terms)
+        if values and values[0] == "案件":
+            term_hits -= 2
+        score = non_empty + term_hits * 3
+        if score > best_score:
+            best_row = row
+            best_score = score
+    return best_row
+
+
 def style_generic_sheet(ws: Any) -> None:
     st = base_styles()
     ws._charts = []
@@ -504,41 +775,71 @@ def style_generic_sheet(ws: Any) -> None:
     widths = WIDTHS.get(ws.title, [])
     for col in range(1, max(max_col, len(widths)) + 1):
         ws.column_dimensions[get_column_letter(col)].width = widths[col - 1] if col <= len(widths) else 16
-    if ws.title not in {"00_結論", "01_内訳"}:
-        ws.freeze_panes = "A2"
-        if max_row >= 1:
-            for cell in ws[1]:
-                cell.fill = fill(COLORS["header"])
-                cell.font = st["section_font"]
-                cell.alignment = st["center"]
-                cell.border = st["header_border"]
-            ws.row_dimensions[1].height = 28
-        for row in ws.iter_rows(min_row=2, max_row=max_row, min_col=1, max_col=max_col):
-            for cell in row:
-                cell.font = st["body_font"]
-                cell.alignment = st["right"] if isinstance(cell.value, (int, float)) else st["left"]
-                cell.border = st["border"]
-                if isinstance(cell.value, (int, float)):
-                    cell.number_format = "0.0"
-            ws.row_dimensions[row[0].row].height = 28
-        if max_col and max_row:
-            ws.auto_filter.ref = f"A1:{get_column_letter(max_col)}{max_row}"
-    else:
+    if ws.title in {"00_結論", "01_内訳"}:
         for row_idx in range(1, max_row + 1):
             ws.row_dimensions[row_idx].height = 30 if ws.title == "00_結論" else 32
+        return
+
+    header_row = likely_table_header_row(ws)
+    ws.freeze_panes = f"A{header_row + 1}"
+    if max_row >= 1:
+        for cell in ws[1]:
+            cell.fill = fill(COLORS["header"])
+            cell.font = st["section_font"]
+            cell.alignment = st["left"]
+            cell.border = st["header_border"]
+        ws.row_dimensions[1].height = 28
+    if max_row >= 2:
+        for cell in ws[2]:
+            cell.fill = fill(COLORS["neutral"])
+
+    for row in range(1, max_row + 1):
+        first_value = text(ws.cell(row, 1).value)
+        row_is_header = row == header_row
+        row_is_total = first_value in {"合計", "Total", "WBS由来合計"} or "最終推奨" in first_value
+        for col in range(1, max_col + 1):
+            cell = ws.cell(row, col)
+            if row == 1:
+                cell.font = st["section_font"]
+            elif row_is_header:
+                cell.font = st["header_font"]
+            elif row_is_total:
+                cell.font = st["bold_font"]
+            else:
+                cell.font = st["body_font"]
+            cell.border = st["border"]
+            if row_is_header:
+                cell.fill = fill(COLORS["subtle_header"])
+                cell.alignment = st["center"]
+            elif row_is_total:
+                cell.fill = fill(COLORS["total"])
+                cell.alignment = st["right"] if isinstance(cell.value, (int, float)) else st["left"]
+            else:
+                cell.alignment = st["right"] if isinstance(cell.value, (int, float)) else st["left"]
+            if isinstance(cell.value, (int, float)):
+                cell.number_format = "0.0"
+        ws.row_dimensions[row].height = 28
+    if max_col and max_row:
+        ws.auto_filter.ref = f"A{header_row}:{get_column_letter(max_col)}{max_row}"
 
 
 def normalize_presentation_workbook(wb: Any) -> None:
     source_summary = sheet_by_label(wb, "結論", "サマリー")
     source_breakdown = sheet_by_label(wb, "内訳", "工程別")
+    source_wbs = sheet_by_label(wb, "WBS")
+    source_ai = sheet_by_label(wb, "AI補正")
     summary = extract_summary_values(source_summary)
     methods = extract_method_rows(source_summary)
-    phases = extract_phase_rows(source_breakdown)
+    ai_rows = extract_wbs_ai_rows(source_wbs)
+    phases = phase_rows_from_ai_rows(ai_rows) if ai_rows else extract_phase_rows(source_breakdown)
 
     conclusion_ws = source_summary or wb.create_sheet("00_結論", 0)
     breakdown_ws = source_breakdown or wb.create_sheet("01_内訳", 1)
+    ai_ws = source_ai or wb.create_sheet("10_AI補正")
     rebuild_conclusion_sheet(conclusion_ws, summary, methods)
     rebuild_breakdown_sheet(breakdown_ws, phases)
+    if ai_rows:
+        rebuild_ai_adjustment_sheet(ai_ws, ai_rows)
     renumber_and_order_sheets(wb)
     for ws in wb.worksheets:
         style_generic_sheet(ws)

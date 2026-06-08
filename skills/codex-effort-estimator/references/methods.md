@@ -19,7 +19,7 @@ Use this reference for software effort estimation when the input is requirements
 | Similar past work exists | Analogy calibration after WBS/PERT, then adjust for differences |
 | Existing codebase is the target | Repository inventory plus rebuild/completion model |
 | Requirements are unclear | Discovery estimate first, implementation estimate second |
-| AI coding assistance is explicitly assumed | Raw human estimate first, then phase-specific AI coding assistance adjustment |
+| AI coding assistance is explicitly assumed | Raw human estimate first, then line-level AI coding assistance adjustment from `AI削減区分` and fixed coefficients |
 
 ## Three-Point Estimate
 
@@ -155,7 +155,7 @@ Monte Carlo-style outputs are useful when distributions can be stated, but a tra
 
 ## AI Coding Assistance
 
-Apply AI coding assistance only when the user explicitly includes that assumption. Start with the raw human WBS/PERT estimate, then adjust implementation-heavy phases using `ai-coding-assistance-adjustment.md`.
+Apply AI coding assistance only when the user explicitly includes that assumption. Start with the raw human WBS/PERT estimate, then adjust each WBS line using its `AI削減区分` and the fixed coefficients in `ai-coding-assistance-adjustment.md`.
 
 Do not reduce requirements, stakeholder review, acceptance, report visual QA, data validation, deployment coordination, or unresolved domain decisions merely because coding is AI-assisted.
 

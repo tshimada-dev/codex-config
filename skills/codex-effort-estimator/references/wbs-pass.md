@@ -16,7 +16,7 @@ Estimate human engineering effort in person-days. Do not estimate price, rates, 
 6. Include PM, requirements, design, implementation, reports/output, testing, acceptance support, manuals/training, deployment, and handoff when they are part of the delivery.
 7. Apply risk at the WBS line or total level only when it is traceable to source evidence. Count each risk once: if line `high` values already embed the risk, do not also add a separate reserve line for the same uncertainty.
 8. Cross-check the bottom-up total against a top-down per-unit anchor (person-days per report, screen, workflow, or function point). If the implied per-unit cost is well above a credible anchor, re-examine the largest repeated groups for under-applied economy of scale before finalizing.
-9. If AI coding assistance is explicitly in scope, keep raw human effort values but label which WBS lines are routine coding, code-adjacent, or non-reducible for downstream adjustment.
+9. If AI coding assistance is explicitly in scope, keep raw human effort values and assign `AI削減区分` per WBS line for downstream adjustment. The WBS author owns the reducibility judgment because it depends on line context; the AI adjustment pass owns only the fixed coefficient application from `references/ai-coding-assistance-adjustment.md`.
 10. State confidence and the facts that would materially change the estimate.
 
 ## WBS Line Guidance
@@ -42,8 +42,8 @@ Return:
 
 - Source files inspected.
 - Scope and exclusions.
-- WBS table with `Component`, `Basis`, `Low`, `Likely / Most likely`, `High`, and `Notes`.
-- AI-reducibility notes when AI coding assistance is explicitly assumed.
+- WBS table with `Component`, `Basis`, `Low`, `Likely / Most likely`, `High`, `AI削減区分`, and `Notes`.
+- AI-reducibility notes when AI coding assistance is explicitly assumed. Allowed `AI削減区分` values are `定型実装`, `コード隣接`, `複雑実装`, `検証重`, `削減不可`, and `対象外`. Use the most conservative applicable value when a line mixes work types and cannot be split.
 - Total low / likely / high person-days.
 - Main assumptions.
 - Main risks and range drivers.

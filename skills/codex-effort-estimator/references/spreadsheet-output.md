@@ -34,7 +34,7 @@ For substantial estimates, create the standard workbook shape from `workbook-for
 | `07_FP` | Function point estimate when inputs, outputs, inquiries, logical files, or external interface files can be counted. |
 | `08_UCP` | Use case points estimate when actors and workflows/use cases can be counted. |
 | `09_トップダウン` | Direct whole-project optimistic / most-likely / pessimistic anchor. |
-| `10_AI補正` | AI coding assistance adjustment when explicitly assumed. |
+| `10_AI補正` | Line-level AI coding assistance adjustment from WBS `AI削減区分` and fixed coefficients. |
 | `11_公共レビュー` | Public-sector/report/acceptance coverage review when applicable. |
 | `12_リスクモデル` | Risk-adjusted scenario or Monte Carlo-style model from probability/impact assumptions. |
 | `13_制約` | Constraint/capacity feasibility envelope from deadline, staffing, review gates, and delivery windows. |
@@ -154,13 +154,16 @@ For sizing, discovery, and analogy calibration passes, keep their roles clear:
 - Parametric, function point, use case point, top-down three-point, constraint capacity, and risk model passes are independent viewpoints when run. Do not collapse them into WBS-derived notes.
 - Discovery is a separate pre-implementation effort when delivery scope is not stable.
 - Analogy calibration is a validation or adjustment rationale, not an unexplained replacement for WBS/PERT.
-- AI coding assistance adjustment is a phase-specific adjustment from baseline to assisted effort, not a new independent size estimate.
+- AI coding assistance adjustment is a line-level dependent transformation from raw WBS/PERT baseline to assisted effort, not a new independent size estimate.
 
 For AI coding assistance adjustment, show:
 
-- raw baseline low/base/high
-- phase multipliers
-- adjusted low/base/high
+- raw baseline low/base/high per WBS line
+- the WBS author's `AI削減区分` judgment per line
+- fixed multipliers from `references/ai-coding-assistance-adjustment.md`
+- adjusted low/base/high per line
+- base delta per line
+- explicit `判断者` and `係数権限` columns so reducibility judgment and coefficient authority are separated
 - non-reducible work
 - assumptions and confidence
 

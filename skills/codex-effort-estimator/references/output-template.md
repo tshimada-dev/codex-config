@@ -48,8 +48,9 @@ When AI coding assistance is explicitly assumed, also include:
 
 - Raw human baseline
 - AI-assisted adjusted range
-- Which phases were reduced
-- Which phases were not reduced
+- Which WBS lines were reduced
+- Which WBS lines were not reduced
+- Which fixed coefficient was applied for each `AI削減区分`
 
 ## Tone
 

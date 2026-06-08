@@ -209,7 +209,7 @@ For specialist passes, name only the specialization and source documents. Let th
 | PERT pass | Tasks can be estimated with three-point ranges | Use `references/pert-pass.md`. Produce optimistic/most-likely/pessimistic estimates, PERT expected value, and confidence notes. |
 | Analogy calibration pass | Comparable past projects, actuals, or prior estimates are available | Use `references/analogy-calibration-pass.md`. Compare WBS/PERT against historical anchors and explain adjustment candidates without hiding variance. |
 | Discovery pass | Requirements are too unclear for implementation estimating | Use `references/discovery-pass.md`. Estimate discovery/requirements work and identify decisions needed before implementation estimating. |
-| AI coding assistance adjustment pass | The user explicitly says AI coding assistance is assumed | Use `references/ai-coding-assistance-adjustment.md`. Adjust raw human WBS/PERT by phase and explain which work is or is not reducible. |
+| AI coding assistance adjustment pass | The user explicitly says AI coding assistance is assumed | Use `references/ai-coding-assistance-adjustment.md`. Adjust raw human WBS/PERT by WBS line using `AI削減区分` and fixed coefficients; explain which work is or is not reducible. |
 | Public-sector/business-system review pass | Government, RFP, Excel/PDF, CSV, training, acceptance, or formal deliverables matter | Use `references/public-review-pass.md` and `references/public-sector-business-systems.md` as a risk-review and coverage-audit pass. Identify which public/report/acceptance factors are already included in WBS or PERT, which are missing or thin, and which should only widen the risk range. Do not treat this pass as a mechanical additive estimate unless the assignment explicitly asks for an additive-only adjustment. |
 | Repository cost pass | Existing repository or rebuild/completion value is in scope | Use `references/repo-cost-pass.md`. Report measured facts separately from inference. |
 
@@ -266,7 +266,7 @@ Use $codex-effort-estimator with references/discovery-pass.md only for the metho
 ```
 
 ```text
-Use $codex-effort-estimator with references/ai-coding-assistance-adjustment.md only for the method instructions. Raw estimate artifact: [path or pasted table]. The user explicitly assumes AI coding assistance. Adjust the estimate by phase, reducing routine implementation where appropriate while preserving requirements, review, acceptance, data/report validation, and coordination effort. Return baseline, adjusted range, multiplier rationale, non-reducible work, and confidence.
+Use $codex-effort-estimator with references/ai-coding-assistance-adjustment.md only for the method instructions. Raw estimate artifact: [path or pasted WBS/PERT table with AI削減区分]. The user explicitly assumes AI coding assistance. Adjust the estimate by WBS line using the documented fixed coefficients for each `AI削減区分`, preserving raw baseline values and separating `判断者` from `係数権限`. Return line-level baseline, adjusted range, multiplier rationale, non-reducible work, reduction sanity check, and confidence.
 ```
 
 ```text
@@ -295,7 +295,7 @@ The parent should report:
 - Risk model result separately from public/report review, including expected risk exposure, correlated high-risk scenario, and overlap warnings.
 - Discovery effort separately from implementation effort when requirements are not stable enough for delivery estimating.
 - Analogy calibration separately from raw WBS/PERT, including which historical differences justify any adjustment.
-- AI-assisted adjustment separately from the raw human estimate when the user explicitly assumes AI coding assistance. Show which phases changed and which did not.
+- AI-assisted adjustment separately from the raw human estimate when the user explicitly assumes AI coding assistance. Show which WBS lines changed, which did not, and which fixed coefficient was applied.
 - For specialist review passes, separate coverage audit from arithmetic. Mark each finding as already covered, missing/thin, or risk-only.
 - Do not mechanically add a public-sector/report/acceptance adjustment on top of WBS or PERT when those methods already include the same work.
 - Apply only the non-overlapping missing/thin portion as an adjustment; use overlapping high-uncertainty findings to widen the range or explain the high-risk scenario.
@@ -343,7 +343,7 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 - `references/pert-pass.md`: method-specific instructions for PERT subagent passes.
 - `references/analogy-calibration-pass.md`: historical comparison and calibration instructions.
 - `references/discovery-pass.md`: discovery and requirements-uncertainty estimate instructions.
-- `references/ai-coding-assistance-adjustment.md`: phase-specific adjustment rules when AI coding assistance is explicitly assumed.
+- `references/ai-coding-assistance-adjustment.md`: line-level fixed-coefficient adjustment rules when AI coding assistance is explicitly assumed.
 - `references/public-review-pass.md`: method-specific instructions for public-sector/report/acceptance coverage review.
 - `references/repo-cost-pass.md`: method-specific instructions for repository rebuild or completion estimates.
 - `references/public-sector-business-systems.md`: WBS and risk factors for government/business systems, especially document and Excel-heavy work.
