@@ -132,6 +132,12 @@ For the component unit anchor pass, show:
 - anchor source and rationale
 - clear note that the pass did not use WBS totals or WBS-derived PERT
 
+When repeated variants or shared skeletons are detected, the workbook must also show the economy-of-scale audit trail:
+
+- `05_単価アンカー` must expose count, framework-once effort, unit anchors, variant/reuse factor, complexity factor, and family totals instead of only family totals.
+- `18_親統合` must include the top-down per-unit cross-check with count and variant/reuse factor.
+- If the source supports repetition but not a concrete factor, write `未記載` in the factor cell and let formatter QA warn; do not silently hide the missing audit field.
+
 For independent anchor passes, show enough detail to audit the method:
 
 - Parametric: model equation, drivers, coefficients, adjustment factors, and calibration confidence.
@@ -169,6 +175,8 @@ For AI coding assistance adjustment, show:
 - non-reducible work
 - assumptions and confidence
 
+The WBS/AI-adjustment row tag is the single source of truth for reducibility. Do not let the formatter invent phase-level reducibility labels or explanatory judgments from a hardcoded dictionary. Summary or breakdown sheets may aggregate or restate the tag, but they must remain traceable to `03_WBS` / `10_AI補正`.
+
 ## Workbook Quality
 
 Before delivering:
@@ -180,6 +188,8 @@ Before delivering:
 - Scan for formula errors such as `#REF!`, `#VALUE!`, `#DIV/0!`, `#NAME?`, and `#N/A`.
 - Treat formatter `errors` as release blockers. The formatter must detect visible total-row cross-foot mismatches, AI adjustment formula mismatches, and breakdown delta/rate mismatches.
 - When PERT is WBS-derived rather than independently estimated, ensure `04_PERT` includes a visible `WBS由来CI` warning banner.
+- When repeated variants or shared skeletons are detected, ensure `05_単価アンカー` has count/framework/unit/factor audit columns and `18_親統合` has the top-down per-unit reuse cross-check. Formatter warnings for missing variant/reuse factors are release blockers under `--strict`.
+- Ensure `01_内訳` AI reducibility tags match `10_AI補正` after canonical alias normalization; mismatches are formatter QA warnings and strict-mode blockers.
 - Render at least the summary and one detailed sheet for visual review.
 - Make long text readable with sensible column widths and wrapping.
 - Keep the final `.xlsx` in the project `outputs` folder or another user-visible artifact path.

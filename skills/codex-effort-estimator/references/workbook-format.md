@@ -41,7 +41,7 @@ Use these exact presentation sheet names after formatting. The numeric prefixes 
 | Order | Sheet | Required | Purpose |
 |---:|---|---|---|
 | 0 | `00_結論` | Yes | Customer-facing conclusion: final range, planning center, confidence, and concise rationale. |
-| 1 | `01_内訳` | Yes | Readable phase breakdown with AI-assisted effort, WBS baseline, delta, and reducibility judgment. |
+| 1 | `01_内訳` | Yes | Readable breakdown with AI-assisted effort, WBS baseline, delta, and the AI tag from WBS/AI adjustment. |
 | 2 | `02_規模根拠` | Yes | Counted scope facts and sizing confidence. |
 | 3 | `03_WBS` | Yes | WBS bottom-up estimate lines. |
 | 4 | `04_PERT` | Yes | Independent PERT task estimates and expected values, or WBS-derived variance aggregation when independent PERT was skipped. |
@@ -111,7 +111,9 @@ Do not add a comparison chart. The table itself is the auditable artifact.
 
 Columns:
 
-`工程`, `AI補助後目安`, `AI補助前WBS`, `差分`, `削減率`, `削減可否`, `主な内容/注意`, `参照`
+`工程/WBS作業`, `AI補助後目安`, `AI補助前WBS`, `差分`, `削減率`, `AI削減区分`, `主な内容/注意`, `参照`
+
+This sheet is for presentation, not a separate estimation or reducibility judgment. Keep formulas and `AI削減区分` traceable to `03_WBS` / `10_AI補正`; do not invent phase-level reducibility labels in the formatter.
 
 If AI adjustment is not applicable, set `AI補正後` to `-` rather than removing the column.
 
@@ -317,9 +319,9 @@ Also include a range synthesis table whenever three-point data exists:
 
 When scope contains repeated variants or shared skeletons, include a top-down cross-check table so the economy-of-scale reconciliation is auditable:
 
-`観点`, `Bottom-up per-unit`, `Anchor`, `差`, `判断`, `根拠`
+`観点`, `件数`, `Bottom-up per-unit`, `Anchor`, `差`, `Variant/reuse factor`, `判断`, `根拠`
 
-`判断` values: `整合`, `繰り返し/再利用で下方調整`, `根拠付きで高位維持`. State the per-unit basis (per report, screen, workflow, or function point) and whether a measured productivity baseline exists. See `references/repetition-and-reuse.md`.
+`判断` values: `整合`, `繰り返し/再利用で下方調整`, `根拠付きで高位維持`. State the per-unit basis (per report, screen, workflow, or function point), the variant/reuse factor, and whether a measured productivity baseline exists. See `references/repetition-and-reuse.md`.
 
 When the component unit anchor pass ran, include a method-difference table:
 

@@ -47,6 +47,7 @@ If a line has an unknown `AI削減区分`, apply `1.00`, flag it as `要確認`,
 
 1. Start from raw WBS/PERT line items with low / most likely / high values.
 2. Require each line to carry `AI削減区分` and a rationale. If a line mixes reducible and non-reducible work, split it before applying multipliers. If it cannot be split from the evidence, use the more conservative category and say why.
+   - For foundation, CRUD, common UI, scaffolding, scripts, or patterned implementation lines, explicitly decide whether the line is `定型実装`, `コード隣接`, or `複雑実装`. Do not leave a generic "foundation" line at `複雑実装` without naming the complexity driver such as legacy behavior matching, security, operations, performance, or uncertain integration.
 3. Apply the fixed coefficient for each line's `AI削減区分` to low / most likely / high. Do not adjust the raw baseline cells.
 4. Aggregate adjusted lines to phase and total summaries after line-level multiplication.
 5. Keep risk and contingency visible. Do not hide unresolved requirements inside a productivity factor.
