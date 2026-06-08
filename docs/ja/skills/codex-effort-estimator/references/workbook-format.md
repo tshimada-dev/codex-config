@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/workbook-format.md
-source_commit: c689b105822474ff84cd516f33c664c4ed7d4cfa
+source_commit: 17be59e3fe075540200adf764fe1654cf6b3be3d
 canonical: false
 ---
 
@@ -58,6 +58,13 @@ run ごとに新しい visual style を作らないでください。
 | 9 | `09_Repo` | Optional | repository rebuild または completion estimate。 |
 | 10 | `10_親統合` | Yes | pass coverage、parent reconciliation、final recommendation、high-risk scenario。 |
 | 11 | `11_前提リスク` | Yes | assumptions、exclusions、risks、confirmation questions。 |
+| 12 | `12_単価アンカー` | Optional | countable scope signals から作る independent component-unit top-down estimate。 |
+| 13 | `13_パラメトリック` | Optional | count drivers と coefficients による independent equation-based estimate。 |
+| 14 | `14_FP` | Optional | function point estimate。 |
+| 15 | `15_UCP` | Optional | use case points estimate。 |
+| 16 | `16_トップダウン` | Optional | project 全体を直接見る three-point anchor。 |
+| 17 | `17_制約` | Optional | constraint/capacity feasibility envelope。 |
+| 18 | `18_リスクモデル` | Optional | risk-adjusted scenario または Monte Carlo-style model。 |
 
 high-stakes estimates では、検討したが applicable でない optional sheets も、黙って workbook structure を変える代わりに短い `適用なし` 行付きで含めます。quick internal estimates では optional sheets を省略できますが、required sheets とその order は固定です。
 
@@ -106,7 +113,7 @@ method comparison table も含めます。columns:
 
 Columns:
 
-`工程`, `WBS`, `PERT`, `AI補正後`, `親最終`, `メモ`
+`工程`, `WBS`, `PERT`, `単価アンカー`, `パラメトリック`, `FP/UCP`, `AI補正後`, `親最終`, `メモ`
 
 AI adjustment が applicable でない場合も、column を削除せず `AI補正後` に `-` を入れます。
 
@@ -208,6 +215,13 @@ scope に繰り返しの variant や共有 skeleton がある場合は、economy
 
 `判断` values: `整合`, `繰り返し/再利用で下方調整`, `根拠付きで高位維持`。per-unit の基準（report/screen/workflow/function point あたり）と、measured productivity baseline の有無を明記します。`references/repetition-and-reuse.md` 参照。
 
+component unit anchor pass を実行した場合は、method-difference table も含めます。
+
+`手法`, `Low`, `Base`, `High`, `中心`, `独立性`, `親判断`
+
+`単価アンカー` は、WBS total、WBS-derived PERT、parent range、prior estimate artifact を使っていない場合に WBS から independent と mark します。
+同じ independence column を `パラメトリック`、`FP`、`UCP`、`トップダウン`、`制約`、`リスクモデル` にも使います。
+
 ### `11_前提リスク`
 
 同じ columns を持つ separate tables を使います。
@@ -215,6 +229,82 @@ scope に繰り返しの variant や共有 skeleton がある場合は、economy
 `種別`, `内容`, `影響`, `確認/対応`
 
 `種別` values: `前提`, `除外`, `リスク`, `確認`.
+
+### `12_単価アンカー`
+
+Columns:
+
+`分類`, `数量`, `数量根拠`, `共通基盤Low`, `共通基盤Base`, `共通基盤High`, `単価Low`, `単価Base`, `単価High`, `係数`, `Low`, `Base`, `High`, `根拠/メモ`
+
+family totals には formulas を使います。
+
+```text
+Low = framework_low + count * unit_low * factor
+Base = framework_base + count * unit_base * factor
+High = framework_high + count * unit_high * factor
+```
+
+total row を含めます。この sheet は independent top-down component anchor であり、WBS totals や WBS-derived PERT values を使ってはいけないことを visible note として残します。
+
+### `13_パラメトリック`
+
+Columns:
+
+`ドライバ`, `数量`, `数量根拠`, `係数Low`, `係数Base`, `係数High`, `係数根拠`, `調整係数Low`, `調整係数Base`, `調整係数High`, `Low`, `Base`, `High`, `メモ`
+
+model equation を visible note として含めます。driver totals と adjustment totals には formulas を使います。coefficients が local actual、benchmark、heuristic、judgment のどれかを明示します。
+
+### `14_FP`
+
+Columns:
+
+`種別`, `項目群`, `数量Low`, `数量Base`, `数量High`, `複雑度`, `重み`, `FP Low`, `FP Base`, `FP High`, `根拠`, `メモ`
+
+`種別` values: `EI`, `EO`, `EQ`, `ILF`, `EIF`.
+
+productivity conversion rows も含めます。
+
+`生産性`, `Low`, `Base`, `High`, `根拠`
+
+adjusted function points を productivity で割る formulas で effort を示し、converted effort totals を hardcode しません。
+
+### `15_UCP`
+
+Columns:
+
+`分類`, `項目`, `複雑度`, `数量`, `重み`, `UCP`, `根拠`, `メモ`
+
+`分類` values: `Actor`, `Use case`, `TCF`, `ECF`, `Productivity`.
+
+UAW、UUCW、UUCP、TCF、ECF、UCP、productivity、low/base/high effort の rows を含めます。可能な範囲で formulas を使います。
+
+### `16_トップダウン`
+
+Columns:
+
+`観点`, `楽観`, `最頻/普通`, `悲観`, `期待値`, `SD`, `根拠`, `メモ`
+
+delivery class と dominant effort drivers を含めます。total row は `(optimistic + 4 * most likely + pessimistic) / 6` で expected value を計算します。
+
+### `17_制約`
+
+Columns:
+
+`シナリオ`, `作業日`, `FTE`, `集中係数`, `総容量`, `レビュー/固定バッファ`, `実効容量`, `示唆`, `根拠`
+
+person-days と calendar dates を分けます。fixed constraints と open assumptions を含めます。
+
+### `18_リスクモデル`
+
+Columns:
+
+`リスク`, `確率`, `影響Low`, `影響Base`, `影響High`, `期待影響`, `相関グループ`, `根拠`, `確認/緩和`
+
+scenario/P-percentile rows も含めます。
+
+`シナリオ`, `Low/P50`, `Base/P80`, `High/P90`, `根拠`
+
+risk が WBS、public review、他 method に既に含まれる可能性がある場合は overlap warning を mark します。
 
 ## Visual Rules
 

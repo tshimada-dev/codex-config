@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/SKILL.md
-source_commit: e0db24e0a5eb8841faed87713b00cc3415063643
+source_commit: 17be59e3fe075540200adf764fe1654cf6b3be3d
 canonical: false
 ---
 
@@ -14,7 +14,7 @@ canonical: false
 
 ## 使い方
 
-依頼内容を見積もりタイプに分類し、このスキル内の reference を使って見積もります。外部の見積もり Skill は前提にせず、sizing、WBS、PERT、analogy calibration、discovery、AI coding assistance adjustment、公共・帳票 review、repository rebuild/completion の各手法を同一 Skill 内の独立した reference として扱います。
+依頼内容を見積もりタイプに分類し、このスキル内の reference を使って見積もります。外部の見積もり Skill は前提にせず、sizing、WBS、component unit anchor、parametric model、function point、use case points、top-down three-point、constraint capacity、risk model、PERT、analogy calibration、discovery、AI coding assistance adjustment、公共・帳票 review、repository rebuild/completion の各手法を同一 Skill 内の独立した reference として扱います。
 
 ## 基本 Workflow
 
@@ -22,7 +22,7 @@ canonical: false
 2. document、repository、issue backlog などの根拠を収集する。
 3. 該当する Decision Path をすべて選び、Pass Coverage Gate で全 pass を `run` / `skipped` / `not applicable` に分類し、skip 理由を記録する。
 4. 手法 pass を実行する前に subagent が利用可能かを最優先で確認し、利用可能なら規模に関係なく手法ごとに subagent を分ける。
-5. WBS、PERT、repo-cost、discovery など該当 pass を実行する。
+5. WBS、component unit anchor、parametric model、function point、use case points、top-down three-point、constraint capacity、risk model、PERT、repo-cost、discovery など該当 pass を実行する。
 6. 前提、除外、リスク、信頼度、確認事項、pass coverage を含めて要約する。
 
 ## Subagent 統括
@@ -33,6 +33,13 @@ subagent 利用の目的は並行作業ではなく、見積もり観点の独�
 
 - Sizing pass: `references/sizing-pass.md`
 - WBS bottom-up pass: `references/wbs-pass.md`
+- Component unit anchor pass: `references/component-unit-anchor-pass.md`
+- Parametric model pass: `references/parametric-model-pass.md`
+- Function point pass: `references/function-point-pass.md`
+- Use case points pass: `references/use-case-points-pass.md`
+- Top-down three-point pass: `references/top-down-three-point-pass.md`
+- Constraint capacity pass: `references/constraint-capacity-pass.md`
+- Risk model pass: `references/risk-model-pass.md`
 - PERT pass: `references/pert-pass.md`
 - Analogy calibration pass: `references/analogy-calibration-pass.md`
 - Discovery pass: `references/discovery-pass.md`
@@ -42,9 +49,9 @@ subagent 利用の目的は並行作業ではなく、見積もり観点の独�
 
 親 agent は各手法の差分を比較し、前提や scope の違いを明示したうえで、最終レンジと planning center をまとめます。
 
-非 trivial な見積もりでは、最低限 `sizing または sizing 不要理由`、`WBS/PERT/repo-cost のうち少なくとも1つの工数手法`、`coverage/risk review`、`parent synthesis`、`固定フォーマット Excel workbook` を通します。公共、repo、discovery、analogy、AI補正などの条件付き pass は、実行しない場合も skip 理由を明示します。
+非 trivial な見積もりでは、最低限 `sizing または sizing 不要理由`、`WBS`、`countable scope がある場合の component unit anchor と parametric model`、`functional-size signal がある場合の function point / use case points`、`top-down three-point`、`必要に応じた constraint capacity / risk model / PERT / repo-cost / discovery / analogy`、`coverage/risk review`、`parent synthesis`、`固定フォーマット Excel workbook` を通します。公共、repo、discovery、analogy、AI補正などの条件付き pass は、実行しない場合も skip 理由を明示します。
 
-Sizing は画面、帳票、CSV、データ、連携、deliverables などの規模根拠として扱い、単独の総工数見積もりにはしません。Analogy calibration は過去実績との比較による補正・検証として扱い、WBS/PERT を根拠なく平均値で置き換えません。Discovery は要件が不安定な場合の事前調査・要件定義工数として扱い、実装工数とは分けて表示します。
+Sizing は画面、帳票、CSV、データ、連携、deliverables などの規模根拠として扱い、単独の総工数見積もりにはしません。Component unit anchor は、その count を使って WBS とは別に low/base/high の総工数を出す独立 pass として扱います。Parametric model、function point、use case points、top-down three-point、constraint capacity、risk model も、該当する入力がある場合は WBS total、WBS-derived PERT、親の期待 range を渡さず実行します。Analogy calibration は過去実績との比較による補正・検証として扱い、WBS/PERT を根拠なく平均値で置き換えません。Discovery は要件が不安定な場合の事前調査・要件定義工数として扱い、実装工数とは分けて表示します。
 
 公共・帳票・受入などの specialist pass は、原則として単純加算する補正値ではなく、WBS/PERT の coverage audit として扱います。親 agent は findings を `already covered`、`missing/thin`、`risk-only` に分け、既に WBS/PERT に含まれる作業は二重計上しません。未織り込み部分だけを調整し、不確実性が高いだけの項目は high range や high-risk scenario に反映します。
 

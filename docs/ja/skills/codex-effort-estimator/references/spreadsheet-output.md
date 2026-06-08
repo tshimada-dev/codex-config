@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/spreadsheet-output.md
-source_commit: e0db24e0a5eb8841faed87713b00cc3415063643
+source_commit: 17be59e3fe075540200adf764fe1654cf6b3be3d
 canonical: false
 ---
 
@@ -42,6 +42,13 @@ substantial estimates では `workbook-format.md` の standard workbook shape �
 | `09_Repo` | 該当する場合の repository rebuild または completion estimate。 |
 | `10_親統合` | parent reconciliation: pass coverage、method differences、final range、implementation-only range、high-risk range。 |
 | `11_前提リスク` | assumptions、exclusions、risks、confirmation questions。 |
+| `12_単価アンカー` | Countable component family がある場合の independent component-unit top-down estimate。 |
+| `13_パラメトリック` | count drivers、coefficients、adjustment factors による independent equation-based estimate。 |
+| `14_FP` | inputs、outputs、inquiries、logical files、external interface files を数えられる場合の function point estimate。 |
+| `15_UCP` | actors と workflows/use cases を数えられる場合の use case points estimate。 |
+| `16_トップダウン` | project 全体を直接見る optimistic / most-likely / pessimistic anchor。 |
+| `17_制約` | deadline、staffing、review gates、delivery windows による constraint/capacity feasibility envelope。 |
+| `18_リスクモデル` | probability/impact assumptions による risk-adjusted scenario または Monte Carlo-style model。 |
 
 AI coding assistance が明示的に前提の場合は、専用の `AI補正` / `AI Adjustment` sheet、または `親統合` 内の明確に分離した table を追加します。
 
@@ -61,13 +68,15 @@ default phases:
 - Testing/acceptance
 - Training/manuals/delivery/handoff
 
-phase summary には、WBS most likely、PERT expected、parent final standard など、total-estimate method の center values を phase ごとに含めます。specialist pass が total estimate ではなく coverage/risk review の場合は、review coverage、risk range driver、adjustment candidate として明確に label します。
+phase summary には、WBS most likely、PERT expected、component anchor、parent final standard など、total-estimate method の center values を phase ごとに含めます。specialist pass が total estimate ではなく coverage/risk review の場合は、review coverage、risk range driver、adjustment candidate として明確に label します。
 
 | Column | Meaning |
 |---|---|
 | Phase | work phase または delivery area。 |
 | WBS most likely | WBS method の central value。 |
 | PERT expected | variance aggregation 後の PERT expected value。 |
+| Component anchor | independent component-unit anchor pass の central value。 |
+| Parametric / FP / UCP | 該当 pass を実行した場合の independent functional または driver-based central values。 |
 | Review/adjustment candidate | public-sector/report/repository review finding、risk driver、または non-overlapping adjustment candidate。実際に total estimate でない限り comparable total estimate として提示しない。 |
 | Parent final standard | final parent synthesis の central value。 |
 | AI-assisted adjusted | AI coding assistance が明示的に前提の場合の final adjusted central value。 |
@@ -115,6 +124,25 @@ WBS では次を示します。
 - low / most likely / high。ここで `likely` は central most-likely estimate
 - total formulas
 
+Component unit anchor pass では次を示します。
+
+- component family counts と count confidence
+- framework low/base/high
+- unit low/base/high
+- reuse or complexity factor
+- family low/base/high totals
+- anchor source and rationale
+- WBS totals または WBS-derived PERT を使っていないという明示
+
+independent anchor passes では、method を audit できる detail を示します。
+
+- Parametric: model equation、drivers、coefficients、adjustment factors、calibration confidence。
+- Function point: EI/EO/EQ/ILF/EIF counts、complexity weights、productivity conversion、boundary ambiguity。
+- Use case points: actor/use-case weights、TCF/ECF、productivity conversion、actor/workflow ambiguity。
+- Top-down three-point: delivery class、dominant drivers、optimistic/most-likely/pessimistic totals、expected value、SD。
+- Constraint capacity: staffing scenarios、workdays、focus factor、review buffers、feasible capacity、schedule implication。
+- Risk model: independent base anchor、risk register、probability/impact、correlation groups、expected exposure、P50/P80/P90 または scenario bands。
+
 review または adjustment pass は、意図的な total estimate でない限り total-estimate methods と分けます。次を示します。
 
 - coverage findings: already covered / missing or thin / risk-only
@@ -126,6 +154,8 @@ review output が adjustment candidate に過ぎない場合、public-sector/rep
 sizing、discovery、analogy calibration pass の役割は明確に保ちます。
 
 - Sizing は scope counts の evidence であり、total estimate ではない。
+- Component unit anchor は counts と unit anchors から作る total-estimate method であり、WBS とは分け、WBS に合わせるための調整をしない。
+- Parametric、function point、use case point、top-down three-point、constraint capacity、risk model は、実行した場合 independent viewpoints として扱う。WBS-derived notes に畳み込まない。
 - Discovery は delivery scope が安定していない場合の separate pre-implementation effort。
 - Analogy calibration は validation または adjustment rationale であり、説明のない WBS/PERT の置き換えではない。
 - AI coding assistance adjustment は baseline から assisted effort への phase-specific adjustment であり、新しい independent size estimate ではない。

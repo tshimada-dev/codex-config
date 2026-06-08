@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/output-template.md
-source_commit: 4e0c02d56986cbae7db1327e3fe27ba6b9a4b8e6
+source_commit: 17be59e3fe075540200adf764fe1654cf6b3be3d
 canonical: false
 ---
 
@@ -40,6 +40,10 @@ canonical: false
 必ず含めるもの:
 
 - Pass coverage: どの method pass を run / skipped / not applicable にしたかと理由。
+- countable scope がある場合の independent component unit anchor、または実行できなかった理由。
+- WBS と component-anchor の agreement/disagreement、および material gap の原因。
+- applicable な場合の independent parametric、function point、use case point、top-down three-point、constraint capacity、risk model results、または明示的な skip 理由。
+- cross-method disagreement: assumption、count、coefficient、productivity baseline、constraint、risk driver のどれが gap を説明するか。
 - Assumptions。
 - Exclusions。
 - Risks and contingency。
