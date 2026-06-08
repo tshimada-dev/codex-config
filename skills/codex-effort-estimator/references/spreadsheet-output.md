@@ -92,6 +92,8 @@ The synthesis sheet must also include a pass coverage table:
 | Pass | Status | Reason | Evidence |
 |---|---|---|---|
 
+Above or beside pass coverage, record `Estimate tier` as `quick`, `standard`, or `full`, plus a short reason and any passes intentionally skipped because of the tier.
+
 Use `run`, `skipped`, or `not applicable` in English outputs. For the default Japanese workbook, use `実行`, `スキップ`, or `非該当`. Do not omit a pass silently.
 
 The synthesis sheet must include range synthesis when any three-point data exists:
@@ -176,6 +178,8 @@ Before delivering:
 - Verify sheet names and order match `workbook-format.md`.
 - Inspect the key summary and synthesis ranges.
 - Scan for formula errors such as `#REF!`, `#VALUE!`, `#DIV/0!`, `#NAME?`, and `#N/A`.
+- Treat formatter `errors` as release blockers. The formatter must detect visible total-row cross-foot mismatches, AI adjustment formula mismatches, and breakdown delta/rate mismatches.
+- When PERT is WBS-derived rather than independently estimated, ensure `04_PERT` includes a visible `WBS由来CI` warning banner.
 - Render at least the summary and one detailed sheet for visual review.
 - Make long text readable with sensible column widths and wrapping.
 - Keep the final `.xlsx` in the project `outputs` folder or another user-visible artifact path.

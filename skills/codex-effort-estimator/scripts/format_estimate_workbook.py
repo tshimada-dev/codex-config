@@ -20,7 +20,7 @@ try:
     from openpyxl import load_workbook
     from openpyxl.formatting.rule import ColorScaleRule
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-    from openpyxl.utils import get_column_letter
+    from openpyxl.utils import get_column_letter, range_boundaries
 except ImportError as exc:
     raise SystemExit(
         "openpyxl is required. Use the bundled Codex Python runtime or install openpyxl."
@@ -214,6 +214,20 @@ NUMERIC_HEADERS = {
 
 FORMULA_ERRORS = {"#REF!", "#VALUE!", "#DIV/0!", "#NAME?", "#N/A"}
 
+NON_ADDITIVE_HEADERS = {
+    "",
+    "倍率",
+    "固定倍率",
+    "削減率",
+    "確率",
+    "係数",
+    "集中係数",
+    "SD",
+    "Total SD",
+    "90% CI Low",
+    "90% CI High",
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -268,6 +282,77 @@ def used_bounds(ws: Any) -> tuple[int, int]:
     while max_col > 1 and all(ws.cell(row, max_col).value is None for row in range(1, max_row + 1)):
         max_col -= 1
     return max_row, max_col
+
+
+def formula_numeric_value(ws: Any, formula: str, seen: set[tuple[int, int]] | None = None) -> float | None:
+    expr = formula.strip()
+    if expr.startswith("="):
+        expr = expr[1:].strip()
+
+    sum_match = re.fullmatch(r"SUM\(([A-Z]+\d+):([A-Z]+\d+)\)", expr, flags=re.IGNORECASE)
+    if sum_match:
+        min_col, min_row, max_col, max_row = range_boundaries(f"{sum_match.group(1)}:{sum_match.group(2)}")
+        total = 0.0
+        found = False
+        for row in range(min_row, max_row + 1):
+            for col in range(min_col, max_col + 1):
+                value = numeric_cell_value(ws, row, col, seen)
+                if value is not None:
+                    total += value
+                    found = True
+        return total if found else None
+
+    binary_match = re.fullmatch(r"([A-Z]+\d+)\s*([+\-*/])\s*([A-Z]+\d+)", expr)
+    if binary_match:
+        left = numeric_ref_value(ws, binary_match.group(1), seen)
+        right = numeric_ref_value(ws, binary_match.group(3), seen)
+        if left is None or right is None:
+            return None
+        operator = binary_match.group(2)
+        if operator == "+":
+            return left + right
+        if operator == "-":
+            return left - right
+        if operator == "*":
+            return left * right
+        if operator == "/" and right != 0:
+            return left / right
+        return None
+
+    ref_match = re.fullmatch(r"([A-Z]+\d+)", expr)
+    if ref_match:
+        return numeric_ref_value(ws, ref_match.group(1), seen)
+
+    return None
+
+
+def numeric_ref_value(ws: Any, ref: str, seen: set[tuple[int, int]] | None = None) -> float | None:
+    match = re.fullmatch(r"([A-Z]+)(\d+)", ref)
+    if not match:
+        return None
+    col = 0
+    for char in match.group(1):
+        col = col * 26 + (ord(char) - ord("A") + 1)
+    return numeric_cell_value(ws, int(match.group(2)), col, seen)
+
+
+def numeric_cell_value(ws: Any, row: int, col: int, seen: set[tuple[int, int]] | None = None) -> float | None:
+    cell_key = (row, col)
+    seen = seen or set()
+    if cell_key in seen:
+        return None
+    seen.add(cell_key)
+    value = ws.cell(row, col).value
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str) and value.startswith("="):
+        return formula_numeric_value(ws, value, seen)
+    return None
+
+
+def close_enough(actual: float, expected: float) -> bool:
+    tolerance = max(0.15, abs(expected) * 0.001)
+    return abs(actual - expected) <= tolerance
 
 
 def clear_sheet(ws: Any) -> None:
@@ -736,6 +821,26 @@ def renumber_and_order_sheets(wb: Any) -> None:
     wb._sheets = ordered
 
 
+def mark_wbs_derived_pert(wb: Any) -> None:
+    ws = sheet_by_label(wb, "PERT")
+    if ws is None:
+        return
+    max_row, max_col = used_bounds(ws)
+    is_wbs_derived = any(
+        "WBS由来CI" in text(ws.cell(row, col).value)
+        or "derived from WBS" in text(ws.cell(row, col).value)
+        for row in range(1, max_row + 1)
+        for col in range(1, max_col + 1)
+    )
+    if not is_wbs_derived:
+        return
+    ws["A3"] = "注意: このPERTは独立見積ではなく、03_WBSの三点値から算出したWBS由来CIです。方法比較では独立観測として扱わないでください。"
+    ws["A3"].fill = fill(COLORS["assumption"])
+    ws["A3"].font = Font(name="Yu Gothic", size=10, bold=True, color=COLORS["text"])
+    ws["A3"].alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
+    ws.row_dimensions[3].height = 32
+
+
 def likely_table_header_row(ws: Any) -> int:
     max_row, max_col = used_bounds(ws)
     header_terms = {
@@ -765,6 +870,134 @@ def likely_table_header_row(ws: Any) -> int:
             best_row = row
             best_score = score
     return best_row
+
+
+def header_map(ws: Any, header_row: int, max_col: int) -> dict[str, int]:
+    return {text(ws.cell(header_row, col).value): col for col in range(1, max_col + 1)}
+
+
+def check_total_crossfoot(ws: Any) -> list[str]:
+    errors: list[str] = []
+    max_row, max_col = used_bounds(ws)
+    if max_row < 3 or max_col < 2:
+        return errors
+    header_row = likely_table_header_row(ws)
+    headers = header_map(ws, header_row, max_col)
+    for total_row in range(header_row + 1, max_row + 1):
+        label = text(ws.cell(total_row, 1).value)
+        if label not in {"合計", "Total", "WBS由来合計", "WBS由来CI"}:
+            continue
+        for col in range(2, max_col + 1):
+            header = text(ws.cell(header_row, col).value)
+            if header in NON_ADDITIVE_HEADERS or header.endswith("率"):
+                continue
+            total_value = numeric_cell_value(ws, total_row, col)
+            if total_value is None:
+                continue
+            values = [
+                numeric_cell_value(ws, row, col)
+                for row in range(header_row + 1, total_row)
+                if text(ws.cell(row, 1).value) not in {"合計", "Total", "WBS由来合計", "WBS由来CI"}
+            ]
+            numeric_values = [value for value in values if value is not None]
+            if not numeric_values:
+                continue
+            expected = sum(numeric_values)
+            if not close_enough(total_value, expected):
+                errors.append(
+                    f"{ws.title}!{get_column_letter(col)}{total_row}: total {total_value:.3f} "
+                    f"does not match sum {expected:.3f} for `{header}`"
+                )
+    return errors
+
+
+def check_ai_adjustment_crossfoot(ws: Any) -> list[str]:
+    errors: list[str] = []
+    max_row, max_col = used_bounds(ws)
+    header_row, headers = find_header_row(
+        ws,
+        {"WBS分類", "WBS作業", "AI削減区分", "Raw Base", "固定倍率", "Adjusted Base", "Base差分"},
+    )
+    if header_row is None:
+        return errors
+
+    for row in range(header_row + 1, max_row + 1):
+        if text(ws.cell(row, headers["WBS分類"]).value) in {"", "合計"}:
+            continue
+        tag = text(ws.cell(row, headers["AI削減区分"]).value)
+        multiplier = numeric_cell_value(ws, row, headers["固定倍率"])
+        expected_multiplier, _ = ai_multiplier_for(tag)
+        if multiplier is None or not close_enough(multiplier, expected_multiplier):
+            errors.append(
+                f"{ws.title}!{get_column_letter(headers['固定倍率'])}{row}: multiplier "
+                f"{multiplier} does not match fixed coefficient {expected_multiplier:.2f} for `{tag}`"
+            )
+
+        for raw_header, adjusted_header in [
+            ("Raw Low", "Adjusted Low"),
+            ("Raw Base", "Adjusted Base"),
+            ("Raw High", "Adjusted High"),
+        ]:
+            if raw_header not in headers or adjusted_header not in headers or multiplier is None:
+                continue
+            raw = numeric_cell_value(ws, row, headers[raw_header])
+            adjusted = numeric_cell_value(ws, row, headers[adjusted_header])
+            if raw is None or adjusted is None:
+                continue
+            expected_adjusted = raw * multiplier
+            if not close_enough(adjusted, expected_adjusted):
+                errors.append(
+                    f"{ws.title}!{get_column_letter(headers[adjusted_header])}{row}: adjusted "
+                    f"{adjusted:.3f} does not match {raw_header} * multiplier {expected_adjusted:.3f}"
+                )
+
+        if "Base差分" in headers and "Raw Base" in headers and "Adjusted Base" in headers:
+            raw_base = numeric_cell_value(ws, row, headers["Raw Base"])
+            adjusted_base = numeric_cell_value(ws, row, headers["Adjusted Base"])
+            delta = numeric_cell_value(ws, row, headers["Base差分"])
+            if raw_base is not None and adjusted_base is not None and delta is not None:
+                expected_delta = adjusted_base - raw_base
+                if not close_enough(delta, expected_delta):
+                    errors.append(
+                        f"{ws.title}!{get_column_letter(headers['Base差分'])}{row}: delta "
+                        f"{delta:.3f} does not match adjusted-base minus raw-base {expected_delta:.3f}"
+                    )
+
+        judge = text(ws.cell(row, headers.get("判断者", 0)).value) if "判断者" in headers else ""
+        authority = text(ws.cell(row, headers.get("係数権限", 0)).value) if "係数権限" in headers else ""
+        if not judge or not authority:
+            errors.append(f"{ws.title}!A{row}: missing judgment/authority audit fields")
+    return errors
+
+
+def check_breakdown_crossfoot(ws: Any) -> list[str]:
+    errors: list[str] = []
+    max_row, max_col = used_bounds(ws)
+    header_row, headers = find_header_row(ws, {"工程", "AI補助後目安", "AI補助前WBS", "差分", "削減率"})
+    if header_row is None:
+        return errors
+    for row in range(header_row + 1, max_row + 1):
+        if text(ws.cell(row, headers["工程"]).value) in {"", "合計"}:
+            continue
+        adjusted = numeric_cell_value(ws, row, headers["AI補助後目安"])
+        raw = numeric_cell_value(ws, row, headers["AI補助前WBS"])
+        diff = numeric_cell_value(ws, row, headers["差分"])
+        rate = numeric_cell_value(ws, row, headers["削減率"])
+        if adjusted is not None and raw is not None and diff is not None:
+            expected_diff = adjusted - raw
+            if not close_enough(diff, expected_diff):
+                errors.append(
+                    f"{ws.title}!{get_column_letter(headers['差分'])}{row}: diff "
+                    f"{diff:.3f} does not match adjusted minus raw {expected_diff:.3f}"
+                )
+        if raw not in (None, 0) and diff is not None and rate is not None:
+            expected_rate = diff / raw
+            if not close_enough(rate, expected_rate):
+                errors.append(
+                    f"{ws.title}!{get_column_letter(headers['削減率'])}{row}: rate "
+                    f"{rate:.3f} does not match diff/raw {expected_rate:.3f}"
+                )
+    return errors
 
 
 def style_generic_sheet(ws: Any) -> None:
@@ -841,6 +1074,7 @@ def normalize_presentation_workbook(wb: Any) -> None:
     if ai_rows:
         rebuild_ai_adjustment_sheet(ai_ws, ai_rows)
     renumber_and_order_sheets(wb)
+    mark_wbs_derived_pert(wb)
     for ws in wb.worksheets:
         style_generic_sheet(ws)
         ws.sheet_properties.tabColor = TAB_COLORS.get(ws.title, COLORS["border"])
@@ -868,6 +1102,11 @@ def validate_workbook(wb: Any) -> tuple[list[str], list[str]]:
     for ws in wb.worksheets:
         if ws._charts:
             errors.append(f"{ws.title}: charts were not removed")
+        errors.extend(check_total_crossfoot(ws))
+        if ws.title == "10_AI補正":
+            errors.extend(check_ai_adjustment_crossfoot(ws))
+        if ws.title == "01_内訳":
+            errors.extend(check_breakdown_crossfoot(ws))
         max_row, max_col = used_bounds(ws)
         for row in range(1, max_row + 1):
             for col in range(1, max_col + 1):

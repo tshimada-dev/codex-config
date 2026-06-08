@@ -157,6 +157,8 @@ When independent PERT was skipped and WBS three-point rows exist, add a `WBS由�
 
 Use WBS row low / most likely / high values as the source. Mark the table as `derived from WBS; not an independent method`.
 
+When `04_PERT` is WBS-derived, add a visible banner near the top of the sheet stating that independent PERT was not run and the sheet must not be treated as an independent method result.
+
 ### `05_単価アンカー`
 
 Columns:
@@ -293,7 +295,13 @@ Columns:
 
 ### `18_親統合`
 
-Start with a pass coverage table:
+Start with a tier row or small tier table:
+
+`Item`, `Value`, `Reason`
+
+Include `Estimate tier` as `quick`, `standard`, or `full`, with a one-sentence reason.
+
+Then include a pass coverage table:
 
 `Pass`, `状態`, `理由`, `根拠`
 
@@ -355,3 +363,4 @@ Before delivery, verify:
 - Header rows, total rows, and risk/assumption colors follow the token table.
 - Text is readable without manual resizing in the main summary and synthesis sheets.
 - Render and visually inspect representative detailed sheets with different layouts, including any sheet that has wide evidence/notes text, many numeric columns, or optional method-specific columns.
+- Run deterministic workbook QA in `scripts/format_estimate_workbook.py`: total rows must cross-foot against visible numeric rows, AI adjustment formulas must match raw values and fixed coefficients, and breakdown deltas/rates must match their source columns.

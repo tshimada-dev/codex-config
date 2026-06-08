@@ -30,6 +30,8 @@ Select every matching row, not just the best-looking row. Hybrid requests, such 
 
 Before estimating, complete the `Pass Coverage Gate` below. Do not silently skip an applicable viewpoint.
 
+Before the gate, choose `quick`, `standard`, or `full` using `references/estimate-tiers.md`, then record the tier and reason in the final answer and workbook synthesis.
+
 ## Minimum Spine
 
 Every non-trivial estimate should include this minimum spine:
@@ -83,6 +85,7 @@ If a pass is skipped, the final synthesis must make the skip visible. A silent o
    - For documents: list source files, count major functions, reports, imports, exports, data volumes, integrations, environments, and required deliverables.
    - For repos: count non-generated code and identify architecture, tests, integrations, operational maturity, and missing production work.
    - For issues/backlogs: normalize tasks, dependencies, acceptance criteria, and confidence.
+   - When delegating, use `references/delegation-input-design.md`: share raw sources and mechanical facts such as `source_inventory.*`, not parent interpretation summaries.
    - When counts matter, use `references/sizing-pass.md` before estimating so WBS/PERT lines are grounded in visible size signals.
    - When countable components exist, use `references/component-unit-anchor-pass.md` as an independent top-down anchor. Do not let WBS totals, WBS phase allocation, or parent-preferred ranges influence that pass.
    - When measurable drivers exist, use `references/parametric-model-pass.md` as a separate equation-based anchor.
@@ -94,6 +97,7 @@ If a pass is skipped, the final synthesis must make the skip visible. A silent o
 3. Decide whether to delegate:
    - Build the pass coverage checklist first, selecting all applicable passes from the decision path and coverage gate.
    - Check whether subagents are available before running method passes. This is a priority check, not an optional optimization.
+   - Scope each delegation packet with `references/delegation-input-design.md` so independent observation passes stay isolated while dependent transformation passes receive only the artifact they transform.
    - When subagents are available, delegate each applicable method pass to a separate subagent regardless of estimate size.
    - Use subagents primarily to preserve independence between estimation viewpoints; parallel execution is useful but not the reason for delegation.
    - If subagents are unavailable, apply the same method passes sequentially in the parent agent and say so.
@@ -175,6 +179,8 @@ The purpose of delegation in this skill is viewpoint independence and anchoring 
 - Produce the final range, planning center, confidence, and stakeholder-ready explanation.
 
 ### Delegation Hygiene
+
+Use `references/delegation-input-design.md` for packet classes, allowed shared facts, method-specific source scopes, and compact delegate packet shape.
 
 Use a neutral delegation packet. It may include:
 
@@ -282,6 +288,7 @@ Use $codex-effort-estimator with references/repo-cost-pass.md only for the metho
 The parent should report:
 
 - Pass coverage checklist with `run`, `skipped`, or `not applicable` for every standard delegate, including reasons.
+- Estimate tier (`quick`, `standard`, or `full`) and the reason for that tier.
 - Method results side by side.
 - Range synthesis for any available three-point data, including WBS-derived variance aggregation when independent PERT was skipped.
 - Agreement and disagreement.
@@ -338,11 +345,13 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 ## References
 
 - `references/methods.md`: estimation methods, range logic, and risk adjustment.
+- `references/estimate-tiers.md`: quick/standard/full tier selection rules and required tier reporting.
 - `references/sizing-pass.md`: scope counting instructions for screens, reports, data, integrations, workflows, roles, and deliverables.
 - `references/wbs-pass.md`: method-specific instructions for WBS bottom-up subagent passes.
 - `references/pert-pass.md`: method-specific instructions for PERT subagent passes.
 - `references/analogy-calibration-pass.md`: historical comparison and calibration instructions.
 - `references/discovery-pass.md`: discovery and requirements-uncertainty estimate instructions.
+- `references/delegation-input-design.md`: subagent input isolation, shared-fact rules, and method-specific source scopes.
 - `references/ai-coding-assistance-adjustment.md`: line-level fixed-coefficient adjustment rules when AI coding assistance is explicitly assumed.
 - `references/public-review-pass.md`: method-specific instructions for public-sector/report/acceptance coverage review.
 - `references/repo-cost-pass.md`: method-specific instructions for repository rebuild or completion estimates.

@@ -10,6 +10,7 @@ Use this structure for concise estimate deliverables.
 - Recommended range: X-Y person-days
 - Planning center: Z person-days
 - Confidence: High / Medium / Low
+- Estimate tier: quick / standard / full, with reason
 - Basis: [documents / backlog / repository / interviews]
 - Main drivers: [top 3]
 - Workbook: [path], unless text-only or quick gut-check output was requested
