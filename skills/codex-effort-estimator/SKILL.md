@@ -13,14 +13,18 @@ Classify the request before estimating:
 
 | Estimate type | Use this path |
 |---|---|
-| General feature/project estimate | Use `references/sizing-pass.md` when scope can be counted, then `references/wbs-pass.md` for WBS bottom-up estimation. Use `references/methods.md` for shared range logic. |
-| Requirements/RFP/document-driven estimate | Use `references/sizing-pass.md`, `references/wbs-pass.md`, then `references/public-review-pass.md` when procurement, government, legacy Office, CSV, reports, training, acceptance, or formal deliverables are involved. |
+| General feature/project estimate | Use `references/sizing-pass.md` when scope can be counted, then `references/wbs-pass.md` for WBS bottom-up estimation. When countable components exist, also run independent anchors: `references/component-unit-anchor-pass.md`, `references/parametric-model-pass.md`, and `references/top-down-three-point-pass.md`. Use `references/methods.md` for shared range logic. |
+| Requirements/RFP/document-driven estimate | Use `references/sizing-pass.md`, `references/wbs-pass.md`, `references/component-unit-anchor-pass.md`, `references/parametric-model-pass.md`, and `references/top-down-three-point-pass.md`; then use `references/public-review-pass.md` when procurement, government, legacy Office, CSV, reports, training, acceptance, or formal deliverables are involved. |
 | Existing repository rebuild/cost estimate | Use `references/repo-cost-pass.md` plus measured repository facts. Keep rebuild/completion effort separate from price unless the user asks for cost. |
 | Task backlog/GitHub issue estimate | Use `references/pert-pass.md` when tasks are already decomposed enough for three-point ranges; otherwise decompose first with WBS. |
+| Functional-size signals exist | Use `references/function-point-pass.md` when inputs, outputs, inquiries, logical files, or external interface files can be counted. Use `references/use-case-points-pass.md` when actors and workflows/use cases can be counted. |
 | Similar past work exists | Use `references/analogy-calibration-pass.md` after WBS/PERT to compare against historical actuals or prior estimates and explain variance. |
 | Requirements are too unclear for implementation estimating | Use `references/discovery-pass.md` to estimate discovery, requirements definition, prototype, data/report investigation, and decision work before implementation. |
+| Fixed deadline, staffing, review gates, or delivery window matter | Use `references/constraint-capacity-pass.md` as a feasibility envelope and staffing/calendar sanity check. |
+| Major risks drive the range | Use `references/risk-model-pass.md` as an independent risk-adjusted scenario or Monte Carlo-style model. |
 | User explicitly assumes AI coding assistance | Use `references/ai-coding-assistance-adjustment.md` during parent synthesis or as an explicit adjustment pass. Adjust implementation-heavy work, not stakeholder, acceptance, or uncertainty work. |
 | AI-agent execution time estimate | Use a separate agent-work estimation approach if available; do not convert human delivery estimates directly into agent wall-clock time. |
+| COSMIC or formal functional measurement is explicitly requested | Use COSMIC-style counting only when requested or when the source is detailed enough for data-movement analysis; otherwise prefer the lighter function point and use case point passes. |
 
 Select every matching row, not just the best-looking row. Hybrid requests, such as public-sector repository rebuilds or RFP-derived backlog estimates, require the union of all applicable passes.
 
@@ -31,10 +35,16 @@ Before estimating, complete the `Pass Coverage Gate` below. Do not silently skip
 Every non-trivial estimate should include this minimum spine:
 
 1. Sizing or explicit reason sizing is not useful.
-2. At least one effort method: WBS for broad/document-driven scope, PERT for decomposed task scope, or repository cost for rebuild/completion scope.
-3. Coverage/risk review: public/report review when any trigger is present; otherwise a parent-owned risk review that checks assumptions, exclusions, validation, acceptance, and delivery support.
-4. Parent synthesis with final range, confidence, and pass coverage.
-5. Fixed-format workbook unless the user asks for text only or the request is a quick gut-check.
+2. WBS for broad/document-driven scope unless another method is the sole appropriate model.
+3. Component unit anchor when countable scope signals exist, so the final estimate is not dependent on a single WBS anchor.
+4. Parametric model and top-down three-point anchors when the estimate is non-trivial and enough source facts exist.
+5. Functional-size anchors when supported: function point for input/output/data/interface signals, and use case points for actor/workflow signals.
+6. Constraint/capacity envelope when date, staffing, review gates, or delivery windows materially affect feasibility.
+7. Risk model when a few uncertainty drivers materially widen the range.
+8. At least one additional effort method when applicable: PERT for decomposed task scope, repository cost for rebuild/completion scope, discovery for unstable implementation scope, or analogy calibration when credible historical anchors exist.
+9. Coverage/risk review: public/report review when any trigger is present; otherwise a parent-owned risk review that checks assumptions, exclusions, validation, acceptance, and delivery support.
+10. Parent synthesis with final range, confidence, and pass coverage.
+11. Fixed-format workbook unless the user asks for text only or the request is a quick gut-check.
 
 Use discovery instead of implementation estimating when the source material is not stable enough to define delivery scope. Use analogy calibration only when comparable actuals, prior estimates, or productivity baselines exist, but always record whether it was run or skipped.
 
@@ -46,6 +56,13 @@ Before running method passes, create a coverage checklist from the table below. 
 |---|---|---|
 | Sizing | Scope has countable screens, reports, imports, exports, entities, workflows, roles, integrations, environments, or deliverables | Source is too small or abstract to count; record what could not be counted. |
 | WBS | Scope is broad, document-driven, RFP-driven, or feature/project oriented | PERT or repo-cost is the sole appropriate effort method and WBS would duplicate it without adding structure. |
+| Component unit anchor | Scope has countable components such as screens, workflows, reports, imports, exports, integrations, entities, data sets, roles, environments, or formal deliverables | Source has no meaningful component counts, or a measured historical analogy is the sole credible top-down anchor. Do not skip merely because WBS was run. |
+| Parametric model | Scope has measurable drivers that can feed an explicit estimating equation | No reliable countable drivers exist, or source facts are too abstract to assign coefficients. Do not skip merely because component unit anchor or WBS was run. |
+| Function point | Inputs, outputs, inquiries, internal logical files, or external interface files can be counted at least coarsely | Functional boundaries are too unclear to count, or the system is not function-oriented. Record the missing count types. |
+| Use case points | Actors and workflows/use cases can be counted at least coarsely | The source has no actor/workflow/use-case view, or workflows cannot be bounded. |
+| Top-down three-point | Non-trivial estimate needs an independent whole-project anchor | Request is a quick gut-check already answered directly, or scope is too abstract even for broad class anchoring. |
+| Constraint capacity | Deadline, delivery window, staffing, review gates, procurement cadence, or acceptance windows are relevant | No calendar/staffing/review constraints are provided or inferable; record the missing constraint facts. |
+| Risk model | A small set of uncertainty drivers materially affects the range | Risks are trivial, already bounded, or no risk probabilities/impacts can be stated even qualitatively. |
 | PERT | Tasks are decomposed enough for an independent three-point estimate | Tasks are not decomposed enough; record that WBS or discovery is used instead. Skipping the independent PERT pass does not skip variance aggregation: if WBS lines have low / most likely / high values, apply range synthesis to those WBS three-point values and label it `WBS-derived variance aggregation`. |
 | Repository cost | Existing repository rebuild, replacement, completion, or production-hardening effort is in scope | No repository or codebase is in scope. |
 | Discovery | Requirements, data, reports, integrations, acceptance criteria, or constraints are too unclear for implementation estimating | Implementation scope is stable enough for WBS/PERT/repo-cost. |
@@ -67,6 +84,11 @@ If a pass is skipped, the final synthesis must make the skip visible. A silent o
    - For repos: count non-generated code and identify architecture, tests, integrations, operational maturity, and missing production work.
    - For issues/backlogs: normalize tasks, dependencies, acceptance criteria, and confidence.
    - When counts matter, use `references/sizing-pass.md` before estimating so WBS/PERT lines are grounded in visible size signals.
+   - When countable components exist, use `references/component-unit-anchor-pass.md` as an independent top-down anchor. Do not let WBS totals, WBS phase allocation, or parent-preferred ranges influence that pass.
+   - When measurable drivers exist, use `references/parametric-model-pass.md` as a separate equation-based anchor.
+   - When functional-size signals exist, use `references/function-point-pass.md` or `references/use-case-points-pass.md` as supported by the source.
+   - When schedule, staffing, acceptance windows, or review gates matter, use `references/constraint-capacity-pass.md`.
+   - When risk drivers materially affect the range, use `references/risk-model-pass.md`.
    - When scope has repeated variants (regions, branches, similar reports/screens) or shared skeletons, group them and use `references/repetition-and-reuse.md`; counted artifacts are not the same as build scope.
 
 3. Decide whether to delegate:
@@ -95,6 +117,8 @@ If a pass is skipped, the final synthesis must make the skip visible. A silent o
    - Always run `Range Synthesis` when any WBS, PERT, or repository effort lines contain low / most likely / high three-point values.
    - Use discovery estimates instead of implementation estimates when the source material is not sufficient to define implementation scope.
    - Use analogy calibration when comparable historical work is available; report calibration separately from raw WBS/PERT.
+   - Use the component unit anchor as a separate total-estimate method when countable components exist; compare it against WBS only during parent synthesis.
+   - Use parametric, function point, use case point, top-down three-point, constraint capacity, and risk model passes as independent viewpoints when their required inputs exist; compare them only during parent synthesis.
    - When the user explicitly says AI coding assistance is assumed, apply `references/ai-coding-assistance-adjustment.md` after raw WBS/PERT so routine implementation is not overstated.
    - Apply risk multipliers only after base work is decomposed.
    - Keep contingency visible instead of hiding it inside every line.
@@ -175,6 +199,13 @@ For specialist passes, name only the specialization and source documents. Let th
 |---|---|---|
 | Sizing pass | Documents, RFPs, repos, or backlogs expose countable scope signals | Use `references/sizing-pass.md`. Produce counted scope facts and sizing confidence; do not estimate total effort unless asked. |
 | WBS bottom-up pass | General feature/project or document-driven scope | Use `references/wbs-pass.md`. Produce WBS low/most-likely/high effort, assumptions, exclusions, risks, and confidence. |
+| Component unit anchor pass | Countable screens, workflows, reports, imports, exports, integrations, data sets, roles, environments, or deliverables exist | Use `references/component-unit-anchor-pass.md`. Produce an independent top-down low/base/high estimate from component counts and unit anchors. Do not use WBS totals, WBS-derived PERT, parent ranges, or prior estimate artifacts. |
+| Parametric model pass | Measurable drivers can feed an explicit estimating equation | Use `references/parametric-model-pass.md`. Produce an independent low/base/high estimate from count drivers, coefficients, and adjustment factors. Do not use WBS or component-unit totals. |
+| Function point pass | Inputs, outputs, inquiries, logical files, or external interface files can be counted | Use `references/function-point-pass.md`. Produce a pragmatic FP count, productivity conversion, and low/base/high effort. Do not tune productivity to match other methods. |
+| Use case points pass | Actors and workflows/use cases can be counted | Use `references/use-case-points-pass.md`. Produce actor/use-case counts, TCF/ECF, productivity conversion, and low/base/high effort. Do not tune factors to match other methods. |
+| Top-down three-point pass | A broad whole-project anchor is useful, especially when WBS anchoring risk matters | Use `references/top-down-three-point-pass.md`. Produce direct optimistic/most-likely/pessimistic whole-project effort. Do not decompose into WBS lines. |
+| Constraint capacity pass | Deadline, staffing, review gates, delivery windows, or acceptance periods affect feasibility | Use `references/constraint-capacity-pass.md`. Produce feasible person-day envelope and staffing/calendar implications. Do not use WBS totals. |
+| Risk model pass | Major uncertainty drivers materially affect the range | Use `references/risk-model-pass.md`. Produce independent risk-adjusted scenarios or P50/P80/P90 from probability/impact assumptions. Do not hide risk in unexplained contingency. |
 | PERT pass | Tasks can be estimated with three-point ranges | Use `references/pert-pass.md`. Produce optimistic/most-likely/pessimistic estimates, PERT expected value, and confidence notes. |
 | Analogy calibration pass | Comparable past projects, actuals, or prior estimates are available | Use `references/analogy-calibration-pass.md`. Compare WBS/PERT against historical anchors and explain adjustment candidates without hiding variance. |
 | Discovery pass | Requirements are too unclear for implementation estimating | Use `references/discovery-pass.md`. Estimate discovery/requirements work and identify decisions needed before implementation estimating. |
@@ -192,6 +223,34 @@ Use $codex-effort-estimator with references/sizing-pass.md only for the method i
 
 ```text
 Use $codex-effort-estimator with references/wbs-pass.md only for the method instructions. Source documents: [paths]. Estimate the named project in person-days using WBS low/most-likely/high ranges. Return WBS table, assumptions, exclusions, risks, confidence, and what would materially change the estimate. Do not use conclusions from other estimators. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/component-unit-anchor-pass.md only for the method instructions. Source documents: [paths]. Estimate the named project in person-days from countable component families and unit anchors. Return count table, unit anchor table, family totals, overall low/base/high, assumptions, risks, confidence, and confirmation questions. Do not use WBS totals, WBS-derived PERT, parent ranges, prior estimate artifacts, or conclusions from other estimators. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/parametric-model-pass.md only for the method instructions. Source documents: [paths]. Estimate the named project in person-days from measurable drivers, coefficients, and explicit adjustment factors. Return model equation, driver table, coefficient sources, adjustment factors, low/base/high total, assumptions, risks, confidence, and confirmation questions. Do not use WBS totals, component-unit totals, WBS-derived PERT, parent ranges, prior estimate artifacts, or conclusions from other estimators. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/function-point-pass.md only for the method instructions. Source documents: [paths]. Produce a pragmatic function point estimate: count EI/EO/EQ/ILF/EIF, assign complexity weights, convert to person-days with an explicit productivity range, and return low/base/high effort, assumptions, ambiguities, confidence, and confirmation questions. Do not use WBS totals, parent ranges, prior estimate artifacts, or conclusions from other estimators. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/use-case-points-pass.md only for the method instructions. Source documents: [paths]. Produce a use case points estimate from actors, use cases/workflows, TCF/ECF, and productivity. Return actor/use-case tables, factors, low/base/high effort, assumptions, uncertainty drivers, confidence, and confirmation questions. Do not use WBS totals, parent ranges, prior estimate artifacts, or conclusions from other estimators. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/top-down-three-point-pass.md only for the method instructions. Source documents: [paths]. Produce a direct whole-project optimistic/most-likely/pessimistic estimate, expected value, standard deviation, delivery class, dominant drivers, assumptions, confidence, and what would materially change the estimate. Do not decompose into WBS lines. Do not use WBS totals, parent ranges, prior estimate artifacts, or conclusions from other estimators. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/constraint-capacity-pass.md only for the method instructions. Source documents: [paths]. Produce a constraint/capacity estimate from deadlines, staffing scenarios, review gates, acceptance windows, and fixed deliverables. Return feasible person-day envelope, staffing/calendar implications, constraints, assumptions, risks, confidence, and confirmation questions. Do not use WBS totals, parent ranges, prior estimate artifacts, or conclusions from other estimators. Do not price the work.
+```
+
+```text
+Use $codex-effort-estimator with references/risk-model-pass.md only for the method instructions. Source documents: [paths]. Produce an independent risk model from source-visible risk drivers, probability/impact assumptions, correlation groups, and an independent base-effort anchor. Return risk register, risk-adjusted range or P50/P80/P90, correlated high-risk scenario, overlap warnings, confidence, and confirmation questions. Do not use WBS totals as the base anchor unless explicitly assigned. Do not use parent ranges, prior estimate artifacts, or conclusions from other estimators. Do not price the work.
 ```
 
 ```text
@@ -228,6 +287,12 @@ The parent should report:
 - Agreement and disagreement.
 - Scope or assumption differences causing gaps.
 - Sizing facts separately from effort estimates, including count confidence and unresolved count ambiguity.
+- Component unit anchor separately from WBS, including unit anchors, reuse assumptions, and whether the difference suggests WBS overreach, WBS thinness, or legitimate scope/risk divergence.
+- Parametric model separately from component-unit and WBS, including equation, coefficients, and calibration confidence.
+- Function point and use case point results separately when run, including count ambiguity and productivity assumptions.
+- Top-down three-point result as a coarse independent whole-project anchor, not a WBS-derived estimate.
+- Constraint capacity result as feasibility evidence: whether the final range is calendar/staffing plausible and which staffing assumptions are required.
+- Risk model result separately from public/report review, including expected risk exposure, correlated high-risk scenario, and overlap warnings.
 - Discovery effort separately from implementation effort when requirements are not stable enough for delivery estimating.
 - Analogy calibration separately from raw WBS/PERT, including which historical differences justify any adjustment.
 - AI-assisted adjustment separately from the raw human estimate when the user explicitly assumes AI coding assistance. Show which phases changed and which did not.

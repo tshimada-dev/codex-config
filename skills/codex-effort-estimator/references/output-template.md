@@ -34,6 +34,10 @@ Use this structure for concise estimate deliverables.
 Always include:
 
 - Pass coverage: which method passes were run, skipped, or not applicable, with reasons
+- Independent component unit anchor when countable scope exists, or the reason it could not be run
+- WBS vs component-anchor agreement/disagreement and what caused any material gap
+- Independent parametric, function point, use case point, top-down three-point, constraint capacity, and risk model results when applicable, or explicit skip reasons
+- Cross-method disagreement: which assumptions, counts, coefficients, productivity baselines, constraints, or risk drivers explain the gap
 - Assumptions
 - Exclusions
 - Risks and contingency

@@ -113,8 +113,10 @@ gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scop
 第三者リポジトリから取得した Skill instruction は、このリポジトリの導入スクリプトでは
 インストールしません。
 
-見積もり手法は同一 skill 内の `references/` に分け、必要に応じて WBS、PERT、
-公共・帳票 review、repository rebuild/completion の各 pass を subagent に渡します。
+見積もり手法は同一 skill 内の `references/` に分け、必要に応じて WBS、component-unit
+top-down anchor、parametric model、function point、use case points、top-down three-point、
+constraint/capacity、risk model、PERT、公共・帳票 review、repository rebuild/completion の
+各 pass を subagent に渡します。
 これにより、サブエージェントの独立性を保ちつつ、外部 Skill の再配布や
 サプライチェーン上の懸念を避けます。
 

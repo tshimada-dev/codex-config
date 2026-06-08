@@ -36,6 +36,13 @@ For substantial estimates, create the standard workbook shape from `workbook-for
 | `09_Repo` | Repository rebuild or completion estimate when applicable. |
 | `10_親統合` | Parent reconciliation: pass coverage, method differences, final range, implementation-only range, high-risk range. |
 | `11_前提リスク` | Assumptions, exclusions, risks, and confirmation questions. |
+| `12_単価アンカー` | Independent component-unit top-down estimate when countable component families exist. |
+| `13_パラメトリック` | Independent equation-based estimate from count drivers, coefficients, and adjustment factors. |
+| `14_FP` | Function point estimate when inputs, outputs, inquiries, logical files, or external interface files can be counted. |
+| `15_UCP` | Use case points estimate when actors and workflows/use cases can be counted. |
+| `16_トップダウン` | Direct whole-project optimistic / most-likely / pessimistic anchor. |
+| `17_制約` | Constraint/capacity feasibility envelope from deadline, staffing, review gates, and delivery windows. |
+| `18_リスクモデル` | Risk-adjusted scenario or Monte Carlo-style model from probability/impact assumptions. |
 
 When AI coding assistance is explicitly assumed, add either a dedicated `AI補正` / `AI Adjustment` sheet or a clearly separated table in `親統合`.
 
@@ -62,6 +69,8 @@ A phase summary should include total-estimate method center values by phase, for
 | Phase | Work phase or delivery area. |
 | WBS most likely | WBS method central value. |
 | PERT expected | PERT expected value after variance aggregation. |
+| Component anchor | Component-unit anchor central value when this independent pass ran. |
+| Parametric / FP / UCP | Independent functional or driver-based central values when those passes ran. |
 | Review/adjustment candidate | Public-sector/report/repository review finding, risk driver, or non-overlapping adjustment candidate. Do not present it as a comparable total estimate unless it is actually a total estimate. |
 | Parent final standard | Final parent synthesis central value. |
 | AI-assisted adjusted | Final adjusted central value when AI coding assistance is explicitly assumed. |
@@ -109,6 +118,25 @@ For WBS, show:
 - low / most likely / high, where `likely` is the central most-likely estimate
 - total formulas
 
+For the component unit anchor pass, show:
+
+- component family counts and count confidence
+- framework low/base/high
+- unit low/base/high
+- reuse or complexity factor
+- family low/base/high totals
+- anchor source and rationale
+- clear note that the pass did not use WBS totals or WBS-derived PERT
+
+For independent anchor passes, show enough detail to audit the method:
+
+- Parametric: model equation, drivers, coefficients, adjustment factors, and calibration confidence.
+- Function point: EI/EO/EQ/ILF/EIF counts, complexity weights, productivity conversion, and boundary ambiguity.
+- Use case points: actor/use-case weights, TCF/ECF, productivity conversion, and actor/workflow ambiguity.
+- Top-down three-point: delivery class, dominant drivers, optimistic/most-likely/pessimistic totals, expected value, and SD.
+- Constraint capacity: staffing scenarios, workdays, focus factor, review buffers, feasible capacity, and schedule implication.
+- Risk model: independent base anchor, risk register, probability/impact, correlation groups, expected exposure, and P50/P80/P90 or scenario bands.
+
 For review or adjustment passes, separate them from total-estimate methods unless they are intentionally total estimates. Show:
 
 - coverage findings: already covered / missing or thin / risk-only
@@ -120,6 +148,8 @@ Do not place a public-sector/report review beside WBS and PERT as if all three a
 For sizing, discovery, and analogy calibration passes, keep their roles clear:
 
 - Sizing is evidence for scope counts, not a total estimate.
+- Component unit anchor is a total-estimate method from counts and unit anchors; keep it separate from WBS and do not tune it to match WBS.
+- Parametric, function point, use case point, top-down three-point, constraint capacity, and risk model passes are independent viewpoints when run. Do not collapse them into WBS-derived notes.
 - Discovery is a separate pre-implementation effort when delivery scope is not stable.
 - Analogy calibration is a validation or adjustment rationale, not an unexplained replacement for WBS/PERT.
 - AI coding assistance adjustment is a phase-specific adjustment from baseline to assisted effort, not a new independent size estimate.

@@ -8,6 +8,13 @@ Use this reference for software effort estimation when the input is requirements
 |---|---|
 | Requirements are broad but readable | WBS bottom-up with low/base/high ranges |
 | Scope has countable screens, reports, data, integrations, or deliverables | Sizing pass before WBS/PERT |
+| Scope has countable component families and the estimate is non-trivial | Component unit anchor pass as an independent top-down total estimate, separate from WBS |
+| Scope has measurable drivers that can feed an equation | Parametric model pass as an independent coefficient-based total estimate |
+| Functional input/output/data/interface signals can be counted | Function point pass as a functional-size anchor |
+| Actors and workflows/use cases can be counted | Use case points pass as a workflow-size anchor |
+| A coarse whole-project sanity anchor is needed | Top-down three-point pass |
+| Deadline, staffing, review gates, or delivery windows matter | Constraint capacity pass |
+| Major uncertainty drivers dominate the range | Risk model pass |
 | Tasks are already decomposed | PERT per task plus dependency/risk review |
 | Similar past work exists | Analogy calibration after WBS/PERT, then adjust for differences |
 | Existing codebase is the target | Repository inventory plus rebuild/completion model |
@@ -69,6 +76,72 @@ Apply multipliers after estimating the base WBS.
 
 Do not stack many multipliers mechanically. Explain the dominant risk drivers and use a single combined adjustment when that is clearer.
 
+## Component Unit Anchor
+
+When scope has countable component families, run `component-unit-anchor-pass.md` as an independent top-down total estimate. This is not the same as a WBS sanity check.
+
+Use this method to create a second anchor from:
+
+- workflows or use cases
+- screens or forms
+- reports, documents, spreadsheets, PDF outputs, or templates
+- imports, exports, integrations, or file formats
+- business-rule or calculation clusters
+- data sources, migration sets, master data, or historical data
+- acceptance cycles, manuals, training, formal deliverables, and handoff items
+
+The component anchor should produce its own low / base / high total from count, unit anchor, framework cost, variant/reuse factor, complexity factor, and confidence notes. Do not derive the unit anchors from WBS totals, do not tune the method to match WBS, and do not expose WBS conclusions to a delegated component-anchor estimator.
+
+Use WBS and component-anchor differences as diagnostic evidence:
+
+| Pattern | Possible interpretation |
+|---|---|
+| WBS and component anchor broadly agree | Stronger confidence that the estimate is not dominated by one decomposition. |
+| WBS is materially higher | WBS may have duplicated shared framework, over-counted variants, or included delivery overhead that the component anchor omitted. |
+| Component anchor is materially higher | WBS may be thin on repeated outputs, data/report fidelity, acceptance, documentation, or integration complexity. |
+| Both are wide or far apart | Requirements are likely unstable; consider discovery or explicit confirmation questions before presenting a narrow quote range. |
+
+The parent synthesis may prefer either method when assumptions better match the requested deliverable, but it must keep the disagreement visible and explain the cause.
+
+## Parametric Model
+
+Use `parametric-model-pass.md` when countable drivers can feed an explicit estimating equation. This is a separate method from component unit anchors:
+
+- component unit anchor prices component families directly
+- parametric model applies coefficients and adjustment factors through an equation
+
+The model should show its drivers, coefficient sources, and adjustment factors. Do not tune coefficients to match WBS or component-unit totals. Prefer local actual productivity when available; otherwise mark coefficients as heuristic or judgment and lower confidence.
+
+## Functional-Size Anchors
+
+Use `function-point-pass.md` when the source exposes functional transaction and data categories:
+
+- External Inputs
+- External Outputs
+- External Inquiries
+- Internal Logical Files
+- External Interface Files
+
+Use `use-case-points-pass.md` when the source exposes actors and business workflows/use cases. These methods are valuable because they size the system from user-visible functionality rather than delivery phases.
+
+Use these as pragmatic anchors, not certification claims, unless the work was performed to the relevant formal standard. If boundaries are ambiguous, use ranges and state confidence.
+
+## Top-Down Three-Point
+
+Use `top-down-three-point-pass.md` as a coarse whole-project independent anchor. It is intentionally less detailed than WBS, but it helps detect single-anchor drift. It should directly estimate optimistic / most likely / pessimistic totals from delivery class and dominant drivers. Do not decompose into WBS lines.
+
+## Constraint Capacity
+
+Use `constraint-capacity-pass.md` when delivery date, staffing, review gates, acceptance windows, procurement cadence, or calendar feasibility matters. This pass estimates a feasible envelope rather than a feature build size. Keep person-days and calendar duration separate.
+
+When the final recommended range exceeds feasible capacity under plausible staffing, report the staffing/scope/schedule implication instead of silently accepting the number.
+
+## Risk Model
+
+Use `risk-model-pass.md` when a few uncertainty drivers materially affect the range. The pass should expose probability, impact, correlation, expected risk exposure, and high-risk scenario. It should not hide risk inside an unexplained contingency or double-count risks already embedded in other methods.
+
+Monte Carlo-style outputs are useful when distributions can be stated, but a transparent scenario model is preferable to a fake-precise simulation.
+
 ## Quantitative Sanity Checks
 
 - For three-point estimates, pessimistic should usually be about 1.5-3.0x optimistic. Values outside that range are allowed, but require a note explaining the asymmetric risk.
@@ -76,7 +149,8 @@ Do not stack many multipliers mechanically. Explain the dominant risk drivers an
 - If one line item is more than 25-30% of the total, split it or explain why it cannot be decomposed.
 - For repeated variants (regions, branches, similar reports/screens), confirm the estimate uses `framework once plus variants`, not a bespoke count multiplication. Counted artifacts drift high when each is priced as a full build; see `references/repetition-and-reuse.md`.
 - Count each risk once. If line `high` values already embed pessimistic risk, do not also stack a separate reserve line and the correlated endpoint-sum high for the same uncertainty.
-- Cross-check the bottom-up total against a top-down per-unit figure. A per-unit cost well above a credible anchor signals under-applied economy of scale or reuse.
+- Cross-check the bottom-up total against the independent component unit anchor when that pass ran. A per-unit cost well above a credible anchor signals under-applied economy of scale or reuse.
+- Compare WBS against parametric, function point, use case point, top-down, constraint, and risk model outputs only after those methods complete. Do not feed WBS results into those passes.
 - If organization-specific actual productivity is available, such as person-days per screen, report, integration, CRUD module, or KLOC, use it as calibration evidence. If no baseline exists, state that the estimate relies on document-derived judgment rather than measured organizational productivity.
 
 ## AI Coding Assistance
@@ -93,6 +167,12 @@ Before finalizing:
 - Any available three-point data should have range synthesis; do not leave the planning range as endpoint sums by default.
 - No large line item should hide multiple unrelated features.
 - Repeated variants and reused skeletons should be priced with economy of scale, and the bottom-up total should pass a top-down per-unit cross-check.
+- Countable component families should have an independent component unit anchor unless the source is too abstract to support unit counts.
+- Measurable driver sets should have a parametric model unless coefficients would be pure fiction.
+- Functional-size signals should have function point or use case point anchors when count boundaries are defensible.
+- Non-trivial estimates should have a top-down three-point anchor unless the source is too abstract even for delivery-class reasoning.
+- Calendar-constrained estimates should have a constraint capacity check.
+- Risk-heavy estimates should have a risk model or a stated reason why probabilities/impacts cannot be estimated.
 - Management, testing, documentation, and acceptance support should not be omitted.
 - Calendar duration should account for review waits, not only person-days.
 - Confidence should drop when source documents are samples rather than final specifications.
