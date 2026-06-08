@@ -131,7 +131,7 @@ AI_TAG_ALIASES = {
 }
 
 WIDTHS = {
-    "00_結論": [24, 18, 42, 18, 28, 28],
+    "00_結論": [24, 32, 38, 16, 24, 24],
     "01_内訳": [24, 15, 15, 13, 12, 16, 58, 24],
     "02_規模根拠": [14, 28, 14, 54, 12, 38],
     "03_WBS": [16, 34, 54, 11, 13, 11, 14, 46],
@@ -585,6 +585,7 @@ def rebuild_conclusion_sheet(ws: Any, summary: dict[str, tuple[Any, ...]], metho
         row[0].font = st["bold_font"]
         row[1].font = st["big_font"]
         row[1].fill = fill(COLORS["total"])
+        row[1].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
     ws.append([])
     ws.append(["結論の根拠", "要点", "影響", "扱い", "参照シート", ""])
@@ -643,8 +644,8 @@ def rebuild_breakdown_sheet(ws: Any, phases: list[list[Any]]) -> None:
     ws.merge_cells("A2:H2")
     ws.append(["工程", "AI補助後目安", "AI補助前WBS", "差分", "削減率", "削減可否", "主な内容/注意", "参照"])
     for cell in ws[3]:
-        cell.fill = fill(COLORS["subtle_header"])
-        cell.font = st["header_font"]
+        cell.fill = fill(COLORS["header"])
+        cell.font = Font(name="Yu Gothic", size=10, bold=True, color=COLORS["header_text"])
         cell.alignment = st["center"]
         cell.border = st["header_border"]
     for row in phases:
@@ -1010,7 +1011,10 @@ def style_generic_sheet(ws: Any) -> None:
         ws.column_dimensions[get_column_letter(col)].width = widths[col - 1] if col <= len(widths) else 16
     if ws.title in {"00_結論", "01_内訳"}:
         for row_idx in range(1, max_row + 1):
-            ws.row_dimensions[row_idx].height = 30 if ws.title == "00_結論" else 32
+            if ws.title == "00_結論":
+                ws.row_dimensions[row_idx].height = 46 if 3 <= row_idx <= 8 else 30
+            else:
+                ws.row_dimensions[row_idx].height = 32
         return
 
     header_row = likely_table_header_row(ws)
@@ -1042,7 +1046,8 @@ def style_generic_sheet(ws: Any) -> None:
                 cell.font = st["body_font"]
             cell.border = st["border"]
             if row_is_header:
-                cell.fill = fill(COLORS["subtle_header"])
+                cell.fill = fill(COLORS["header"])
+                cell.font = Font(name="Yu Gothic", size=10, bold=True, color=COLORS["header_text"])
                 cell.alignment = st["center"]
             elif row_is_total:
                 cell.fill = fill(COLORS["total"])
