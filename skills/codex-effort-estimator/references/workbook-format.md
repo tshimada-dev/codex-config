@@ -36,29 +36,29 @@ Use these colors consistently:
 
 ## Standard Sheet Order
 
-Use these exact sheet names. Keep the numeric prefixes stable. Do not renumber sheets when an optional sheet is omitted.
+Use these exact presentation sheet names after formatting. The numeric prefixes must match the visible tab order; run `scripts/format_estimate_workbook.py` after generation so old/raw names and optional-sheet order are normalized.
 
 | Order | Sheet | Required | Purpose |
 |---:|---|---|---|
-| 0 | `00_サマリー` | Yes | Executive summary, final range, confidence, method comparison. |
-| 1 | `01_工程別` | Yes | Phase-level totals and final adjusted values. |
+| 0 | `00_結論` | Yes | Customer-facing conclusion: final range, planning center, confidence, and concise rationale. |
+| 1 | `01_内訳` | Yes | Readable phase breakdown with AI-assisted effort, WBS baseline, delta, and reducibility judgment. |
 | 2 | `02_規模根拠` | Yes | Counted scope facts and sizing confidence. |
 | 3 | `03_WBS` | Yes | WBS bottom-up estimate lines. |
 | 4 | `04_PERT` | Yes | Independent PERT task estimates and expected values, or WBS-derived variance aggregation when independent PERT was skipped. |
-| 5 | `05_類推補正` | Optional | Historical analogy and calibration. |
-| 6 | `06_Discovery` | Optional | Discovery estimate when implementation scope is unstable. |
-| 7 | `07_AI補正` | Optional | AI coding assistance adjustment when explicitly assumed. |
-| 8 | `08_公共レビュー` | Optional | Public-sector/report/acceptance coverage review. |
-| 9 | `09_Repo` | Optional | Repository rebuild or completion estimate. |
-| 10 | `10_親統合` | Yes | Pass coverage, parent reconciliation, final recommendation, high-risk scenario. |
-| 11 | `11_前提リスク` | Yes | Assumptions, exclusions, risks, and confirmation questions. |
-| 12 | `12_単価アンカー` | Optional | Independent component-unit top-down estimate from countable scope signals. |
-| 13 | `13_パラメトリック` | Optional | Independent equation-based estimate from count drivers and coefficients. |
-| 14 | `14_FP` | Optional | Function point estimate. |
-| 15 | `15_UCP` | Optional | Use case points estimate. |
-| 16 | `16_トップダウン` | Optional | Direct whole-project three-point anchor. |
-| 17 | `17_制約` | Optional | Constraint/capacity feasibility envelope. |
-| 18 | `18_リスクモデル` | Optional | Risk-adjusted scenario or Monte Carlo-style model. |
+| 5 | `05_単価アンカー` | Optional | Independent component-unit top-down estimate from countable scope signals. |
+| 6 | `06_パラメトリック` | Optional | Independent equation-based estimate from count drivers and coefficients. |
+| 7 | `07_FP` | Optional | Function point estimate. |
+| 8 | `08_UCP` | Optional | Use case points estimate. |
+| 9 | `09_トップダウン` | Optional | Direct whole-project three-point anchor. |
+| 10 | `10_AI補正` | Optional | AI coding assistance adjustment when explicitly assumed. |
+| 11 | `11_公共レビュー` | Optional | Public-sector/report/acceptance coverage review. |
+| 12 | `12_リスクモデル` | Optional | Risk-adjusted scenario or Monte Carlo-style model. |
+| 13 | `13_制約` | Optional | Constraint/capacity feasibility envelope. |
+| 14 | `14_Discovery` | Optional | Discovery estimate when implementation scope is unstable. |
+| 15 | `15_前提リスク` | Yes | Assumptions, exclusions, risks, and confirmation questions. |
+| 16 | `16_類推補正` | Optional | Historical analogy and calibration. |
+| 17 | `17_Repo` | Optional | Repository rebuild or completion estimate. |
+| 18 | `18_親統合` | Yes | Pass coverage, parent reconciliation, final recommendation, high-risk scenario. |
 
 For high-stakes estimates, include optional sheets that were considered but not applicable with a short `適用なし` row rather than silently changing the workbook structure. For quick internal estimates, optional sheets may be omitted, but required sheets and their order stay fixed.
 
@@ -66,7 +66,7 @@ If a required method sheet such as `03_WBS` or `04_PERT` was not run, keep the s
 
 Exception: if independent PERT was not run but WBS has low / most likely / high values, `04_PERT` must include a `WBS由来CI` block. This block is a calculation from WBS rows, not an independent PERT estimate.
 
-Number gaps from omitted optional sheets are intentional. For example, a workbook may show `00_サマリー`, `01_工程別`, `02_規模根拠`, `03_WBS`, `04_PERT`, `10_親統合`, `11_前提リスク` when optional sheets are not applicable.
+For presentation workbooks, sheet numbers must match visible tab order. If optional sheets are omitted, the deterministic formatter renumbers remaining tabs so there is no mismatch between sheet position and prefix.
 
 ## Shared Sheet Layout
 
@@ -84,9 +84,11 @@ Use a short note block below the main table only when needed. Do not place impor
 
 ## Standard Columns
 
-### `00_サマリー`
+### `00_結論`
 
-Columns: `項目`, `値`, `補足`
+Top conclusion table columns:
+
+`結論`, `値`, `読み方`, `提出時の扱い`, `補足`, `確認観点`
 
 Include rows for:
 
@@ -99,15 +101,17 @@ Include rows for:
 - Main risk drivers.
 - Workbook generation assumptions.
 
-Also include a method comparison table with columns:
+Also include a short rationale table and a method comparison table with columns:
 
-`手法`, `楽観/Low`, `普通/Base`, `悲観/High`, `中心/期待値`, `親の解釈`
+`方法別レンジ`, `楽観`, `中心/平均`, `悲観`, `幅`, `メモ`
 
-### `01_工程別`
+Do not add a comparison chart. The table itself is the auditable artifact.
+
+### `01_内訳`
 
 Columns:
 
-`工程`, `WBS`, `PERT`, `単価アンカー`, `パラメトリック`, `FP/UCP`, `AI補正後`, `親最終`, `メモ`
+`工程`, `AI補助後目安`, `AI補助前WBS`, `差分`, `削減率`, `削減可否`, `主な内容/注意`, `参照`
 
 If AI adjustment is not applicable, set `AI補正後` to `-` rather than removing the column.
 
@@ -153,19 +157,63 @@ When independent PERT was skipped and WBS three-point rows exist, add a `WBS由�
 
 Use WBS row low / most likely / high values as the source. Mark the table as `derived from WBS; not an independent method`.
 
-### `05_類推補正`
+### `05_単価アンカー`
 
 Columns:
 
-`比較対象`, `類似点`, `差分`, `実績/見積`, `信頼度`, `補正示唆`
+`分類`, `数量`, `数量根拠`, `共通基盤Low`, `共通基盤Base`, `共通基盤High`, `単価Low`, `単価Base`, `単価High`, `係数`, `Low`, `Base`, `High`, `根拠/メモ`
 
-### `06_Discovery`
+Use formulas for family totals:
+
+```text
+Low = framework_low + count * unit_low * factor
+Base = framework_base + count * unit_base * factor
+High = framework_high + count * unit_high * factor
+```
+
+Include a total row. Add a visible note that this sheet is an independent top-down component anchor and must not use WBS totals or WBS-derived PERT values.
+
+### `06_パラメトリック`
 
 Columns:
 
-`調査項目`, `目的`, `Low`, `Likely`, `High`, `成果物`, `実装見積への影響`
+`ドライバ`, `数量`, `数量根拠`, `係数Low`, `係数Base`, `係数High`, `係数根拠`, `調整係数Low`, `調整係数Base`, `調整係数High`, `Low`, `Base`, `High`, `メモ`
 
-### `07_AI補正`
+Include the model equation in a visible note. Use formulas for driver totals and adjustment totals. State whether coefficients are local actuals, benchmarks, heuristics, or judgment.
+
+### `07_FP`
+
+Columns:
+
+`種別`, `項目群`, `数量Low`, `数量Base`, `数量High`, `複雑度`, `重み`, `FP Low`, `FP Base`, `FP High`, `根拠`, `メモ`
+
+Allowed `種別` values: `EI`, `EO`, `EQ`, `ILF`, `EIF`.
+
+Include productivity conversion rows:
+
+`生産性`, `Low`, `Base`, `High`, `根拠`
+
+Show effort formulas from adjusted function points divided by productivity. Do not hardcode converted effort totals.
+
+### `08_UCP`
+
+Columns:
+
+`分類`, `項目`, `複雑度`, `数量`, `重み`, `UCP`, `根拠`, `メモ`
+
+`分類` values: `Actor`, `Use case`, `TCF`, `ECF`, `Productivity`.
+
+Include rows for UAW, UUCW, UUCP, TCF, ECF, UCP, productivity, and low/base/high effort. Use formulas where practical.
+
+### `09_トップダウン`
+
+Columns:
+
+`観点`, `楽観`, `最頻/普通`, `悲観`, `期待値`, `SD`, `根拠`, `メモ`
+
+Include delivery class and dominant effort drivers. The total row should calculate expected value as `(optimistic + 4 * most likely + pessimistic) / 6`.
+
+### `10_AI補正`
 
 Columns:
 
@@ -173,7 +221,7 @@ Columns:
 
 Keep `ベースライン` and `補正後` side by side. Do not overwrite the raw estimate.
 
-### `08_公共レビュー`
+### `11_公共レビュー`
 
 Columns:
 
@@ -181,13 +229,53 @@ Columns:
 
 `分類` values: `織込済`, `不足/薄い`, `リスクのみ`, `要確認`.
 
-### `09_Repo`
+### `12_リスクモデル`
+
+Columns:
+
+`リスク`, `確率`, `影響Low`, `影響Base`, `影響High`, `期待影響`, `相関グループ`, `根拠`, `確認/緩和`
+
+Also include scenario/P-percentile rows:
+
+`シナリオ`, `Low/P50`, `Base/P80`, `High/P90`, `根拠`
+
+Mark overlap warnings when a risk is likely already represented in WBS, public review, or another method.
+
+### `13_制約`
+
+Columns:
+
+`シナリオ`, `作業日`, `FTE`, `集中係数`, `総容量`, `レビュー/固定バッファ`, `実効容量`, `示唆`, `根拠`
+
+Keep person-days and calendar dates separate. Include fixed constraints and open assumptions.
+
+### `14_Discovery`
+
+Columns:
+
+`調査項目`, `目的`, `Low`, `Likely`, `High`, `成果物`, `実装見積への影響`
+
+### `15_前提リスク`
+
+Use separate tables with the same columns:
+
+`種別`, `内容`, `影響`, `確認/対応`
+
+`種別` values: `前提`, `除外`, `リスク`, `確認`.
+
+### `16_類推補正`
+
+Columns:
+
+`比較対象`, `類似点`, `差分`, `実績/見積`, `信頼度`, `補正示唆`
+
+### `17_Repo`
 
 Columns:
 
 `領域`, `測定事実`, `推定`, `Low`, `Base`, `High`, `メモ`
 
-### `10_親統合`
+### `18_親統合`
 
 Start with a pass coverage table:
 
@@ -216,90 +304,6 @@ When the component unit anchor pass ran, include a method-difference table:
 Mark `単価アンカー` as independent from WBS when it did not use WBS totals, WBS-derived PERT, parent ranges, or prior estimate artifacts.
 Use the same independence column for `パラメトリック`, `FP`, `UCP`, `トップダウン`, `制約`, and `リスクモデル`.
 
-### `11_前提リスク`
-
-Use separate tables with the same columns:
-
-`種別`, `内容`, `影響`, `確認/対応`
-
-`種別` values: `前提`, `除外`, `リスク`, `確認`.
-
-### `12_単価アンカー`
-
-Columns:
-
-`分類`, `数量`, `数量根拠`, `共通基盤Low`, `共通基盤Base`, `共通基盤High`, `単価Low`, `単価Base`, `単価High`, `係数`, `Low`, `Base`, `High`, `根拠/メモ`
-
-Use formulas for family totals:
-
-```text
-Low = framework_low + count * unit_low * factor
-Base = framework_base + count * unit_base * factor
-High = framework_high + count * unit_high * factor
-```
-
-Include a total row. Add a visible note that this sheet is an independent top-down component anchor and must not use WBS totals or WBS-derived PERT values.
-
-### `13_パラメトリック`
-
-Columns:
-
-`ドライバ`, `数量`, `数量根拠`, `係数Low`, `係数Base`, `係数High`, `係数根拠`, `調整係数Low`, `調整係数Base`, `調整係数High`, `Low`, `Base`, `High`, `メモ`
-
-Include the model equation in a visible note. Use formulas for driver totals and adjustment totals. State whether coefficients are local actuals, benchmarks, heuristics, or judgment.
-
-### `14_FP`
-
-Columns:
-
-`種別`, `項目群`, `数量Low`, `数量Base`, `数量High`, `複雑度`, `重み`, `FP Low`, `FP Base`, `FP High`, `根拠`, `メモ`
-
-Allowed `種別` values: `EI`, `EO`, `EQ`, `ILF`, `EIF`.
-
-Include productivity conversion rows:
-
-`生産性`, `Low`, `Base`, `High`, `根拠`
-
-Show effort formulas from adjusted function points divided by productivity. Do not hardcode converted effort totals.
-
-### `15_UCP`
-
-Columns:
-
-`分類`, `項目`, `複雑度`, `数量`, `重み`, `UCP`, `根拠`, `メモ`
-
-`分類` values: `Actor`, `Use case`, `TCF`, `ECF`, `Productivity`.
-
-Include rows for UAW, UUCW, UUCP, TCF, ECF, UCP, productivity, and low/base/high effort. Use formulas where practical.
-
-### `16_トップダウン`
-
-Columns:
-
-`観点`, `楽観`, `最頻/普通`, `悲観`, `期待値`, `SD`, `根拠`, `メモ`
-
-Include delivery class and dominant effort drivers. The total row should calculate expected value as `(optimistic + 4 * most likely + pessimistic) / 6`.
-
-### `17_制約`
-
-Columns:
-
-`シナリオ`, `作業日`, `FTE`, `集中係数`, `総容量`, `レビュー/固定バッファ`, `実効容量`, `示唆`, `根拠`
-
-Keep person-days and calendar dates separate. Include fixed constraints and open assumptions.
-
-### `18_リスクモデル`
-
-Columns:
-
-`リスク`, `確率`, `影響Low`, `影響Base`, `影響High`, `期待影響`, `相関グループ`, `根拠`, `確認/緩和`
-
-Also include scenario/P-percentile rows:
-
-`シナリオ`, `Low/P50`, `Base/P80`, `High/P90`, `根拠`
-
-Mark overlap warnings when a risk is likely already represented in WBS, public review, or another method.
-
 ## Visual Rules
 
 - Use dark blue headers with white bold text.
@@ -315,7 +319,7 @@ Mark overlap warnings when a risk is likely already represented in WBS, public r
   - description/evidence columns: 28-45
   - numeric columns: 10-12
   - notes columns: 35-50
-- Do not use decorative gradients, images, charts, or large title blocks unless the user asks.
+- Do not use decorative gradients, images, charts, or large title blocks unless the user asks. Method comparisons must remain tables, not charts.
 
 ## QA Checklist
 
@@ -324,7 +328,7 @@ Before delivery, verify:
 - Required sheets exist with exact names and order.
 - Optional sheets keep their fixed names when present.
 - Required columns are present and in order.
-- `10_親統合` includes a pass coverage table for every standard delegate with run/skip reason.
+- `18_親統合` includes a pass coverage table for every standard delegate with run/skip reason.
 - Totals and PERT expected values use formulas.
 - PERT total range uses variance aggregation, not simple endpoint sums.
 - WBS three-point data produces WBS-derived variance aggregation even when independent PERT was skipped.

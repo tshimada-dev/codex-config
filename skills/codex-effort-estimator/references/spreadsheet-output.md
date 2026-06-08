@@ -24,29 +24,29 @@ For substantial estimates, create the standard workbook shape from `workbook-for
 
 | Sheet | Purpose |
 |---|---|
-| `00_サマリー` | Final recommended range, planning center, confidence, and method comparison. |
-| `01_工程別` | Phase-level breakdown across methods: PM, requirements, design, implementation, reports, testing, manuals/handoff. |
+| `00_結論` | Final recommended range, planning center, confidence, concise rationale, and method comparison table. |
+| `01_内訳` | Readable phase breakdown: AI-assisted effort, WBS baseline, delta, reducibility judgment, and reference sheet. |
 | `02_規模根拠` | Source facts: function count, reports, imports, data volumes, integrations, environments, constraints. |
 | `03_WBS` | WBS bottom-up estimate lines. Keep the sheet and add an `適用なし` row if WBS was not run. |
 | `04_PERT` | Independent PERT task estimates and expected values. If independent PERT was not run but WBS has three-point values, include a `WBS由来CI` block instead of ending with only `適用なし`. |
-| `05_類推補正` | Historical analogy and calibration when applicable. |
-| `06_Discovery` | Discovery estimate when implementation scope is unstable. |
-| `07_AI補正` | AI coding assistance adjustment when explicitly assumed. |
-| `08_公共レビュー` | Public-sector/report/acceptance coverage review when applicable. |
-| `09_Repo` | Repository rebuild or completion estimate when applicable. |
-| `10_親統合` | Parent reconciliation: pass coverage, method differences, final range, implementation-only range, high-risk range. |
-| `11_前提リスク` | Assumptions, exclusions, risks, and confirmation questions. |
-| `12_単価アンカー` | Independent component-unit top-down estimate when countable component families exist. |
-| `13_パラメトリック` | Independent equation-based estimate from count drivers, coefficients, and adjustment factors. |
-| `14_FP` | Function point estimate when inputs, outputs, inquiries, logical files, or external interface files can be counted. |
-| `15_UCP` | Use case points estimate when actors and workflows/use cases can be counted. |
-| `16_トップダウン` | Direct whole-project optimistic / most-likely / pessimistic anchor. |
-| `17_制約` | Constraint/capacity feasibility envelope from deadline, staffing, review gates, and delivery windows. |
-| `18_リスクモデル` | Risk-adjusted scenario or Monte Carlo-style model from probability/impact assumptions. |
+| `05_単価アンカー` | Independent component-unit top-down estimate when countable component families exist. |
+| `06_パラメトリック` | Independent equation-based estimate from count drivers, coefficients, and adjustment factors. |
+| `07_FP` | Function point estimate when inputs, outputs, inquiries, logical files, or external interface files can be counted. |
+| `08_UCP` | Use case points estimate when actors and workflows/use cases can be counted. |
+| `09_トップダウン` | Direct whole-project optimistic / most-likely / pessimistic anchor. |
+| `10_AI補正` | AI coding assistance adjustment when explicitly assumed. |
+| `11_公共レビュー` | Public-sector/report/acceptance coverage review when applicable. |
+| `12_リスクモデル` | Risk-adjusted scenario or Monte Carlo-style model from probability/impact assumptions. |
+| `13_制約` | Constraint/capacity feasibility envelope from deadline, staffing, review gates, and delivery windows. |
+| `14_Discovery` | Discovery estimate when implementation scope is unstable. |
+| `15_前提リスク` | Assumptions, exclusions, risks, and confirmation questions. |
+| `16_類推補正` | Historical analogy and calibration when applicable. |
+| `17_Repo` | Repository rebuild or completion estimate when applicable. |
+| `18_親統合` | Parent reconciliation: pass coverage, method differences, final range, implementation-only range, high-risk range. |
 
 When AI coding assistance is explicitly assumed, add either a dedicated `AI補正` / `AI Adjustment` sheet or a clearly separated table in `親統合`.
 
-Do not renumber sheets when optional method sheets are omitted. Number gaps are intentional.
+For presentation workbooks, sheet prefixes must match visible tab order. Run the deterministic formatter after generation so omitted or reordered optional sheets are renumbered consistently.
 
 ## Phase Breakdown
 
@@ -80,10 +80,12 @@ Include a total row with formulas, not hardcoded totals.
 
 ## Method Comparison
 
-The summary should include a method comparison table:
+The conclusion sheet should include a method comparison table:
 
-| 手法 | 楽観/Low | 普通/Base | 悲観/High | 中心/期待値 | 親の解釈 |
+| 方法別レンジ | 楽観 | 中心/平均 | 悲観 | 幅 | メモ |
 |---|---:|---:|---:|---:|---|
+
+Do not add a center-value comparison chart unless the user explicitly asks for charts.
 
 The synthesis sheet must also include a pass coverage table:
 
