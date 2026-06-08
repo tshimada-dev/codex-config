@@ -40,8 +40,11 @@ Before packaging a dirty target file, inspect its diff and separate user-owned h
 - Stage only files that belong to the requested change.
 - Never stage unrelated user-owned changes.
 - Do not include secrets, logs, temporary files, or unrelated formatting churn.
+- When a commit changes workflow, architecture, policy, estimation logic, security posture, or other design judgment, include a body with 2-3 concise lines explaining why the change is needed and what verification supports it. Small mechanical fixes may use a subject-only commit.
 - Use non-interactive git commands.
 - If pre-commit hooks modify files, inspect the new diff before committing.
+
+For personal Windows/PowerShell-only workflows, keep commits local and factual. When preparing for team distribution, call out portability assumptions and split cross-platform packaging into its own change instead of hiding it in an unrelated commit.
 
 ## Temporary Or No-Commit Repos
 

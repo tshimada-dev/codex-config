@@ -43,6 +43,8 @@ This pass works best when the source material exposes counts such as:
    - repeated variant factor, such as additional report variants at 0.15-0.40 of the first implementation
    - complexity factor, such as strict PDF fidelity, legacy Office, complicated calculation rules, or uncertain real data
    - confidence factor, such as sample-only data or missing acceptance criteria
+   - When repeated variants are source-visible, do not leave the factor blank. If the exact factor cannot be known, choose a defensible low/base/high factor range from `references/repetition-and-reuse.md`, state the realization assumption, and use the conservative end for the high estimate.
+   - Examples: `5 regions: framework once + 4 variants at 0.10/0.20/0.30`, `8 CSV variants: common parser + mappings at 0.15/0.25/0.40`, `18 report templates: shared export engine + template variants at 0.15/0.30/0.45`.
 6. Calculate each family:
 
 ```text
@@ -80,7 +82,7 @@ Return:
 
 - Source files inspected.
 - Count table with `Component family`, `Count`, `Count basis`, `Count confidence`, and `Notes`.
-- Unit anchor table with `Component family`, `Framework low/base/high`, `Unit low/base/high`, `Reuse or complexity factor`, `Anchor source`, and `Rationale`.
+- Unit anchor table with `Component family`, `Framework low/base/high`, `Unit low/base/high`, `Reuse or complexity factor low/base/high`, `Anchor source`, and `Rationale`.
 - Total table with `Component family`, `Low`, `Base`, `High`, and `Notes`.
 - Overall component-anchor low / base / high person-days.
 - Main assumptions.

@@ -234,6 +234,32 @@ REUSE_FACTOR_PATTERNS = (
     re.compile(r"(?:×|x)\s*(0\.\d+)", re.IGNORECASE),
 )
 
+AI_IMPLEMENTATION_TERMS = (
+    "実装",
+    "基盤",
+    "UI",
+    "画面",
+    "CRUD",
+    "CSV",
+    "取込",
+    "出力",
+    "帳票",
+    "PDF",
+    "Excel",
+    "テンプレ",
+    "マスタ",
+    "計算",
+    "判定",
+    "採番",
+    "コード",
+    "VBA",
+    "script",
+    "parser",
+    "mapping",
+)
+
+AI_REVIEW_HEAVY_TAGS = {"複雑実装", "検証重"}
+
 NON_ADDITIVE_HEADERS = {
     "",
     "倍率",
@@ -1462,6 +1488,66 @@ def check_breakdown_ai_tags(wb: Any) -> list[str]:
     return warnings
 
 
+def check_ai_reducibility_bias(wb: Any) -> list[str]:
+    warnings: list[str] = []
+    ws = sheet_by_label(wb, "AI補正")
+    if ws is None:
+        return warnings
+    header_row, headers = find_header_row(
+        ws,
+        {"WBS作業", "AI削減区分", "Raw Base", "Adjusted Base"},
+    )
+    if header_row is None:
+        return warnings
+
+    total_raw = 0.0
+    total_adjusted = 0.0
+    implementation_raw = 0.0
+    review_heavy_raw = 0.0
+    review_heavy_examples: list[str] = []
+    max_row, _ = used_bounds(ws)
+    for row in range(header_row + 1, max_row + 1):
+        task = text(ws.cell(row, headers["WBS作業"]).value)
+        if not task or task == "合計":
+            continue
+        raw = numeric_cell_value(ws, row, headers["Raw Base"])
+        adjusted = numeric_cell_value(ws, row, headers["Adjusted Base"])
+        if raw is None or raw <= 0:
+            continue
+        if adjusted is not None:
+            total_raw += raw
+            total_adjusted += adjusted
+        haystack = " ".join(
+            [
+                task,
+                text(ws.cell(row, headers.get("WBS分類", 0)).value) if "WBS分類" in headers else "",
+                text(ws.cell(row, headers.get("根拠", 0)).value) if "根拠" in headers else "",
+            ]
+        )
+        if not contains_any(haystack, AI_IMPLEMENTATION_TERMS):
+            continue
+        implementation_raw += raw
+        tag = normalize_ai_tag(ws.cell(row, headers["AI削減区分"]).value)
+        if tag in AI_REVIEW_HEAVY_TAGS:
+            review_heavy_raw += raw
+            if len(review_heavy_examples) < 4:
+                review_heavy_examples.append(f"{task}={tag}")
+
+    if not total_raw or not implementation_raw:
+        return warnings
+    reduction_rate = (total_raw - total_adjusted) / total_raw if total_raw else 0.0
+    review_heavy_share = review_heavy_raw / implementation_raw
+    if review_heavy_share >= 0.70 and reduction_rate < 0.15:
+        examples = ", ".join(review_heavy_examples)
+        warnings.append(
+            "AI reducibility sanity check: implementation-like work is mostly tagged "
+            f"`複雑実装/検証重` ({review_heavy_share:.0%} of implementation raw base) while "
+            f"overall AI reduction is only {reduction_rate:.0%}. Re-evaluate AI削減区分 against "
+            f"the current scope and implementation approach. Examples: {examples}"
+        )
+    return warnings
+
+
 def check_reuse_audit(wb: Any) -> list[str]:
     warnings: list[str] = []
     context = collect_reuse_context(wb)
@@ -1649,6 +1735,7 @@ def validate_workbook(wb: Any) -> tuple[list[str], list[str]]:
                     errors.append(f"{ws.title}!{get_column_letter(col)}{row}: {value}")
     warnings.extend(check_reuse_audit(wb))
     warnings.extend(check_breakdown_ai_tags(wb))
+    warnings.extend(check_ai_reducibility_bias(wb))
     return warnings, errors
 
 

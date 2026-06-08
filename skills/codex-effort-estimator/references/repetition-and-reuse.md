@@ -32,6 +32,8 @@ Choose the variant factor from how the variant is realized, not from how it look
 
 Choose the high end when the variants are not confirmed to share a template, when fidelity is strict (pixel/PDF), or when each variant needs its own validation and acceptance evidence.
 
+When a repeated group is detected, the variant factor is an auditable estimate field, not optional metadata. Do not output `未記載`, blank, or an implicit discount for the factor when the source shows repeated variants. If the evidence is insufficient for one exact factor, output a low/base/high factor range and the assumption behind it, for example `0.10/0.20/0.30 because the source says five regions share one logic path with parameter differences`.
+
 ## Cross-Feature Reuse
 
 Distinct features often share a skeleton even when they are not labelled as variants. Examples: several workflows that all import, validate, calculate, number, and output; several screens built on the same form/grid foundation.
@@ -64,6 +66,7 @@ When no organizational baseline exists, say so, and state that the absolute leve
 When this reference is applied, the estimate should make the economy of scale auditable:
 
 - Repetition groups with instance counts, the framework line, and the variant factor used.
+- Variant factor low/base/high when the exact factor is uncertain, plus the reason each end of the range is plausible.
 - Reuse assumptions between features, marked as assumptions when unconfirmed.
 - A single, clearly located representation of risk/contingency.
 - A top-down per-unit cross-check with its reconciliation outcome.
