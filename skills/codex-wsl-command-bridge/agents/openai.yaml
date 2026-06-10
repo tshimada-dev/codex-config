@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex WSL Command Bridge"
+  short_description: "Run WSL/Linux commands safely from Windows PowerShell."
+  default_prompt: "Use this skill when running WSL commands from Windows PowerShell, especially for multi-line Bash, variables, path conversion, file transfer, or destructive operations."
