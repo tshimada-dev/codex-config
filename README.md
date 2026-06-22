@@ -1,5 +1,7 @@
 # Codex Config
 
+[English overview](README.en.md)
+
 ## 3分で見る価値
 
 このリポジトリは、OpenAI Codex を継続的な開発相棒として使うための個人設定集であり、
