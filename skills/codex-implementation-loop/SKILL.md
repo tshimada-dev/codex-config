@@ -28,7 +28,7 @@ When subagents are available, prefer worker agents for bounded implementation sl
 3. Prefer the smallest change that matches local style.
 4. Edit with `apply_patch` for manual changes.
 5. Add or update tests when behavior changes or risk is nontrivial; for behavior changes, prefer writing the focused test before the implementation when practical.
-6. Run the narrowest meaningful check first.
+6. Run the narrowest meaningful check first. If it differs from the CI command or is only a local substitute, record that difference instead of treating it as equivalent to CI.
 7. Broaden checks when shared contracts, state, CLI behavior, UI flows, or public APIs changed.
 8. Summarize changed files, checks, and residual risk.
 

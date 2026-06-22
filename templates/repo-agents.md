@@ -23,6 +23,7 @@
 - Typecheck:
 - Test:
 - Build:
+- CI parity: if any local command differs from CI, document the difference and do not silently treat it as equivalent.
 
 ## Safety
 

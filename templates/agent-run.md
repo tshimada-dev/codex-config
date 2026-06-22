@@ -28,6 +28,12 @@ Phase: `research | implementation | verification | paused | handoff`
 
 -
 
+## Decisions
+
+| Decision | Rationale | Alternatives rejected |
+| --- | --- | --- |
+| | | |
+
 ## Implementation Plan
 
 -

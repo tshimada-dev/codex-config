@@ -23,7 +23,7 @@ When subagents are available, prefer a reviewer agent for a focused pre-PR pass 
    - targeted `git diff`
 2. Separate your changes from unrelated user changes.
 3. Confirm the diff tells one coherent story. If not, propose splitting.
-4. Run relevant verification unless impossible or explicitly skipped by the user.
+4. Run relevant verification unless impossible or explicitly skipped by the user. If local verification differs from CI, state the discrepancy instead of claiming the CI contract was satisfied.
 5. Prepare a concise summary:
    - what changed
    - why it changed
