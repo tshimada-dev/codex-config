@@ -140,3 +140,7 @@ constraint/capacity、risk model、PERT、公共・帳票 review、repository re
 [docs/ja/README.md](docs/ja/README.md) にまとめています。
 
 内容が英語版と食い違う場合は、英語版を優先します。
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
