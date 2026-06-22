@@ -27,7 +27,7 @@ When subagents are available, prefer worker agents for bounded implementation sl
 2. Inspect the current file before editing.
 3. Prefer the smallest change that matches local style.
 4. Edit with `apply_patch` for manual changes.
-5. Add or update tests when behavior changes or risk is nontrivial.
+5. Add or update tests when behavior changes or risk is nontrivial; for behavior changes, prefer writing the focused test before the implementation when practical.
 6. Run the narrowest meaningful check first.
 7. Broaden checks when shared contracts, state, CLI behavior, UI flows, or public APIs changed.
 8. Summarize changed files, checks, and residual risk.
