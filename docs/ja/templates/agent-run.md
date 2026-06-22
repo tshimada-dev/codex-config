@@ -1,6 +1,6 @@
 ---
 source: templates/agent-run.md
-source_commit: 747e954d067ae3c02d63e4b611dcce9da8ed39c8
+source_commit: 19c15b99d16f1e7fb1d3d795442637b05693ca81
 canonical: false
 ---
 
@@ -35,6 +35,12 @@ Phase: `research | implementation | verification | paused | handoff`
 ### Assumptions and Risks
 
 -
+
+## Decisions
+
+| Decision | Rationale | Alternatives rejected |
+| --- | --- | --- |
+| | | |
 
 ## Implementation Plan
 

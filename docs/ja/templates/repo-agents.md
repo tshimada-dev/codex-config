@@ -1,6 +1,6 @@
 ---
 source: templates/repo-agents.md
-source_commit: 747e954d067ae3c02d63e4b611dcce9da8ed39c8
+source_commit: 19c15b99d16f1e7fb1d3d795442637b05693ca81
 canonical: false
 ---
 
@@ -31,6 +31,7 @@ canonical: false
 - Typecheck:
 - Test:
 - Build:
+- CI parity: local command が CI と異なる場合は差分を記録し、同等として黙って扱わない。
 
 ## Safety
 

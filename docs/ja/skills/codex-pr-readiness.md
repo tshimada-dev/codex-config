@@ -1,6 +1,6 @@
 ---
 source: skills/codex-pr-readiness/SKILL.md
-source_commit: 48eb930dceb63657f8f66ca4238e48954f48ef80
+source_commit: 19c15b99d16f1e7fb1d3d795442637b05693ca81
 canonical: false
 ---
 
@@ -20,7 +20,7 @@ canonical: false
    - targeted `git diff`
 2. 自分の変更と無関係な user changes を分ける。
 3. diff が一つの coherent story になっているか確認する。そうでない場合は分割を提案する。
-4. 可能なら relevant verification を実行する。
+4. 可能なら relevant verification を実行する。local verification が CI と異なる場合は、CI contract を満たしたと主張せず、差分を明示する。
 5. summary を用意する。
    - what changed
    - why it changed

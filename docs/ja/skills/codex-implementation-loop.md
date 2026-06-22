@@ -1,6 +1,6 @@
 ---
 source: skills/codex-implementation-loop/SKILL.md
-source_commit: 9d82168940feaf062538dd53619db9d0906cde5a
+source_commit: 19c15b99d16f1e7fb1d3d795442637b05693ca81
 canonical: false
 ---
 
@@ -35,7 +35,7 @@ subagents が使える場合は、parent の次 step を妨げない bounded sli
 3. local style に合う最小の変更を選ぶ。
 4. manual changes は `apply_patch` で編集する。
 5. behavior change や nontrivial risk がある場合は tests を追加または更新する。behavior change では、実務上可能なら implementation 前に focused test を書くことを優先する。
-6. 最小の意味ある check から実行する。
+6. 最小の意味ある check から実行する。CI command と異なる、または local substitute にすぎない場合は、CI と同等として扱わず、その差分を記録する。
 7. shared contracts、state、CLI behavior、UI flows、public APIs に触れたら broader checks を実行する。
 8. changed files、checks、residual risk をまとめる。
 
