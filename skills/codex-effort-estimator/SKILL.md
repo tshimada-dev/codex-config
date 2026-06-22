@@ -290,6 +290,7 @@ The parent should report:
 - Pass coverage checklist with `run`, `skipped`, or `not applicable` for every standard delegate, including reasons.
 - Estimate tier (`quick`, `standard`, or `full`) and the reason for that tier.
 - Method results side by side.
+- Method-dependence clusters: group methods that share the same dominant size drivers, productivity assumptions, or risk adders. Agreement inside one cluster is corroboration of that assumption set, not multiple independent votes.
 - Range synthesis for any available three-point data, including WBS-derived variance aggregation when independent PERT was skipped.
 - Agreement and disagreement.
 - Scope or assumption differences causing gaps.
@@ -311,6 +312,8 @@ The parent should report:
 - Confirmation questions that could narrow the range.
 
 If method outputs conflict, prefer the estimate whose assumptions best match the user's target deliverable. Keep outliers visible when they represent real delivery risk.
+
+Do not treat false convergence as confidence. If WBS, component-unit, UCP, or parametric outputs agree because they all rely on the same exposed count, hidden-use-case assumption, productivity coefficient, lifecycle inclusion, or risk uplift, count that agreement once during parent synthesis. Compare that cluster against genuinely different anchors such as function points, constraint capacity, top-down three-point, historical analogy, or measured productivity. When the final center follows a high cluster while lower independent anchors are plausible, explicitly explain why the lower anchors are rejected; otherwise shift the planning center or final range toward the independent anchors.
 
 ### Adjustment Review Rule
 
@@ -336,6 +339,7 @@ When reporting, use labels such as `public/report risk review`, `coverage audit`
 - Do not estimate repeated variants (regions, branches, similar reports/screens) as fully independent builds; estimate a shared framework once plus reduced-cost variants, and state the variant factor.
 - Do not count the same risk more than once; if three-point high values already embed risk, do not also add a separate reserve line and headline the correlated endpoint-sum high for the same uncertainty.
 - Do not present an uncalibrated bottom-up total as anchored; cross-check it against a top-down per-unit figure and say when no measured productivity baseline exists.
+- Do not let several methods with the same underlying size/productivity assumption outvote a smaller number of genuinely independent anchors.
 - Do not let analogy calibration override current scope evidence without explaining the comparable project, differences, and confidence.
 - Do not produce implementation-only precision when the proper answer is a discovery estimate plus confirmation questions.
 - Do not apply AI coding assistance reductions unless the user explicitly says that assumption is in scope.

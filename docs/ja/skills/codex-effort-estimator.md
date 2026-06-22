@@ -47,7 +47,9 @@ subagent 利用の目的は並行作業ではなく、見積もり観点の独�
 - Public-sector/business-system review pass: `references/public-review-pass.md` と `references/public-sector-business-systems.md`
 - Repository rebuild/completion pass: `references/repo-cost-pass.md`
 
-親 agent は各手法の差分を比較し、前提や scope の違いを明示したうえで、最終レンジと planning center をまとめます。
+親 agent は各手法の差分を比較し、前提や scope の違いを明示したうえで、最終レンジと planning center をまとめます。同じ主要 count、隠れ scope 仮定、生産性係数、lifecycle 範囲、risk uplift を共有する手法は method-dependence cluster としてまとめ、cluster 内の一致を複数の独立票として扱いません。
+
+WBS、component unit、UCP、parametric などが同じ use case 数や同じ productivity 仮定で高位に揃った場合、それは「1つの高位 cluster」として扱います。FP、constraint capacity、top-down、analogy、実績 productivity など異なる evidence からの anchor と比較し、最終中心を高位 cluster に寄せるなら、低位 anchor がどの lifecycle・scope・risk を落としているのかを明示します。説明できない場合は planning center または final range を独立 anchor 側へ寄せます。
 
 非 trivial な見積もりでは、最低限 `sizing または sizing 不要理由`、`WBS`、`countable scope がある場合の component unit anchor と parametric model`、`functional-size signal がある場合の function point / use case points`、`top-down three-point`、`必要に応じた constraint capacity / risk model / PERT / repo-cost / discovery / analogy`、`coverage/risk review`、`parent synthesis`、`固定フォーマット Excel workbook` を通します。公共、repo、discovery、analogy、AI補正などの条件付き pass は、実行しない場合も skip 理由を明示します。
 

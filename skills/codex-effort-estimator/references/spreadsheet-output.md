@@ -103,6 +103,13 @@ The synthesis sheet must include range synthesis when any three-point data exist
 
 If the source is WBS, label it `WBS-derived variance aggregation` or `WBS由来CI`, and do not present it as an independent method result.
 
+The synthesis sheet must include a method-dependence cluster table whenever three or more total-estimate methods are compared:
+
+| Cluster | Methods | Shared assumptions | Independent anchors checked | Parent treatment | Reason |
+|---|---|---|---|---|---|
+
+Use this table to prevent false convergence. If WBS, component-unit, UCP, and parametric estimates share the same count or productivity assumptions, list them in one cluster rather than treating their agreement as multiple independent votes. When the final range follows one cluster over plausible anchors from FP, constraint capacity, top-down, analogy, or measured productivity, explain why the other anchors were rejected or why the final range was shifted.
+
 For PERT, show:
 
 - optimistic
@@ -160,6 +167,7 @@ For sizing, discovery, and analogy calibration passes, keep their roles clear:
 - Sizing is evidence for scope counts, not a total estimate.
 - Component unit anchor is a total-estimate method from counts and unit anchors; keep it separate from WBS and do not tune it to match WBS.
 - Parametric, function point, use case point, top-down three-point, constraint capacity, and risk model passes are independent viewpoints when run. Do not collapse them into WBS-derived notes.
+- Independent viewpoint does not mean independent vote during parent synthesis. If independent passes converge only because they share the same count/productivity/risk assumptions, group them in the method-dependence cluster table and count the cluster once.
 - Discovery is a separate pre-implementation effort when delivery scope is not stable.
 - Analogy calibration is a validation or adjustment rationale, not an unexplained replacement for WBS/PERT.
 - AI coding assistance adjustment is a line-level dependent transformation from raw WBS/PERT baseline to assisted effort, not a new independent size estimate.

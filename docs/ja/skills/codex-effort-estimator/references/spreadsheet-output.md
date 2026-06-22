@@ -105,6 +105,13 @@ three-point data が存在する場合、synthesis sheet には range synthesis 
 
 source が WBS の場合は `WBS-derived variance aggregation` または `WBS由来CI` と label し、独立した method result として提示しないでください。
 
+3つ以上の total-estimate method を比較する場合、synthesis sheet には method-dependence cluster table を含めます。
+
+| Cluster | Methods | Shared assumptions | Independent anchors checked | Parent treatment | Reason |
+|---|---|---|---|---|---|
+
+この table は偽の収束を防ぐために使います。WBS、component-unit、UCP、parametric が同じ count や productivity assumption を共有している場合、それらの一致を複数の独立票として扱わず1つの cluster にまとめます。final range が FP、constraint capacity、top-down、analogy、measured productivity などの plausible anchor より高い/低い cluster に従う場合、他 anchor を却下した理由、または final range を寄せた理由を明記します。
+
 PERT では次を示します。
 
 - optimistic
@@ -142,6 +149,8 @@ independent anchor passes では、method を audit できる detail を示し�
 - Top-down three-point: delivery class、dominant drivers、optimistic/most-likely/pessimistic totals、expected value、SD。
 - Constraint capacity: staffing scenarios、workdays、focus factor、review buffers、feasible capacity、schedule implication。
 - Risk model: independent base anchor、risk register、probability/impact、correlation groups、expected exposure、P50/P80/P90 または scenario bands。
+
+independent viewpoint は、parent synthesis で独立票になることを自動的には意味しません。複数 pass が同じ count/productivity/risk assumption で収束している場合は method-dependence cluster table にまとめ、cluster を1票として扱います。
 
 review または adjustment pass は、意図的な total estimate でない限り total-estimate methods と分けます。次を示します。
 

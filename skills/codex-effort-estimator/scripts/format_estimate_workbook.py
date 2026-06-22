@@ -898,6 +898,54 @@ def parent_has_reuse_crosscheck(ws: Any) -> bool:
     return False
 
 
+def parent_has_method_dependence_audit(ws: Any) -> bool:
+    max_row, max_col = used_bounds(ws)
+    required_sets = [
+        {"Cluster", "Methods", "Shared assumptions", "Independent anchors checked", "Parent treatment", "Reason"},
+        {"クラスタ", "手法", "共有前提", "確認した独立アンカー", "親判断", "根拠"},
+    ]
+    for row in range(1, max_row + 1):
+        headers = {text(ws.cell(row, col).value) for col in range(1, max_col + 1)}
+        if any(required.issubset(headers) for required in required_sets):
+            return True
+    return False
+
+
+def parent_total_method_count(ws: Any) -> int:
+    max_row, max_col = used_bounds(ws)
+    for row in range(1, max_row + 1):
+        headers = header_map(ws, row, max_col)
+        method_col = headers.get("手法") or headers.get("Method")
+        if method_col is None:
+            continue
+        has_total_range = any(header in headers for header in ("Low", "Base", "High", "中心", "Center"))
+        if not has_total_range:
+            continue
+        count = 0
+        for check_row in range(row + 1, max_row + 1):
+            method = text(ws.cell(check_row, method_col).value)
+            if not method:
+                break
+            if method.lower() in {"source", "論点"}:
+                break
+            count += 1
+        return count
+    return 0
+
+
+def check_method_dependence_audit(wb: Any) -> list[str]:
+    warnings: list[str] = []
+    parent_ws = sheet_by_label(wb, "親統合")
+    if parent_ws is None:
+        return warnings
+    method_count = parent_total_method_count(parent_ws)
+    if method_count >= 3 and not parent_has_method_dependence_audit(parent_ws):
+        warnings.append(
+            "18_親統合 compares three or more total-estimate methods but lacks a method-dependence cluster table"
+        )
+    return warnings
+
+
 def ensure_parent_reuse_crosscheck(wb: Any, context: dict[str, Any]) -> None:
     signals = context["signals"]
     if not signals:
@@ -1734,6 +1782,7 @@ def validate_workbook(wb: Any) -> tuple[list[str], list[str]]:
                 if value in FORMULA_ERRORS:
                     errors.append(f"{ws.title}!{get_column_letter(col)}{row}: {value}")
     warnings.extend(check_reuse_audit(wb))
+    warnings.extend(check_method_dependence_audit(wb))
     warnings.extend(check_breakdown_ai_tags(wb))
     warnings.extend(check_ai_reducibility_bias(wb))
     return warnings, errors

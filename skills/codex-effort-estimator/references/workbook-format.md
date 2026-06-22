@@ -313,6 +313,12 @@ Then include the reconciliation table:
 
 `論点`, `WBS/PERTとの差`, `親判断`, `Final Low`, `Final Base`, `Final High`, `根拠`
 
+When three or more total-estimate methods are compared, include a method-dependence cluster table:
+
+`Cluster`, `Methods`, `Shared assumptions`, `Independent anchors checked`, `Parent treatment`, `Reason`
+
+Use this table to show whether apparent method agreement is real independent convergence or one assumption family repeating itself. If the final recommendation follows a high or low cluster while other plausible anchors disagree, the `Reason` must name the deliverable, lifecycle, productivity, or risk assumption that justifies the choice.
+
 Also include a range synthesis table whenever three-point data exists:
 
 `Source`, `Most likely total`, `Expected total`, `Total SD`, `90% CI Low`, `90% CI High`, `Endpoint scenario`, `Interpretation`
@@ -329,6 +335,8 @@ When the component unit anchor pass ran, include a method-difference table:
 
 Mark `単価アンカー` as independent from WBS when it did not use WBS totals, WBS-derived PERT, parent ranges, or prior estimate artifacts.
 Use the same independence column for `パラメトリック`, `FP`, `UCP`, `トップダウン`, `制約`, and `リスクモデル`.
+
+The `独立性` column records whether a pass was generated independently. It does not by itself prove independent evidence at synthesis time. Use the method-dependence cluster table to show shared drivers such as the same use-case count, same productivity coefficient, same acceptance inclusion, or same risk uplift.
 
 ## Visual Rules
 
@@ -360,6 +368,7 @@ Before delivery, verify:
 - WBS three-point data produces WBS-derived variance aggregation even when independent PERT was skipped.
 - Baseline and AI-assisted values are separate when AI assistance is assumed.
 - Public/report review findings are not displayed as comparable total estimates unless explicitly additive.
+- `18_親統合` includes a method-dependence cluster table when three or more total-estimate methods are compared.
 - Every populated column in every sheet has an intentional width. Check each sheet independently; do not assume a shared width setup covers sheets with different column counts or different long-text columns.
 - No formula errors: `#REF!`, `#VALUE!`, `#DIV/0!`, `#NAME?`, `#N/A`.
 - Header rows, total rows, and risk/assumption colors follow the token table.

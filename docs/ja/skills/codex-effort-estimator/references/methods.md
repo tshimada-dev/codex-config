@@ -117,6 +117,30 @@ External Inputs、External Outputs、External Inquiries、Internal Logical Files
 
 delivery date、staffing、review gates、acceptance windows、procurement cadence、calendar feasibility が重要な場合は `constraint-capacity-pass.md` を使います。この pass は feature build size ではなく feasible envelope を出します。person-days と calendar duration を分けて扱います。
 
+## Method Dependence と偽の収束
+
+parent synthesis では、method agreement を confidence evidence として使う前に、手法同士の独立性を確認します。
+
+次のような主要前提を共有する手法は method-dependence cluster としてまとめます。
+
+- actors、use cases、screens、reports、imports、entities など同じ scope count
+- 「残りの類似 workflow」など同じ hidden scope の推定
+- 同じ productivity coefficient または unit あたり工数
+- full acceptance、handoff、documentation など同じ lifecycle inclusion
+- 同じ risk uplift、contingency、public/report review adjustment
+
+cluster 内の一致は有用ですが、複数の独立票ではありません。たとえば WBS、component-unit anchor、UCP、parametric が同じ use-case count と似た productivity で高位に揃った場合、それは1つの高位 cluster として扱い、function point、constraint capacity、top-down three-point、analogy、measured productivity など異なる evidence の anchor と比較します。
+
+| Pattern | Parent action |
+|---|---|
+| 複数手法が一致するが count/productivity driver を共有 | 1つの cluster として報告し、method convergence の confidence を下げる。 |
+| 異なる evidence の低位 anchor が plausible | planning center を低位 anchor 側へ寄せるか、final range の下側を広げる。 |
+| 高位 cluster の方が deliverable に合う | 低位 anchor が落としている work または却下した assumption を明示する。 |
+| constraint capacity が選択中心より低い | staffing/calendar implication を説明し、capacity tension だけを scope size の証拠にしない。 |
+| risk model が WBS と同じ base/risk assumptions 由来 | 独立した中心票ではなく risk scenario として扱う。 |
+
+final synthesis では、選択した planning center がどの cluster に従うか、なぜそうしたかを明記します。measured productivity や historical actuals がない場合、cluster weight は judgment-based だと明示します。
+
 ## Risk Model
 
 few uncertainty drivers が range を大きく左右する場合は `risk-model-pass.md` を使います。probability、impact、correlation、expected risk exposure、high-risk scenario を見える形にし、unexplained contingency に隠しません。
@@ -129,6 +153,7 @@ few uncertainty drivers が range を大きく左右する場合は `risk-model-
 - 繰り返しの variant（地区・支店・似た帳票や画面）は、件数の単純掛け算ではなく `framework once plus variants` で見積もれているか確認します。数えた artifact を各々フルビルドとして値付けすると上振れします。`references/repetition-and-reuse.md` を参照。
 - risk は1回だけ計上します。line の high が既に悲観 risk を含むなら、同じ不確実性に別個の reserve line と相関 endpoint-sum の high を重ねません。
 - component unit anchor pass が実行された場合は、bottom-up total をその independent anchor と突合します。credible anchor を大きく上回る per-unit は、economy of scale や reuse の適用不足の signal です。
+- method agreement は shared assumptions ごとに cluster 化します。1つの assumption family が、異なる低位/高位 anchor を多数決で押し流さないようにします。
 - WBS と parametric、function point、use case point、top-down、constraint、risk model の比較は、各 method が完了した後にだけ行います。WBS result をそれらの pass に渡しません。
 - 組織固有の actual productivity がある場合、person-days per screen/report/integration/CRUD module/KLOC などを calibration evidence として使います。baseline がない場合は、document-derived judgment に依存していると明記します。
 

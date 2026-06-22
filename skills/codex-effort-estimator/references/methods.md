@@ -136,6 +136,32 @@ Use `constraint-capacity-pass.md` when delivery date, staffing, review gates, ac
 
 When the final recommended range exceeds feasible capacity under plausible staffing, report the staffing/scope/schedule implication instead of silently accepting the number.
 
+## Method Dependence And False Convergence
+
+Parent synthesis must evaluate method independence before using method agreement as confidence evidence.
+
+Create method-dependence clusters by grouping methods that share the same dominant assumptions:
+
+- the same scope count, such as actors, use cases, screens, reports, imports, or entities
+- the same inferred hidden scope, such as "remaining similar workflows"
+- the same productivity coefficient or person-hours-per-unit assumption
+- the same lifecycle inclusion, such as full acceptance, handoff, or documentation
+- the same risk uplift, contingency, or public/report review adjustment
+
+Agreement inside one cluster is useful, but it is not several independent votes. For example, WBS, component-unit anchor, UCP, and parametric outputs may all land high because they price the same use-case count with similar productivity assumptions. Treat that as one high cluster, then compare it against function point, constraint capacity, top-down three-point, analogy, or measured productivity anchors that use different evidence.
+
+Use this reconciliation pattern:
+
+| Pattern | Parent action |
+|---|---|
+| Several methods agree but share the same count/productivity driver | Report a single cluster and lower confidence in "method convergence". |
+| Lower anchors use different evidence and are plausible | Move the planning center toward the lower anchors or widen the final range downward. |
+| A high cluster better matches the deliverable because lower anchors omit lifecycle or risk | Keep the higher center, but explicitly name the omitted work or rejected assumption. |
+| Constraint capacity is below the selected center | Explain the staffing/calendar implication, and do not use capacity tension alone as proof of scope size. |
+| Risk model is derived from the same base/risk assumptions as WBS | Treat it as a risk scenario, not another independent center vote. |
+
+The final synthesis should state which cluster the selected planning center follows and why. If no measured productivity or historical actuals exist, say the cluster weights are judgment-based.
+
 ## Risk Model
 
 Use `risk-model-pass.md` when a few uncertainty drivers materially affect the range. The pass should expose probability, impact, correlation, expected risk exposure, and high-risk scenario. It should not hide risk inside an unexplained contingency or double-count risks already embedded in other methods.
@@ -167,6 +193,7 @@ Before finalizing:
 - Any available three-point data should have range synthesis; do not leave the planning range as endpoint sums by default.
 - No large line item should hide multiple unrelated features.
 - Repeated variants and reused skeletons should be priced with economy of scale, and the bottom-up total should pass a top-down per-unit cross-check.
+- Method agreement should be clustered by shared assumptions; do not let one assumption family outvote distinct low or high anchors.
 - Countable component families should have an independent component unit anchor unless the source is too abstract to support unit counts.
 - Measurable driver sets should have a parametric model unless coefficients would be pure fiction.
 - Functional-size signals should have function point or use case point anchors when count boundaries are defensible.

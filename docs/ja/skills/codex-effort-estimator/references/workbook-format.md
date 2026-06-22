@@ -205,6 +205,12 @@ pass coverage table から始めます。
 
 `論点`, `WBS/PERTとの差`, `親判断`, `Final Low`, `Final Base`, `Final High`, `根拠`
 
+3つ以上の total-estimate method を比較する場合、method-dependence cluster table を含めます。
+
+`Cluster`, `Methods`, `Shared assumptions`, `Independent anchors checked`, `Parent treatment`, `Reason`
+
+この table は apparent method agreement が本当に独立した収束なのか、同じ assumption family の繰り返しなのかを示します。final recommendation が他の plausible anchor と異なる高位/低位 cluster に従う場合、`Reason` には deliverable、lifecycle、productivity、risk assumption のどれが選択理由なのかを明記します。
+
 three-point data が存在するときは、range synthesis table も含めます。
 
 `Source`, `Most likely total`, `Expected total`, `Total SD`, `90% CI Low`, `90% CI High`, `Endpoint scenario`, `Interpretation`
@@ -221,6 +227,8 @@ component unit anchor pass を実行した場合は、method-difference table �
 
 `単価アンカー` は、WBS total、WBS-derived PERT、parent range、prior estimate artifact を使っていない場合に WBS から independent と mark します。
 同じ independence column を `パラメトリック`、`FP`、`UCP`、`トップダウン`、`制約`、`リスクモデル` にも使います。
+
+`独立性` column は pass が独立に生成されたかを記録するだけで、synthesis 時の evidence が独立している証明にはなりません。use-case count、生産性係数、acceptance inclusion、risk uplift など shared driver は method-dependence cluster table で明示します。
 
 ### `11_前提リスク`
 
