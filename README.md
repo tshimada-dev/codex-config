@@ -9,7 +9,7 @@
 
 - [`skills/codex-*`](skills/): 調査、計画、実装、デバッグ、レビュー準備、UI 検証を分離したマルチエージェント向け Skill 群。
 - [`skills/codex-effort-estimator`](skills/codex-effort-estimator/): 見積もりにおける独立観測、バイアス制御、AI 補正、監査可能な workbook 出力を扱う代表的な実証対象。
-- [`scripts/install.ps1`](scripts/install.ps1): tracked file だけを `$HOME\.codex` に反映し、manifest と prune で安全に同期する配布ツール。
+- [`scripts/install.ps1`](scripts/install.ps1): tracked file だけを `$HOME/.codex` に反映し、manifest と prune で安全に同期する PowerShell 7 ベースの配布ツール。
 - [`rules/`](rules/) と [`templates/`](templates/): 長時間作業、CI 差分、意思決定記録、危険コマンド境界を Codex が再利用できる形に落とし込んだ運用設計。
 
 ポートフォリオとしては、単なる dotfiles ではなく「エージェントに任せる範囲、検証、判断の記録、
@@ -45,26 +45,27 @@ AI 活用状況を説明する際の実例として参照することはあり�
 
 ## インストール
 
-前提: PowerShell 7+ と Git が利用できる環境で、git clone した作業ツリーから実行します。
+前提: PowerShell 7+ (`pwsh`) と Git が利用できる環境で、git clone した作業ツリーから実行します。
+Windows では `.\scripts\install.ps1`、macOS/Linux では `pwsh ./scripts/install.ps1` で実行できます。
 
-デフォルトでは `$env:CODEX_HOME` を優先し、未設定の場合は `$HOME\.codex` に
+デフォルトでは `$env:CODEX_HOME` を優先し、未設定の場合は `$HOME/.codex` に
 インストールします。インストール先に同名ファイルがあり、内容が異なる場合は
 上書きせずに停止します。既存ファイルと同じ内容の場合は `Unchanged` として skip します。
 
 installer はインストール先の `.codex-config-managed-files` に source repo、
 source commit、install 時刻、管理対象ファイル一覧を含む manifest を書き込みます。
 
-| 目的 | コマンド |
-| --- | --- |
-| 通常インストール | `.\scripts\install.ps1` |
-| 事前確認 | `.\scripts\install.ps1 -WhatIf` |
-| 既存の管理対象ファイルを置き換える | `.\scripts\install.ps1 -Overwrite` |
-| 前回管理後に削除・リネームされたファイルを `$HOME\.codex` から削除する | `.\scripts\install.ps1 -Prune` |
-| 置き換え前にバックアップする | `.\scripts\install.ps1 -Overwrite -Backup` |
-| 削除前にバックアップする | `.\scripts\install.ps1 -Prune -Backup` |
+| 目的 | Windows | macOS/Linux |
+| --- | --- | --- |
+| 通常インストール | `.\scripts\install.ps1` | `pwsh ./scripts/install.ps1` |
+| 事前確認 | `.\scripts\install.ps1 -WhatIf` | `pwsh ./scripts/install.ps1 -WhatIf` |
+| 既存の管理対象ファイルを置き換える | `.\scripts\install.ps1 -Overwrite` | `pwsh ./scripts/install.ps1 -Overwrite` |
+| 前回管理後に削除・リネームされたファイルを `$HOME/.codex` から削除する | `.\scripts\install.ps1 -Prune` | `pwsh ./scripts/install.ps1 -Prune` |
+| 置き換え前にバックアップする | `.\scripts\install.ps1 -Overwrite -Backup` | `pwsh ./scripts/install.ps1 -Overwrite -Backup` |
+| 削除前にバックアップする | `.\scripts\install.ps1 -Prune -Backup` | `pwsh ./scripts/install.ps1 -Prune -Backup` |
 
 `-Backup` は、削除または上書きされる既存ファイルを
-`$HOME\.codex.backup-YYYYMMDD-HHMMSS` に退避します。
+`$HOME/.codex.backup-YYYYMMDD-HHMMSS` に退避します。
 `-Backup` は `-Overwrite`、`-Prune`、または `-InstallConfig` と一緒に指定します。
 
 untracked / ignored / hidden ファイルを意図せず配布しないよう、installer は git で
@@ -79,11 +80,11 @@ tracked されている管理対象ファイルだけをコピーします。`-P
 共有可能な設定だけを `config/config.base.toml` に置き、明示指定時だけ既存 config に
 merge します。
 
-| 目的 | コマンド |
-| --- | --- |
-| baseline を既存 config に追加する | `.\scripts\install.ps1 -InstallConfig` |
-| 既存の shared config key を明示的に置き換える | `.\scripts\install.ps1 -InstallConfig -OverwriteConfig` |
-| merge 前の live config をバックアップする | `.\scripts\install.ps1 -InstallConfig -OverwriteConfig -Backup` |
+| 目的 | Windows | macOS/Linux |
+| --- | --- | --- |
+| baseline を既存 config に追加する | `.\scripts\install.ps1 -InstallConfig` | `pwsh ./scripts/install.ps1 -InstallConfig` |
+| 既存の shared config key を明示的に置き換える | `.\scripts\install.ps1 -InstallConfig -OverwriteConfig` | `pwsh ./scripts/install.ps1 -InstallConfig -OverwriteConfig` |
+| merge 前の live config をバックアップする | `.\scripts\install.ps1 -InstallConfig -OverwriteConfig -Backup` | `pwsh ./scripts/install.ps1 -InstallConfig -OverwriteConfig -Backup` |
 
 `-InstallConfig` は、`config/config.base.toml` の managed keys を
 `$CODEX_HOME/config.toml` に追加します。既存 key の値が異なる場合は上書きせず停止します。

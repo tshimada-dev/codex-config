@@ -17,9 +17,9 @@ decisions traceable outside chat.
   case study for bias control in software estimation: independent passes,
   line-level AI adjustment, audit-friendly workbook output, and follow-up
   calibration issues.
-- [`scripts/install.ps1`](scripts/install.ps1) installs only tracked managed
-  files into `$HOME\.codex`, writes a manifest, and supports conservative
-  overwrite/prune behavior.
+- [`scripts/install.ps1`](scripts/install.ps1) is a PowerShell 7 installer that
+  copies only tracked managed files into `$HOME/.codex`, writes a manifest, and
+  supports conservative overwrite/prune behavior.
 - [`rules/`](rules/) and [`templates/`](templates/) capture repeatable working
   rules for long-running work, CI parity, command safety, decision notes, and
   repository-specific Codex instructions.
@@ -47,16 +47,31 @@ Planned follow-up work includes:
 - a sanitized sample estimator workbook or screenshots
   ([issue #15](https://github.com/tshimada-dev/codex-config/issues/15)).
 
+## Installation
+
+Prerequisites: PowerShell 7+ (`pwsh`) and Git.
+
+| Purpose | Windows | macOS/Linux |
+| --- | --- | --- |
+| Dry run | `.\scripts\install.ps1 -WhatIf` | `pwsh ./scripts/install.ps1 -WhatIf` |
+| Install managed files | `.\scripts\install.ps1` | `pwsh ./scripts/install.ps1` |
+| Overwrite managed files | `.\scripts\install.ps1 -Overwrite` | `pwsh ./scripts/install.ps1 -Overwrite` |
+| Install shared config baseline | `.\scripts\install.ps1 -InstallConfig` | `pwsh ./scripts/install.ps1 -InstallConfig` |
+
+By default, the installer uses `$CODEX_HOME` when set and otherwise installs to
+`$HOME/.codex`.
+
 ## Portability
 
-This is intentionally optimized for my Windows and PowerShell-based Codex
-environment. The installer and command-policy examples reflect that personal
-workflow.
+This repository is still optimized for my Windows and PowerShell-based Codex
+environment, but the main installer is PowerShell 7 based and can be run with
+`pwsh` on macOS and Linux.
 
-Cross-platform packaging is not the current goal. If this repository becomes a
-team template or OSS distribution target, portability should be handled as its
-own scoped change rather than hidden inside unrelated edits. This follows the
-same direction as
+Some supporting examples are intentionally Windows-specific, especially the WSL
+command bridge skill and parts of the command-policy documentation. If this
+repository becomes a team template or OSS distribution target, deeper
+cross-platform packaging should be handled as its own scoped change. This
+follows the same direction as
 [issue #9](https://github.com/tshimada-dev/codex-config/issues/9).
 
 ## License
