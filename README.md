@@ -1,5 +1,19 @@
 # Codex Config
 
+## 3分で見る価値
+
+このリポジトリは、OpenAI Codex を継続的な開発相棒として使うための個人設定集であり、
+同時に **AI エージェント時代のソフトウェア開発ワークフロー設計の実験場**です。
+
+- [`skills/codex-*`](skills/): 調査、計画、実装、デバッグ、レビュー準備、UI 検証を分離したマルチエージェント向け Skill 群。
+- [`skills/codex-effort-estimator`](skills/codex-effort-estimator/): 見積もりにおける独立観測、バイアス制御、AI 補正、監査可能な workbook 出力を扱う代表的な実証対象。
+- [`scripts/install.ps1`](scripts/install.ps1): tracked file だけを `$HOME\.codex` に反映し、manifest と prune で安全に同期する配布ツール。
+- [`rules/`](rules/) と [`templates/`](templates/): 長時間作業、CI 差分、意思決定記録、危険コマンド境界を Codex が再利用できる形に落とし込んだ運用設計。
+
+ポートフォリオとしては、単なる dotfiles ではなく「エージェントに任せる範囲、検証、判断の記録、
+安全境界をどう設計するか」を示すサンプルです。ベテラン見積もりとの統制比較は #14 で
+ケーススタディ化予定です。
+
 個人用の Codex 設定を、複数端末で使い回すためのリポジトリです。
 
 これは社内標準や公式ルールではなく、個人の作業環境を再現するための設定集です。
