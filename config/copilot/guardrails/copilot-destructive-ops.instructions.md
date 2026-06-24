@@ -18,6 +18,6 @@ Treat these as remote-changing commands: force push, deleting remote branches or
 
 Do not inspect, print, copy, upload, or summarize secrets, tokens, private keys, cookies, or `.env` contents unless the user explicitly asks and the task requires it.
 
-If the user asks for a risky command casually, propose a safer preview first, such as `git status`, `git diff`, `git clean -ndx`, `Remove-Item` without `-Recurse` or `-Force`, or a dry-run mode when the tool supports one.
+If the user asks for a risky command casually, propose a safer preview first, such as `git status`, `git diff`, `git clean -n`, `Remove-Item` without `-Recurse` or `-Force`, or a dry-run mode when the tool supports one.
 
 If a command combines safe and destructive subcommands, split it into separate steps so the destructive part can be reviewed on its own.
