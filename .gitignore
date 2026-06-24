@@ -8,6 +8,7 @@ automations/
 plugins/
 logs/
 tmp/
+outputs/
 
 # OS/editor noise.
 .DS_Store
