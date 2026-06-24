@@ -1,12 +1,14 @@
 # Codex Config
 
-This repository is my personal OpenAI Codex configuration, and also a small
-portfolio of workflow design for software development with AI agents.
+This repository started as my personal OpenAI Codex configuration. It now also
+serves as a portfolio sample for AI coding-agent workflow design: how to define
+delegation boundaries, safety profiles, verification habits, and handoff notes
+so agent-assisted work remains reviewable.
 
 It is not an official company standard or a generic starter template. The
-interesting part is the operating model: how to split agent responsibilities,
-keep changes verifiable, preserve human control over risky actions, and make
-decisions traceable outside chat.
+primary target is Codex. The GitHub Copilot scripts are adapter experiments for
+onboarding and lightweight guardrails, not a claim that Copilot can reproduce
+the same profile-driven execution boundary.
 
 ## Why It Matters
 
@@ -21,8 +23,8 @@ decisions traceable outside chat.
   copies only tracked managed files into `$HOME/.codex`, writes a manifest, and
   supports conservative overwrite/prune behavior.
 - [`scripts/install-copilot-skills.ps1`](scripts/install-copilot-skills.ps1)
-  installs the tracked `skills/codex-*` skills into GitHub Copilot as
-  `copilot-*` Agent Skills.
+  adapts the tracked `skills/codex-*` skills into GitHub Copilot as
+  `copilot-*` Agent Skills for experimentation.
 - [`rules/`](rules/) and [`templates/`](templates/) capture repeatable working
   rules for long-running work, CI parity, command safety, decision notes, and
   repository-specific Codex instructions.
@@ -64,7 +66,9 @@ Prerequisites: PowerShell 7+ (`pwsh`) and Git.
 By default, the installer uses `$CODEX_HOME` when set and otherwise installs to
 `$HOME/.codex`.
 
-To install the workflow skills for GitHub Copilot instead, use:
+## Copilot Adapter Experiment
+
+To try the workflow skills in GitHub Copilot, use:
 
 ```powershell
 .\scripts\install-copilot-skills.ps1 -WhatIf
@@ -76,7 +80,9 @@ transformed copies under `$HOME/.copilot/skills` using `copilot-*` skill names.
 It refuses to overwrite different existing files unless `-Overwrite` is passed.
 Use `-SkillName repo-scout,implementation-loop` to install only selected skills.
 
-For beginner-friendly safety, install Copilot guardrails instead of a read-only
+Because Copilot does not mirror the Codex `safe` / `local-check` / `workspace`
+profile model, this adapter intentionally keeps a narrower scope. For
+beginner-friendly safety, install Copilot guardrails instead of a read-only
 workflow. These guardrails still allow normal edits, tests, formatters,
 `git status`, and `git diff`, but require explicit confirmation for genuinely
 destructive operations such as `git reset --hard`, `git clean`, force-pushes,
