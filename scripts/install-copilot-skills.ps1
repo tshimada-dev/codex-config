@@ -10,6 +10,8 @@ param(
 
     [switch]$Prune,
 
+    [switch]$AllSkills,
+
     [switch]$IncludeCodexAgentMetadata
 )
 
@@ -30,14 +32,29 @@ if ($Backup -and -not ($Overwrite -or $Prune)) {
     throw "-Backup can only be used with -Overwrite or -Prune."
 }
 
+if ($AllSkills -and $SkillName -and $SkillName.Count -gt 0) {
+    throw "-AllSkills cannot be combined with -SkillName."
+}
+
 $ManifestRelativePath = ".codex-config-copilot-managed-files"
 $ManifestVersion = 1
+
+$DefaultCopilotSkillNames = @(
+    "codex-task-intake",
+    "codex-repo-scout",
+    "codex-implementation-loop",
+    "codex-debug-discipline",
+    "codex-plan-slices",
+    "codex-pr-readiness",
+    "codex-ui-quality-gate"
+)
 
 $script:CopiedFileCount = 0
 $script:OverwrittenFileCount = 0
 $script:UnchangedFileCount = 0
 $script:BackedUpFileCount = 0
 $script:PrunedFileCount = 0
+$script:PrunedDirectoryCount = 0
 
 function Invoke-Git {
     param(
@@ -137,8 +154,17 @@ function Get-SelectedSkillNames {
         [void]$available.Add((Get-SourceSkillNameFromRelativePath -RelativePath $file))
     }
 
-    if (-not $SkillName -or $SkillName.Count -eq 0) {
+    if ($AllSkills) {
         return @($available | Sort-Object)
+    }
+
+    if (-not $SkillName -or $SkillName.Count -eq 0) {
+        $missingDefaults = @($DefaultCopilotSkillNames | Where-Object { -not $available.Contains($_) })
+        if ($missingDefaults.Count -gt 0) {
+            throw "Default Copilot skill set references missing source skills: $($missingDefaults -join ', ')"
+        }
+
+        return @($DefaultCopilotSkillNames | Sort-Object)
     }
 
     $selected = @()
@@ -190,7 +216,6 @@ function ConvertTo-CopilotSkillContent {
     $escapedSourceName = [regex]::Escape($SourceSkillName)
     $converted = $Content -replace "(?m)^name:\s+$escapedSourceName\s*$", "name: $CopilotSkillName"
     $converted = $converted -replace "\b$escapedSourceName\b", $CopilotSkillName
-    $converted = $converted -replace "\bCodex\b", "Copilot"
 
     return $converted
 }
@@ -433,6 +458,64 @@ function Remove-PrunedManagedFiles {
     }
 }
 
+function Remove-EmptyPrunedDirectories {
+    param(
+        [string[]]$PreviousRelativePaths,
+
+        [string[]]$CurrentRelativePaths
+    )
+
+    if (-not $Prune) {
+        return
+    }
+
+    $current = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($relativePath in $CurrentRelativePaths) {
+        [void]$current.Add($relativePath)
+    }
+
+    $skillsHomeFullPath = [System.IO.Path]::GetFullPath($CopilotSkillsHome).TrimEnd(
+        [System.IO.Path]::DirectorySeparatorChar,
+        [System.IO.Path]::AltDirectorySeparatorChar
+    )
+    $skillsHomePrefix = $skillsHomeFullPath + [System.IO.Path]::DirectorySeparatorChar
+
+    $candidateDirectories = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($relativePath in ($PreviousRelativePaths | Sort-Object -Unique)) {
+        if ($current.Contains($relativePath)) {
+            continue
+        }
+
+        $relativeDirectory = Split-Path -Parent ($relativePath -replace "/", [System.IO.Path]::DirectorySeparatorChar)
+        while ($relativeDirectory) {
+            [void]$candidateDirectories.Add($relativeDirectory)
+            $relativeDirectory = Split-Path -Parent $relativeDirectory
+        }
+    }
+
+    foreach ($relativeDirectory in ($candidateDirectories | Sort-Object Length -Descending)) {
+        $directory = Join-Path $CopilotSkillsHome $relativeDirectory
+        $directoryFullPath = [System.IO.Path]::GetFullPath($directory)
+        if ($directoryFullPath -eq $skillsHomeFullPath -or -not $directoryFullPath.StartsWith($skillsHomePrefix, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to prune directory outside Copilot skills home: $directory"
+        }
+
+        if (-not (Test-Path -LiteralPath $directory -PathType Container)) {
+            continue
+        }
+
+        if (@(Get-ChildItem -LiteralPath $directory -Force).Count -gt 0) {
+            continue
+        }
+
+        if ($PSCmdlet.ShouldProcess($directory, "Prune empty directory left by managed file removal")) {
+            Remove-Item -LiteralPath $directory -Force
+            $script:PrunedDirectoryCount++
+            Write-Host "Pruned directory: $relativeDirectory"
+        }
+    }
+}
+
 $trackedFiles = @(Get-TrackedSkillFiles)
 $selectedSkillNames = @(Get-SelectedSkillNames -TrackedFiles $trackedFiles)
 $selected = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -459,6 +542,7 @@ if ($Backup) {
 }
 
 Remove-PrunedManagedFiles -PreviousRelativePaths $previousManagedRelativeFiles -CurrentRelativePaths $managedRelativeFiles -BackupRoot $backupRoot
+Remove-EmptyPrunedDirectories -PreviousRelativePaths $previousManagedRelativeFiles -CurrentRelativePaths $managedRelativeFiles
 
 foreach ($relativePath in $selectedFiles) {
     Copy-CopilotSkillFile -SourceRelativePath $relativePath -BackupRoot $backupRoot
@@ -478,7 +562,7 @@ else {
 }
 
 Write-Host "Skills: $($installedSkillNames -join ', ')"
-Write-Host "Copied: $CopiedFileCount; overwritten: $OverwrittenFileCount; unchanged: $UnchangedFileCount; pruned: $PrunedFileCount"
+Write-Host "Copied: $CopiedFileCount; overwritten: $OverwrittenFileCount; unchanged: $UnchangedFileCount; pruned files: $PrunedFileCount; pruned directories: $PrunedDirectoryCount"
 if ($Backup -and $BackedUpFileCount -gt 0) {
     Write-Host "Backed up $BackedUpFileCount file(s) to $backupRoot"
 }

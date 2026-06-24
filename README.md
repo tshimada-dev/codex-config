@@ -2,7 +2,7 @@
 
 [English overview](README.en.md)
 
-## 概要
+## 3分で見る価値
 
 このリポジトリは、OpenAI Codex を継続的な開発相棒として使うための個人設定集から
 始まったものです。現在はそれに加えて、**AI コーディングエージェントに任せる範囲、
@@ -19,6 +19,7 @@
 調査、ローカル検証、通常開発のそれぞれで権限境界を変える設計を重視しています。
 GitHub Copilot 向けのスクリプトは、同じ設計を完全に移植するものではなく、初心者の
 オンボーディングや危険操作の抑止に使える範囲を検証するための派生実験です。
+ベテラン見積もりとの統制比較は #14 でケーススタディ化予定です。
 
 これは社内標準や公式ルールではなく、個人の作業環境と設計判断を再現するための
 リポジトリです。AI 活用状況を説明する際の実例として参照することはありますが、
@@ -134,10 +135,17 @@ source repository 側の `codex-*` Skill を保ったまま、Copilot 側へ `co
 .\scripts\install-copilot-skills.ps1
 ```
 
+デフォルトでは、ツール中立に使いやすい `task-intake`、`repo-scout`、
+`implementation-loop`、`debug-discipline`、`plan-slices`、`pr-readiness`、
+`ui-quality-gate` だけを導入します。`codex-claude-code-reviewer` や
+`codex-wsl-command-bridge` のような Codex/環境結合の強い Skill は、明示指定しない限り
+Copilot 側へ入れません。
+
 既存の Copilot Skill と内容が異なる場合、デフォルトでは上書きせず停止します。
 置き換える場合は `-Overwrite`、置き換え前に退避する場合は `-Overwrite -Backup` を
 指定します。特定 Skill だけ入れる場合は `-SkillName repo-scout,implementation-loop`
-のように指定できます。
+のように指定できます。管理対象の `codex-*` Skill をすべて変換したい場合は、
+移植できる意味を確認したうえで `-AllSkills` を指定します。
 
 Copilot では Codex profile と同じ粒度の権限切り替えは再現しにくいため、このアダプターは
 完全な移植ではありません。初心者向けに、read-only ではなく「本当に危険な操作だけ

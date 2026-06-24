@@ -78,7 +78,13 @@ To try the workflow skills in GitHub Copilot, use:
 The Copilot installer leaves the source `codex-*` skills untouched and installs
 transformed copies under `$HOME/.copilot/skills` using `copilot-*` skill names.
 It refuses to overwrite different existing files unless `-Overwrite` is passed.
-Use `-SkillName repo-scout,implementation-loop` to install only selected skills.
+By default, it installs only the more tool-neutral workflow skills:
+`task-intake`, `repo-scout`, `implementation-loop`, `debug-discipline`,
+`plan-slices`, `pr-readiness`, and `ui-quality-gate`. Codex- or
+environment-coupled skills such as `codex-claude-code-reviewer` and
+`codex-wsl-command-bridge` are not installed unless explicitly requested.
+Use `-SkillName repo-scout,implementation-loop` to install selected skills, or
+`-AllSkills` only after confirming the extra skills make sense in Copilot.
 
 Because Copilot does not mirror the Codex `safe` / `local-check` / `workspace`
 profile model, this adapter intentionally keeps a narrower scope. For
