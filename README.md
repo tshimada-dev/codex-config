@@ -15,11 +15,8 @@
 - [`rules/`](rules/) と [`templates/`](templates/): 長時間作業、CI 差分、意思決定記録、危険コマンド境界を Codex が再利用できる形に落とし込んだ運用設計。
 - [`scripts/install-copilot-skills.ps1`](scripts/install-copilot-skills.ps1): Codex 用 Skill を GitHub Copilot Agent Skills として試すためのアダプター実験。
 
-主対象は Codex です。特に `safe`、`local-check`、`workspace` の profile を使い分け、
-調査、ローカル検証、通常開発のそれぞれで権限境界を変える設計を重視しています。
-GitHub Copilot 向けのスクリプトは、同じ設計を完全に移植するものではなく、初心者の
-オンボーディングや危険操作の抑止に使える範囲を検証するための派生実験です。
-ベテラン見積もりとの統制比較は #14 でケーススタディ化予定です。
+主対象は Codex で、GitHub Copilot 向けスクリプトは設計の一部を移植する派生実験です。
+権限境界の設計（`safe` / `local-check` / `workspace` profile の使い分け）は後述します。
 
 これは社内標準や公式ルールではなく、個人の作業環境と設計判断を再現するための
 リポジトリです。AI 活用状況を説明する際の実例として参照することはありますが、
@@ -76,7 +73,10 @@ untracked / ignored / hidden ファイルを意図せず配布しないよう、
 tracked されている管理対象ファイルだけをコピーします。`-Prune` も manifest に載った
 過去の管理対象ファイルだけを削除し、個人用の未管理ファイルは削除しません。
 
-## Config Baseline
+`scripts/install.ps1` は、`AGENTS.md`、`rules/`、`templates/`、複数の `skills/codex-*`
+をまとめて同期し、manifest と `-Prune` で管理対象を保守します。
+
+## 共有 config baseline
 
 `~/.codex/config.toml` は Codex runtime が local trust state や端末固有設定を
 追記する可能性があるため、このリポジトリでは live `config.toml` を丸ごと同期しません。
@@ -96,7 +96,7 @@ merge します。
 `config/config.base.toml` と profile files には、`[projects.*]`、secrets、MCP server の
 private token/path、plugin runtime state、automation state、端末固有の絶対パスを入れません。
 
-## Profiles
+## Profile 一覧
 
 `config/profiles/*.config.toml` は `$CODEX_HOME/<profile>.config.toml` にコピーされます。
 たとえば `config/profiles/safe.config.toml` は `codex --profile safe` で利用できます。
@@ -170,10 +170,6 @@ VS Code の `settings.json` に JSONC コメントが含まれる場合、merge 
 デフォルトでは停止します。コメントが消えることを理解したうえで自動 merge する場合だけ、
 `-AllowJsoncRewrite` を追加します。
 
-このリポジトリの `scripts/install.ps1` は、`AGENTS.md`、`rules/`、`templates/`、
-複数の `skills/codex-*` をまとめて同期し、manifest と `-Prune` で管理対象を保守する
-ために残します。
-
 ## 運用方針
 
 このリポジトリは保守的に管理します。
@@ -195,6 +191,6 @@ VS Code の `settings.json` に JSONC コメントが含まれる場合、merge 
 
 内容が英語版と食い違う場合は、英語版を優先します。
 
-## License
+## ライセンス
 
 MIT License. See [LICENSE](LICENSE).
