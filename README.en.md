@@ -1,12 +1,14 @@
 # Codex Config
 
-This repository is my personal OpenAI Codex configuration, and also a small
-portfolio of workflow design for software development with AI agents.
+This repository started as my personal OpenAI Codex configuration. It now also
+serves as a portfolio sample for AI coding-agent workflow design: how to define
+delegation boundaries, safety profiles, verification habits, and handoff notes
+so agent-assisted work remains reviewable.
 
 It is not an official company standard or a generic starter template. The
-interesting part is the operating model: how to split agent responsibilities,
-keep changes verifiable, preserve human control over risky actions, and make
-decisions traceable outside chat.
+primary target is Codex. The GitHub Copilot scripts are adapter experiments for
+onboarding and lightweight guardrails, not a claim that Copilot can reproduce
+the same profile-driven execution boundary.
 
 ## Why It Matters
 
@@ -20,6 +22,9 @@ decisions traceable outside chat.
 - [`scripts/install.ps1`](scripts/install.ps1) is a PowerShell 7 installer that
   copies only tracked managed files into `$HOME/.codex`, writes a manifest, and
   supports conservative overwrite/prune behavior.
+- [`scripts/install-copilot-skills.ps1`](scripts/install-copilot-skills.ps1)
+  adapts the tracked `skills/codex-*` skills into GitHub Copilot as
+  `copilot-*` Agent Skills for experimentation.
 - [`rules/`](rules/) and [`templates/`](templates/) capture repeatable working
   rules for long-running work, CI parity, command safety, decision notes, and
   repository-specific Codex instructions.
@@ -60,6 +65,50 @@ Prerequisites: PowerShell 7+ (`pwsh`) and Git.
 
 By default, the installer uses `$CODEX_HOME` when set and otherwise installs to
 `$HOME/.codex`.
+
+## Copilot Adapter Experiment
+
+To try the workflow skills in GitHub Copilot, use:
+
+```powershell
+.\scripts\install-copilot-skills.ps1 -WhatIf
+.\scripts\install-copilot-skills.ps1
+```
+
+The Copilot installer leaves the source `codex-*` skills untouched and installs
+transformed copies under `$HOME/.copilot/skills` using `copilot-*` skill names.
+It refuses to overwrite different existing files unless `-Overwrite` is passed.
+By default, it installs only the more tool-neutral workflow skills:
+`task-intake`, `repo-scout`, `implementation-loop`, `debug-discipline`,
+`plan-slices`, `pr-readiness`, and `ui-quality-gate`. Codex- or
+environment-coupled skills such as `codex-claude-code-reviewer` and
+`codex-wsl-command-bridge` are not installed unless explicitly requested.
+Use `-SkillName repo-scout,implementation-loop` to install selected skills, or
+`-AllSkills` only after confirming the extra skills make sense in Copilot.
+
+Because Copilot does not mirror the Codex `safe` / `local-check` / `workspace`
+profile model, this adapter intentionally keeps a narrower scope. For
+beginner-friendly safety, install Copilot guardrails instead of a read-only
+workflow. These guardrails still allow normal edits, tests, formatters,
+`git status`, and `git diff`, but require explicit confirmation for genuinely
+destructive operations such as `git reset --hard`, `git clean`, force-pushes,
+recursive deletes, publish/deploy/migration commands, and secret handling.
+
+```powershell
+.\scripts\install-copilot-guardrails.ps1
+```
+
+This installs a user-level instruction file under `$HOME/.copilot/instructions`.
+To also merge the matching VS Code terminal auto-approval deny list, back up the
+existing settings file and opt in explicitly:
+
+```powershell
+.\scripts\install-copilot-guardrails.ps1 -ApplyVSCodeSettings -Backup
+```
+
+If VS Code `settings.json` contains JSONC comments, the automatic merge stops by
+default because comments cannot be preserved. Add `-AllowJsoncRewrite` only when
+you accept rewriting the settings file as plain JSON.
 
 ## Portability
 

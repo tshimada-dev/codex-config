@@ -4,23 +4,26 @@
 
 ## 3分で見る価値
 
-このリポジトリは、OpenAI Codex を継続的な開発相棒として使うための個人設定集であり、
-同時に **AI エージェント時代のソフトウェア開発ワークフロー設計の実験場**です。
+このリポジトリは、OpenAI Codex を継続的な開発相棒として使うための個人設定集から
+始まったものです。現在はそれに加えて、**AI コーディングエージェントに任せる範囲、
+安全境界、検証、引き継ぎをどう設計するか**を示すワークフロー設計サンプルとしても
+整備しています。
 
 - [`skills/codex-*`](skills/): 調査、計画、実装、デバッグ、レビュー準備、UI 検証を分離したマルチエージェント向け Skill 群。
 - [`skills/codex-effort-estimator`](skills/codex-effort-estimator/): 見積もりにおける独立観測、バイアス制御、AI 補正、監査可能な workbook 出力を扱う代表的な実証対象。
 - [`scripts/install.ps1`](scripts/install.ps1): tracked file だけを `$HOME/.codex` に反映し、manifest と prune で安全に同期する PowerShell 7 ベースの配布ツール。
 - [`rules/`](rules/) と [`templates/`](templates/): 長時間作業、CI 差分、意思決定記録、危険コマンド境界を Codex が再利用できる形に落とし込んだ運用設計。
+- [`scripts/install-copilot-skills.ps1`](scripts/install-copilot-skills.ps1): Codex 用 Skill を GitHub Copilot Agent Skills として試すためのアダプター実験。
 
-ポートフォリオとしては、単なる dotfiles ではなく「エージェントに任せる範囲、検証、判断の記録、
-安全境界をどう設計するか」を示すサンプルです。ベテラン見積もりとの統制比較は #14 で
-ケーススタディ化予定です。
+主対象は Codex です。特に `safe`、`local-check`、`workspace` の profile を使い分け、
+調査、ローカル検証、通常開発のそれぞれで権限境界を変える設計を重視しています。
+GitHub Copilot 向けのスクリプトは、同じ設計を完全に移植するものではなく、初心者の
+オンボーディングや危険操作の抑止に使える範囲を検証するための派生実験です。
+ベテラン見積もりとの統制比較は #14 でケーススタディ化予定です。
 
-個人用の Codex 設定を、複数端末で使い回すためのリポジトリです。
-
-これは社内標準や公式ルールではなく、個人の作業環境を再現するための設定集です。
-AI 活用状況を説明する際の実例として参照することはありますが、導入を前提とした
-汎用テンプレートではありません。
+これは社内標準や公式ルールではなく、個人の作業環境と設計判断を再現するための
+リポジトリです。AI 活用状況を説明する際の実例として参照することはありますが、
+そのまま導入するための汎用テンプレートではありません。
 
 ## 管理するもの
 
@@ -33,6 +36,7 @@ AI 活用状況を説明する際の実例として参照することはあり�
 - `skills/codex-*`: 汎用的な Codex ワークフロースキル
 - `config/`: 共有可能な `config.toml` baseline と profile files
 - `scripts/install.ps1`: 管理対象ファイルを `$HOME\.codex` にコピーする導入スクリプト
+- `scripts/install-copilot-skills.ps1`: `skills/codex-*` を `copilot-*` 名に変換して GitHub Copilot Agent Skills として導入する実験用スクリプト
 - `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` 検査スクリプト
 - `docs/ja/`: 人間が読むための日本語参考訳
 
@@ -110,7 +114,7 @@ publish、migration、破壊的な local command は `rules/command-policy.rules
 初見・未信頼 repo では、build/test も任意コード実行として扱います。まず `safe` で
 調査し、信頼できると判断した後に `local-check` または `workspace` へ切り替えます。
 
-## スキルだけをインストールする場合
+## Codex スキルだけをインストールする場合
 
 `skills/codex-*` だけを配布したい場合は、GitHub CLI の
 [`gh skill install`](https://cli.github.com/manual/gh_skill_install) も利用できます。
@@ -119,6 +123,52 @@ publish、migration、破壊的な local command は `rules/command-policy.rules
 ```powershell
 gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scope user
 ```
+
+## Copilot アダプター実験
+
+GitHub Copilot に試験的に入れる場合は、`scripts/install-copilot-skills.ps1` を使うと、
+source repository 側の `codex-*` Skill を保ったまま、Copilot 側へ `copilot-*`
+名でインストールできます。デフォルトの導入先は `$HOME/.copilot/skills` です。
+
+```powershell
+.\scripts\install-copilot-skills.ps1 -WhatIf
+.\scripts\install-copilot-skills.ps1
+```
+
+デフォルトでは、ツール中立に使いやすい `task-intake`、`repo-scout`、
+`implementation-loop`、`debug-discipline`、`plan-slices`、`pr-readiness`、
+`ui-quality-gate` だけを導入します。`codex-claude-code-reviewer` や
+`codex-wsl-command-bridge` のような Codex/環境結合の強い Skill は、明示指定しない限り
+Copilot 側へ入れません。
+
+既存の Copilot Skill と内容が異なる場合、デフォルトでは上書きせず停止します。
+置き換える場合は `-Overwrite`、置き換え前に退避する場合は `-Overwrite -Backup` を
+指定します。特定 Skill だけ入れる場合は `-SkillName repo-scout,implementation-loop`
+のように指定できます。管理対象の `codex-*` Skill をすべて変換したい場合は、
+移植できる意味を確認したうえで `-AllSkills` を指定します。
+
+Copilot では Codex profile と同じ粒度の権限切り替えは再現しにくいため、このアダプターは
+完全な移植ではありません。初心者向けに、read-only ではなく「本当に危険な操作だけ
+承認必須」に寄せたい場合は、Copilot guardrails も導入できます。通常の編集、テスト、
+フォーマット、`git status` や `git diff` は妨げず、`git reset --hard`、`git clean`、
+force push、削除系、publish/deploy/migration 系、secret 操作などだけ明示確認を
+求める方針です。
+
+```powershell
+.\scripts\install-copilot-guardrails.ps1
+```
+
+このコマンドは `$HOME/.copilot/instructions` に guardrail instruction を入れます。
+VS Code の terminal auto-approve 設定にも危険コマンドの deny list を merge する場合は、
+既存 settings をバックアップしたうえで明示的に実行します。
+
+```powershell
+.\scripts\install-copilot-guardrails.ps1 -ApplyVSCodeSettings -Backup
+```
+
+VS Code の `settings.json` に JSONC コメントが含まれる場合、merge でコメントを保持できないため
+デフォルトでは停止します。コメントが消えることを理解したうえで自動 merge する場合だけ、
+`-AllowJsoncRewrite` を追加します。
 
 このリポジトリの `scripts/install.ps1` は、`AGENTS.md`、`rules/`、`templates/`、
 複数の `skills/codex-*` をまとめて同期し、manifest と `-Prune` で管理対象を保守する
