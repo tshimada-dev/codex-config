@@ -33,6 +33,7 @@ AI 活用状況を説明する際の実例として参照することはあり�
 - `skills/codex-*`: 汎用的な Codex ワークフロースキル
 - `config/`: 共有可能な `config.toml` baseline と profile files
 - `scripts/install.ps1`: 管理対象ファイルを `$HOME\.codex` にコピーする導入スクリプト
+- `scripts/install-copilot-skills.ps1`: `skills/codex-*` を `copilot-*` 名に変換して GitHub Copilot Agent Skills として導入するスクリプト
 - `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` 検査スクリプト
 - `docs/ja/`: 人間が読むための日本語参考訳
 
@@ -119,6 +120,41 @@ publish、migration、破壊的な local command は `rules/command-policy.rules
 ```powershell
 gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scope user
 ```
+
+GitHub Copilot に入れる場合は、`scripts/install-copilot-skills.ps1` を使うと、
+source repository 側の `codex-*` Skill を保ったまま、Copilot 側へ `copilot-*`
+名でインストールできます。デフォルトの導入先は `$HOME/.copilot/skills` です。
+
+```powershell
+.\scripts\install-copilot-skills.ps1 -WhatIf
+.\scripts\install-copilot-skills.ps1
+```
+
+既存の Copilot Skill と内容が異なる場合、デフォルトでは上書きせず停止します。
+置き換える場合は `-Overwrite`、置き換え前に退避する場合は `-Overwrite -Backup` を
+指定します。特定 Skill だけ入れる場合は `-SkillName repo-scout,implementation-loop`
+のように指定できます。
+
+初心者向けに、read-only ではなく「本当に危険な操作だけ承認必須」に寄せたい場合は、
+Copilot guardrails も導入できます。通常の編集、テスト、format、`git status` や
+`git diff` は妨げず、`git reset --hard`、`git clean`、force push、削除系、
+publish/deploy/migration 系、secret 操作などだけ明示確認を求める方針です。
+
+```powershell
+.\scripts\install-copilot-guardrails.ps1
+```
+
+このコマンドは `$HOME/.copilot/instructions` に guardrail instruction を入れます。
+VS Code の terminal auto-approve 設定にも危険コマンドの deny list を merge する場合は、
+既存 settings をバックアップしたうえで明示的に実行します。
+
+```powershell
+.\scripts\install-copilot-guardrails.ps1 -ApplyVSCodeSettings -Backup
+```
+
+VS Code の `settings.json` に JSONC comment が含まれる場合、merge で comment を保持できないため
+デフォルトでは停止します。comment が消えることを理解したうえで自動 merge する場合だけ、
+`-AllowJsoncRewrite` を追加します。
 
 このリポジトリの `scripts/install.ps1` は、`AGENTS.md`、`rules/`、`templates/`、
 複数の `skills/codex-*` をまとめて同期し、manifest と `-Prune` で管理対象を保守する

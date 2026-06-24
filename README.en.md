@@ -20,6 +20,9 @@ decisions traceable outside chat.
 - [`scripts/install.ps1`](scripts/install.ps1) is a PowerShell 7 installer that
   copies only tracked managed files into `$HOME/.codex`, writes a manifest, and
   supports conservative overwrite/prune behavior.
+- [`scripts/install-copilot-skills.ps1`](scripts/install-copilot-skills.ps1)
+  installs the tracked `skills/codex-*` skills into GitHub Copilot as
+  `copilot-*` Agent Skills.
 - [`rules/`](rules/) and [`templates/`](templates/) capture repeatable working
   rules for long-running work, CI parity, command safety, decision notes, and
   repository-specific Codex instructions.
@@ -60,6 +63,40 @@ Prerequisites: PowerShell 7+ (`pwsh`) and Git.
 
 By default, the installer uses `$CODEX_HOME` when set and otherwise installs to
 `$HOME/.codex`.
+
+To install the workflow skills for GitHub Copilot instead, use:
+
+```powershell
+.\scripts\install-copilot-skills.ps1 -WhatIf
+.\scripts\install-copilot-skills.ps1
+```
+
+The Copilot installer leaves the source `codex-*` skills untouched and installs
+transformed copies under `$HOME/.copilot/skills` using `copilot-*` skill names.
+It refuses to overwrite different existing files unless `-Overwrite` is passed.
+Use `-SkillName repo-scout,implementation-loop` to install only selected skills.
+
+For beginner-friendly safety, install Copilot guardrails instead of a read-only
+workflow. These guardrails still allow normal edits, tests, formatters,
+`git status`, and `git diff`, but require explicit confirmation for genuinely
+destructive operations such as `git reset --hard`, `git clean`, force-pushes,
+recursive deletes, publish/deploy/migration commands, and secret handling.
+
+```powershell
+.\scripts\install-copilot-guardrails.ps1
+```
+
+This installs a user-level instruction file under `$HOME/.copilot/instructions`.
+To also merge the matching VS Code terminal auto-approval deny list, back up the
+existing settings file and opt in explicitly:
+
+```powershell
+.\scripts\install-copilot-guardrails.ps1 -ApplyVSCodeSettings -Backup
+```
+
+If VS Code `settings.json` contains JSONC comments, the automatic merge stops by
+default because comments cannot be preserved. Add `-AllowJsoncRewrite` only when
+you accept rewriting the settings file as plain JSON.
 
 ## Portability
 
