@@ -5,7 +5,8 @@ param(
     [string]$OutFile = "",
     [decimal]$MaxBudgetUsd = 2.00,
     [int]$MaxPromptChars = 200000,
-    [switch]$Run
+    [switch]$Run,
+    [switch]$KeepPrompt
 )
 
 Set-StrictMode -Version Latest
@@ -41,6 +42,7 @@ function Test-SensitiveDiffLine {
 }
 
 $resolvedRepo = (Resolve-Path -LiteralPath $RepoPath).Path
+$promptPath = $null
 Push-Location $resolvedRepo
 try {
     $gitRootLines = @(Invoke-Git @("rev-parse", "--show-toplevel"))
@@ -167,5 +169,9 @@ $($stagedDiff -join [Environment]::NewLine)
     }
 }
 finally {
+    if ($Run -and -not $KeepPrompt -and $promptPath -and (Test-Path -LiteralPath $promptPath -PathType Leaf)) {
+        Remove-Item -LiteralPath $promptPath -Force -ErrorAction SilentlyContinue
+    }
+
     Pop-Location
 }

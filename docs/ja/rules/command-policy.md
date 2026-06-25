@@ -1,6 +1,6 @@
 ---
 source: rules/command-policy.rules
-source_commit: 747e954d067ae3c02d63e4b611dcce9da8ed39c8
+source_commit: 1b6919b924b6a9dd5b2a6e1721a31421f97a9094
 canonical: false
 ---
 
@@ -12,7 +12,7 @@ canonical: false
 
 このファイルは保守的に運用する。日常的に安全だと分かったコマンドだけ、具体的に許可する。
 
-allow rule を追加するのは、読み取り専用 command、または既に信頼済みの repo における trusted verification command に限る。package install、networked tools、publish、deploy、migration、remote mutation、破壊的 command は `prompt` または `forbidden` のままにする。
+allow rule を追加するのは、読み取り専用 command、または既に信頼済みの repo における trusted verification command に限る。build/test command は trusted repo 前提の shortcut であり、初見または未信頼 repo では任意コード実行として扱い、実行前に確認する。package install、networked tools、publish、deploy、migration、remote mutation、cost-incurring cloud operations、破壊的 command は `prompt` または `forbidden` のままにする。
 
 ## allow
 
@@ -66,6 +66,28 @@ allow rule を追加するのは、読み取り専用 command、または既に�
 - `winget install`
 - `gcloud`
 - `gsutil`
+- `aws`
+- `terraform plan`
+- `terraform apply`
+- `terraform destroy`
+- `kubectl apply`
+- `kubectl delete`
+- `helm upgrade`
+- `helm uninstall`
+- `cdk deploy`
+- `cdk destroy`
+- `sam deploy`
+- `serverless deploy`
+- `pulumi up`
+- `pulumi destroy`
+- `psql`
+- `mysql`
+- `influx`
 - `docker compose up`
+- `docker compose down -v`
+- `docker system prune`
+- `docker volume prune`
 - `alembic upgrade`
 - `alembic downgrade`
+
+Cloud / infrastructure tools は読み取り専用に近い command と remote mutation を両方持つ。account、workspace、region、context、target environment が明確になるまでは、provider CLI や plan command も `prompt` に残す。apply、deploy、destroy、delete 系は remote resource の変更、cost 発生、data deletion につながるため、常に明示確認を必須にする。

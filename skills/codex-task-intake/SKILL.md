@@ -17,6 +17,8 @@ Use this skill to turn an unclear request into an executable path with the fewes
    - `workflow`: plan or coordinate a larger multi-step task.
    - `automation`: create a recurring or delayed task.
 3. Identify the main risk: data loss, wrong repo, wrong branch, external side effects, privacy, cost, time, or visual quality.
+   - If the request touches cloud, infrastructure, database, deployment, migration, or other remote operational state, route to `codex-cloud-ops-intake` before any command execution.
+   - For repository work, record whether the repository is trusted, untrusted, or unknown. Treat build, test, and package commands in untrusted or unknown repositories as arbitrary code execution until the user confirms trust.
 4. Decide whether to proceed, inspect first, or ask a question.
 5. Ask at most one concise question when a wrong assumption would be expensive. Otherwise make a conservative assumption and continue.
 
@@ -30,6 +32,7 @@ Use this skill to turn an unclear request into an executable path with the fewes
 - If the task is mainly debugging, hand off to `codex-debug-discipline`.
 - If the task is broad engineering work, hand off to `codex-plan-slices`.
 - If the user asks for a disposable, simulated, or rehearsal repo, establish the workspace boundary first and treat edits outside that boundary as out of scope.
+- If the task involves AWS, Terraform, Kubernetes, databases, deployments, migrations, production/staging resources, or cost-incurring remote operations, hand off to `codex-cloud-ops-intake` before implementation or shell execution.
 
 ## Composition
 
@@ -40,6 +43,7 @@ Use this skill as the entry gate, then route:
 - Bug reports: `codex-debug-discipline` owns reproduction and root cause.
 - Code changes: `codex-implementation-loop` owns the patch and checks.
 - UI changes: `codex-ui-quality-gate` runs after implementation.
+- Cloud, infrastructure, database, deployment, or migration work: `codex-cloud-ops-intake` owns target/effect/approval classification before commands run.
 - Review packaging: `codex-pr-readiness` runs after verification.
 - Long or interrupted work: `codex-context-handoff` captures durable state.
 

@@ -1,6 +1,6 @@
 ---
 source: skills/codex-task-intake/SKILL.md
-source_commit: 48eb930dceb63657f8f66ca4238e48954f48ef80
+source_commit: 1b6919b924b6a9dd5b2a6e1721a31421f97a9094
 canonical: false
 ---
 
@@ -22,6 +22,8 @@ canonical: false
    - `workflow`: 大きめの multi-step task を計画または調整する。
    - `automation`: recurring/delayed task を作る。
 3. 主な risk を特定する。data loss、wrong repo、wrong branch、external side effects、privacy、cost、time、visual quality など。
+   - cloud、infrastructure、database、deployment、migration、その他 remote operational state に触れる依頼は、command 実行前に `codex-cloud-ops-intake` へ route する。
+   - repo 作業では、その repo が trusted、untrusted、unknown のどれかを記録する。untrusted または unknown repo では、build/test/package command を user が trust 確認するまで任意コード実行として扱う。
 4. 進めるか、まず調査するか、質問するかを決める。
 5. 間違った前提が高くつく場合だけ、簡潔な質問を最大1つする。それ以外は保守的に仮定して進める。
 
@@ -35,6 +37,7 @@ canonical: false
 - debugging が主なら `codex-debug-discipline` に渡す。
 - broad engineering work は `codex-plan-slices` に渡す。
 - disposable/simulated/rehearsal repo では workspace boundary を先に確定し、範囲外編集を out of scope とする。
+- AWS、Terraform、Kubernetes、database、deployment、migration、production/staging resource、cost-incurring remote operation を含む場合は、implementation や shell execution の前に `codex-cloud-ops-intake` に渡す。
 
 ## Composition
 
@@ -43,6 +46,7 @@ canonical: false
 - bug reports: reproduction と root cause は `codex-debug-discipline`
 - code changes: patch と checks は `codex-implementation-loop`
 - UI changes: 実装後に `codex-ui-quality-gate`
+- cloud、infrastructure、database、deployment、migration work: command 実行前の target/effect/approval classification は `codex-cloud-ops-intake`
 - review packaging: verification 後に `codex-pr-readiness`
 - long/interrupted work: `codex-context-handoff`
 

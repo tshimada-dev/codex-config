@@ -53,6 +53,7 @@ Useful options:
 - `-Scope "focus on API behavior and missing tests"` adds review focus.
 - `-ExtraPrompt "The target branch is main"` adds safe context.
 - `-OutFile review.txt` writes Claude's response to a local file.
+- `-KeepPrompt` keeps the temporary prompt file after `-Run`; by default the helper deletes it after the external review finishes.
 - `-MaxBudgetUsd 1.00` changes the Claude Code budget cap.
 - `-MaxPromptChars 200000` changes the prompt-size refusal threshold.
 - Omit `-Run` to print the generated prompt path and command preview without calling Claude.
