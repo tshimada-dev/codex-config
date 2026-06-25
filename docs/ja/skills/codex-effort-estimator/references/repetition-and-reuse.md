@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/repetition-and-reuse.md
-source_commit: e535debff08e37bf3540fa3677f8a8e610fcfb8f
+source_commit: 7fda18bc617a3e1bb86991c22e81a7bf090eccd7
 canonical: false
 ---
 

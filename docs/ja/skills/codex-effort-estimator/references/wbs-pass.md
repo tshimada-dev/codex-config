@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/wbs-pass.md
-source_commit: e535debff08e37bf3540fa3677f8a8e610fcfb8f
+source_commit: 3c3986354375e465b922e83fd61b6eb45a19caf2
 canonical: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/ai-coding-assistance-adjustment.md
-source_commit: 112b8f198d5f422c0234007742b82e6f8b470ec5
+source_commit: 7fda18bc617a3e1bb86991c22e81a7bf090eccd7
 canonical: false
 ---
 

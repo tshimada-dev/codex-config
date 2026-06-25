@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/component-unit-anchor-pass.md
-source_commit: 17be59e3fe075540200adf764fe1654cf6b3be3d
+source_commit: 7fda18bc617a3e1bb86991c22e81a7bf090eccd7
 canonical: false
 ---
 

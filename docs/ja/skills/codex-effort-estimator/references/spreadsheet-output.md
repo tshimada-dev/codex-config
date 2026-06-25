@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/spreadsheet-output.md
-source_commit: 17be59e3fe075540200adf764fe1654cf6b3be3d
+source_commit: ae5b24b1f8c5427eec7502997bb4d7a580c06b23
 canonical: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 source: skills/codex-claude-code-reviewer/SKILL.md
-source_commit: 615a918590b6d75cf8e6f85508741040baaba56d
+source_commit: 6028112a9087ea2d4d19e0f1be526c08a7091f1a
 canonical: false
 ---
 
@@ -58,6 +58,7 @@ Useful options:
 - `-Scope "focus on API behavior and missing tests"` で review focus を追加する。
 - `-ExtraPrompt "The target branch is main"` で安全な context を追加する。
 - `-OutFile review.txt` で Claude の response を local file に書く。
+- `-KeepPrompt` で `-Run` 後も temporary prompt file を残す。デフォルトでは external review 完了後に helper が削除する。
 - `-MaxBudgetUsd 1.00` で Claude Code budget cap を変更する。
 - `-MaxPromptChars 200000` で prompt-size refusal threshold を変更する。
 - `-Run` を省略すると、Claude を呼ばずに generated prompt path と command preview を表示する。

@@ -1,6 +1,6 @@
 ---
 source: skills/codex-repo-scout/SKILL.md
-source_commit: 48eb930dceb63657f8f66ca4238e48954f48ef80
+source_commit: 6028112a9087ea2d4d19e0f1be526c08a7091f1a
 canonical: false
 ---
 
@@ -28,6 +28,7 @@ subagents が使えて repo が大きい、または不慣れな場合は、cont
    - `Get-Location`
    - `git status --short --branch`
    - disposable rehearsal repo では、後の diff を implementation work と見なす前に clean baseline を作るか確認する。
+   - repository trust を `trusted`、`untrusted`、`unknown` のどれかで記録する。untrusted または unknown repo では、build/test/package command を任意コード実行として扱い、実行前に確認する。
 2. `rg --files` や directory listing で top-level shape を見る。大きい repo では全出力を貼らず sample/filter する。
 3. build/test entry points を特定する。
    - package manifests
@@ -60,5 +61,6 @@ subagents が使えて repo が大きい、または不慣れな場合は、cont
 - どの existing pattern に従うべきか。
 - どの tests/checks が変更を証明するか。
 - どの runtime、package manager、test command、dev server command が使えるか。
+- build/test/package command を実行できる程度に repo が trusted か、それともまだ approval が必要か。
 - dependencies は入っているか、明確に不足しているか。
 - どの local changes を保持する必要があるか。
