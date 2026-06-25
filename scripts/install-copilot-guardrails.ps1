@@ -115,22 +115,16 @@ function ConvertFrom-JsonCFile {
         return [ordered]@{}
     }
 
-    $options = [System.Text.Json.JsonDocumentOptions]::new()
-    $options.CommentHandling = [System.Text.Json.JsonCommentHandling]::Skip
-    $options.AllowTrailingCommas = $true
-
     try {
-        $document = [System.Text.Json.JsonDocument]::Parse($content, $options)
+        $json = Remove-JsoncTrivia -Content $content
+        if (-not $json.Trim()) {
+            return [ordered]@{}
+        }
+
+        return ConvertTo-OrderedData -Value ($json | ConvertFrom-Json)
     }
     catch {
         throw "Could not parse VS Code settings as JSON/JSONC: $Path. Fix the file or pass a different -VSCodeUserSettingsPath."
-    }
-
-    try {
-        return ConvertFrom-JsonElement -Element $document.RootElement
-    }
-    finally {
-        $document.Dispose()
     }
 }
 
@@ -172,40 +166,157 @@ function Test-JsoncComment {
     return $false
 }
 
-function ConvertFrom-JsonElement {
+function Remove-JsoncTrivia {
     param(
         [Parameter(Mandatory = $true)]
-        [System.Text.Json.JsonElement]$Element
+        [string]$Content
     )
 
-    switch ($Element.ValueKind) {
-        "Object" {
-            $result = [ordered]@{}
-            foreach ($property in $Element.EnumerateObject()) {
-                $result[$property.Name] = ConvertFrom-JsonElement -Element $property.Value
+    $withoutComments = New-Object System.Text.StringBuilder
+    $inString = $false
+    $escaped = $false
+    for ($i = 0; $i -lt $Content.Length; $i++) {
+        $char = $Content[$i]
+        if ($inString) {
+            [void]$withoutComments.Append($char)
+            if ($escaped) {
+                $escaped = $false
+                continue
             }
-            return $result
-        }
-        "Array" {
-            $items = @()
-            foreach ($item in $Element.EnumerateArray()) {
-                $items += ConvertFrom-JsonElement -Element $item
+            if ($char -eq "\") {
+                $escaped = $true
+                continue
             }
-            return $items
-        }
-        "String" { return $Element.GetString() }
-        "Number" {
-            $number = 0L
-            if ($Element.TryGetInt64([ref]$number)) {
-                return $number
+            if ($char -eq '"') {
+                $inString = $false
             }
-            return $Element.GetDouble()
+            continue
         }
-        "True" { return $true }
-        "False" { return $false }
-        "Null" { return $null }
-        default { throw "Unsupported JSON value kind: $($Element.ValueKind)" }
+
+        if ($char -eq '"') {
+            $inString = $true
+            [void]$withoutComments.Append($char)
+            continue
+        }
+
+        if ($char -eq "/" -and ($i + 1) -lt $Content.Length) {
+            $next = $Content[$i + 1]
+            if ($next -eq "/") {
+                $i += 2
+                while ($i -lt $Content.Length -and $Content[$i] -notin "`r", "`n") {
+                    $i++
+                }
+                if ($i -lt $Content.Length) {
+                    [void]$withoutComments.Append($Content[$i])
+                }
+                continue
+            }
+            if ($next -eq "*") {
+                $i += 2
+                while ($i -lt $Content.Length - 1) {
+                    if ($Content[$i] -eq "`r" -or $Content[$i] -eq "`n") {
+                        [void]$withoutComments.Append($Content[$i])
+                    }
+                    if ($Content[$i] -eq "*" -and $Content[$i + 1] -eq "/") {
+                        $i++
+                        break
+                    }
+                    $i++
+                }
+                continue
+            }
+        }
+
+        [void]$withoutComments.Append($char)
     }
+
+    $commentless = $withoutComments.ToString()
+    $result = New-Object System.Text.StringBuilder
+    $inString = $false
+    $escaped = $false
+    for ($i = 0; $i -lt $commentless.Length; $i++) {
+        $char = $commentless[$i]
+        if ($inString) {
+            [void]$result.Append($char)
+            if ($escaped) {
+                $escaped = $false
+                continue
+            }
+            if ($char -eq "\") {
+                $escaped = $true
+                continue
+            }
+            if ($char -eq '"') {
+                $inString = $false
+            }
+            continue
+        }
+
+        if ($char -eq '"') {
+            $inString = $true
+            [void]$result.Append($char)
+            continue
+        }
+
+        if ($char -eq ",") {
+            $nextIndex = $i + 1
+            while ($nextIndex -lt $commentless.Length -and [char]::IsWhiteSpace($commentless[$nextIndex])) {
+                $nextIndex++
+            }
+            if ($nextIndex -lt $commentless.Length -and ($commentless[$nextIndex] -eq "}" -or $commentless[$nextIndex] -eq "]")) {
+                continue
+            }
+        }
+
+        [void]$result.Append($char)
+    }
+
+    return $result.ToString()
+}
+
+function ConvertTo-OrderedData {
+    param(
+        $Value
+    )
+
+    if ($null -eq $Value) {
+        return $null
+    }
+
+    if ($Value -is [System.Collections.IDictionary]) {
+        $result = [ordered]@{}
+        foreach ($key in $Value.Keys) {
+            $result[$key] = ConvertTo-OrderedData -Value $Value[$key]
+        }
+        return $result
+    }
+
+    if ($Value -is [pscustomobject]) {
+        $result = [ordered]@{}
+        foreach ($property in $Value.PSObject.Properties) {
+            $result[$property.Name] = ConvertTo-OrderedData -Value $property.Value
+        }
+        return $result
+    }
+
+    if ($Value -is [System.Collections.IEnumerable] -and $Value -isnot [string]) {
+        return @($Value | ForEach-Object { ConvertTo-OrderedData -Value $_ })
+    }
+
+    return $Value
+}
+
+function Set-Utf8NoBomContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$LiteralPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    $encoding = New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false
+    [System.IO.File]::WriteAllText($LiteralPath, $Value, $encoding)
 }
 
 function Merge-Hashtable {
@@ -280,7 +391,7 @@ function Merge-VSCodeSettings {
 
     $json = ConvertTo-PlainObject -Value $settings | ConvertTo-Json -Depth 20
     if ($PSCmdlet.ShouldProcess($VSCodeUserSettingsPath, "Merge Copilot guardrail settings")) {
-        Set-Content -LiteralPath $VSCodeUserSettingsPath -Value $json -Encoding utf8NoBOM
+        Set-Utf8NoBomContent -LiteralPath $VSCodeUserSettingsPath -Value $json
     }
 }
 

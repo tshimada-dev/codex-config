@@ -232,6 +232,19 @@ function Test-SameFileContent {
     return (Get-FileHash -LiteralPath $Left).Hash -eq (Get-FileHash -LiteralPath $Right).Hash
 }
 
+function Set-Utf8NoBomContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$LiteralPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    $encoding = New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false
+    [System.IO.File]::WriteAllText($LiteralPath, $Value, $encoding)
+}
+
 function Get-SourceRepository {
     $remote = & git -C $RepoRoot remote get-url origin 2>$null
     if ($LASTEXITCODE -eq 0 -and $remote) {
@@ -293,7 +306,7 @@ function Write-ManagedManifest {
     $json = $manifest | ConvertTo-Json -Depth 4
 
     if ($PSCmdlet.ShouldProcess($manifestPath, "Write managed file manifest")) {
-        Set-Content -LiteralPath $manifestPath -Value $json -Encoding utf8
+        Set-Utf8NoBomContent -LiteralPath $manifestPath -Value $json
     }
 }
 
@@ -358,7 +371,7 @@ function Copy-CopilotSkillFile {
                 -SourceRelativePath $SourceRelativePath
 
             $tempFile = [System.IO.Path]::GetTempFileName()
-            Set-Content -LiteralPath $tempFile -Value $convertedContent -Encoding utf8NoBOM
+            Set-Utf8NoBomContent -LiteralPath $tempFile -Value $convertedContent
             $copySource = $tempFile
         }
 
@@ -399,8 +412,8 @@ function Copy-CopilotSkillFile {
         }
     }
     finally {
-        if ($tempFile) {
-            Remove-Item -LiteralPath $tempFile -Force -ErrorAction SilentlyContinue
+        if ($tempFile -and [System.IO.File]::Exists($tempFile)) {
+            [System.IO.File]::Delete($tempFile)
         }
     }
 }
