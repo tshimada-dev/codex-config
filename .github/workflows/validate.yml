@@ -1,0 +1,57 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    name: Validate repository harness
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PowerShell syntax
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $scripts = @(
+            'scripts/install.ps1',
+            'scripts/install-copilot-skills.ps1',
+            'scripts/install-copilot-guardrails.ps1',
+            'scripts/check-ja-source-commits.ps1',
+            'skills/codex-claude-code-reviewer/scripts/invoke-claude-review.ps1',
+            'skills/codex-wsl-command-bridge/scripts/Invoke-WslScript.ps1'
+          )
+
+          foreach ($script in $scripts) {
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $script),
+              [ref]$null,
+              [ref]$errors
+            ) > $null
+
+            if ($errors) {
+              $errors | ForEach-Object { "${script}: $($_.Message)" }
+              throw "PowerShell parse failed: $script"
+            }
+          }
+
+      - name: Validate installer dry runs
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $codexHome = Join-Path $env:RUNNER_TEMP 'codex-home'
+          New-Item -ItemType Directory -Path $codexHome -Force | Out-Null
+
+          ./scripts/install.ps1 -CodexHome $codexHome -WhatIf
+          ./scripts/install.ps1 -CodexHome $codexHome -InstallConfig -WhatIf
+
+      - name: Validate Japanese reference metadata
+        shell: pwsh
+        run: ./scripts/check-ja-source-commits.ps1

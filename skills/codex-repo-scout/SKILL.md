@@ -23,6 +23,7 @@ When subagents are available and the repo is large or unfamiliar, default to exp
    - `Get-Location`
    - `git status --short --branch`
    - for disposable rehearsal repos, create or confirm a clean baseline before treating later diffs as implementation work
+   - record repository trust as `trusted`, `untrusted`, or `unknown`; in untrusted or unknown repositories, treat build/test/package commands as arbitrary code execution and ask before running them
 2. List top-level shape with `rg --files` or directory listing; sample or filter output in large repos instead of dumping everything.
 3. Identify build and test entry points:
    - package manifests
@@ -55,6 +56,7 @@ Stop scouting when you can answer:
 - Which existing pattern should the edit follow?
 - Which tests or checks prove the change?
 - Which runtime, package manager, test command, or dev server command is usable here?
+- Is the repository trusted enough to run build/test/package commands, or should they still require approval?
 - Are dependencies installed or clearly missing?
 - What local changes must be preserved?
 

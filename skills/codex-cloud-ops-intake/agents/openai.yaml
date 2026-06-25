@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Cloud Ops Intake"
+  short_description: "Gate cloud, infrastructure, database, and deployment operations."
+  default_prompt: "Use this skill to classify external side effects, target resources, approval needs, and rollback plans before cloud or database operations."

@@ -2,8 +2,10 @@
 #
 # Keep this file conservative. Specific safe commands can be added as they become routine.
 # Add allow rules only for read-only commands or trusted verification commands in already trusted
-# repositories. Package install, networked tools, publishing, deployment, migration, remote
-# mutation, and destructive commands must remain prompt or forbidden.
+# repositories. Build and test commands are trusted-repository shortcuts: in first-time or
+# untrusted repositories, treat them as arbitrary code execution and ask before running them.
+# Package install, networked tools, publishing, deployment, migration, remote mutation, cost
+# incurring cloud operations, and destructive commands must remain prompt or forbidden.
 
 prefix_rule(pattern=["git", "status"], decision="allow")
 prefix_rule(pattern=["git", "diff"], decision="allow")
@@ -150,10 +152,115 @@ prefix_rule(
     decision="prompt",
     justification="Google Cloud Storage commands can read or mutate cloud resources and may incur cost."
 )
+
+# Cloud and infrastructure tools often have both read-only commands and remote mutations.
+# Keep broad provider CLIs and plan commands behind prompt until account, workspace, region,
+# context, and target environment are known. Apply/deploy/destroy/delete commands always need
+# explicit confirmation because they can mutate remote resources, incur cost, or delete data.
+prefix_rule(
+    pattern=["aws"],
+    decision="prompt",
+    justification="AWS CLI commands can read or mutate cloud resources and may incur cost."
+)
+prefix_rule(
+    pattern=["terraform", "plan"],
+    decision="prompt",
+    justification="Terraform plan can read remote state and providers; confirm workspace, backend, and target environment first."
+)
+prefix_rule(
+    pattern=["terraform", "apply"],
+    decision="prompt",
+    justification="Terraform apply mutates infrastructure and requires explicit approval."
+)
+prefix_rule(
+    pattern=["terraform", "destroy"],
+    decision="prompt",
+    justification="Terraform destroy removes infrastructure and requires explicit approval."
+)
+prefix_rule(
+    pattern=["kubectl", "apply"],
+    decision="prompt",
+    justification="Kubernetes apply mutates cluster resources and requires explicit approval."
+)
+prefix_rule(
+    pattern=["kubectl", "delete"],
+    decision="prompt",
+    justification="Kubernetes delete removes cluster resources and requires explicit approval."
+)
+prefix_rule(
+    pattern=["helm", "upgrade"],
+    decision="prompt",
+    justification="Helm upgrade mutates cluster releases and requires explicit approval."
+)
+prefix_rule(
+    pattern=["helm", "uninstall"],
+    decision="prompt",
+    justification="Helm uninstall removes cluster releases and requires explicit approval."
+)
+prefix_rule(
+    pattern=["cdk", "deploy"],
+    decision="prompt",
+    justification="CDK deploy mutates cloud infrastructure and may incur cost."
+)
+prefix_rule(
+    pattern=["cdk", "destroy"],
+    decision="prompt",
+    justification="CDK destroy removes cloud infrastructure and requires explicit approval."
+)
+prefix_rule(
+    pattern=["sam", "deploy"],
+    decision="prompt",
+    justification="SAM deploy mutates cloud infrastructure and may incur cost."
+)
+prefix_rule(
+    pattern=["serverless", "deploy"],
+    decision="prompt",
+    justification="Serverless deploy mutates cloud infrastructure and may incur cost."
+)
+prefix_rule(
+    pattern=["pulumi", "up"],
+    decision="prompt",
+    justification="Pulumi up mutates infrastructure and requires explicit approval."
+)
+prefix_rule(
+    pattern=["pulumi", "destroy"],
+    decision="prompt",
+    justification="Pulumi destroy removes infrastructure and requires explicit approval."
+)
+prefix_rule(
+    pattern=["psql"],
+    decision="prompt",
+    justification="Database client commands can read or mutate remote data and require target confirmation."
+)
+prefix_rule(
+    pattern=["mysql"],
+    decision="prompt",
+    justification="Database client commands can read or mutate remote data and require target confirmation."
+)
+prefix_rule(
+    pattern=["influx"],
+    decision="prompt",
+    justification="Database client commands can read or mutate remote data and require target confirmation."
+)
 prefix_rule(
     pattern=["docker", "compose", "up"],
     decision="prompt",
     justification="Starting services can create long-running local state."
+)
+prefix_rule(
+    pattern=["docker", "compose", "down", "-v"],
+    decision="prompt",
+    justification="Docker compose down -v removes volumes and can delete local service data."
+)
+prefix_rule(
+    pattern=["docker", "system", "prune"],
+    decision="prompt",
+    justification="Docker system prune deletes local Docker resources and requires explicit approval."
+)
+prefix_rule(
+    pattern=["docker", "volume", "prune"],
+    decision="prompt",
+    justification="Docker volume prune deletes local volumes and can remove persistent service data."
 )
 prefix_rule(
     pattern=["alembic", "upgrade"],
