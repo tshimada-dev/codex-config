@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Field Investigation Loop"
+  short_description: "Run disciplined incident state bundles"
+  default_prompt: "Use $codex-field-investigation-loop to investigate an incident by preserving evidence, forming hypotheses, running safe probes, updating the state bundle, and rendering a workbook view when useful."
