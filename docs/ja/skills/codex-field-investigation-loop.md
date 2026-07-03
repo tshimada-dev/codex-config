@@ -1,6 +1,6 @@
 ---
 source: skills/codex-field-investigation-loop/SKILL.md
-source_commit: d0188c88d6321b69f96dad47cdcd7f741eb2bd06
+source_commit: e5e94281a1ddd5da7ee18af955acae50319ce47b
 canonical: false
 ---
 
@@ -73,6 +73,11 @@ canonical files:
 
 長い調査では、別の Codex session や teammate が再開できるように bundle を chat の外に置く。
 
+親の context 圧迫を減らす場合は、任意の support directories を使う。
+
+- `artifacts/`: summary から参照する raw-safe command outputs、screenshots、excerpts、logs。
+- `subagent-results/`: parent integration 待ちの subagent evidence packets と verification notes。
+
 ## Spreadsheet View
 
 Codex が編集する正本には text files を使い、人間の review には XLSX を使う。
@@ -90,7 +95,16 @@ Codex が編集する正本には text files を使い、人間の review には
 
 - current investigation state bundle の assumption を challenge する。
 - network、device、cloud、app、security、operations など特定視点から hypothesis を提案する。
+- 割り当てられた1つの hypothesis を read-only probes または log analysis で verify する。
 - 次の probe が本当に hypothesis を切り分けるか review する。
 - evidence が current conclusion を支えているか確認する。
 
-subagents に production mutation や risky command を任せない。parent Codex が probe selection、安全、integration、final reporting を所有する。
+Parent Codex は investigation direction、安全、approval boundaries、canonical state updates、integration、final reporting を所有する。
+
+Subagents は parent context load を下げるため hypothesis verification を担当してよいが、parent が割り当てた scope 内に限定する。
+
+- read-only commands、log analysis、local artifact inspection、reasoning checks を優先する。
+- subagents に production mutation、service restart、destructive command、deploy、migration、secret handling を任せない。
+- large raw-safe outputs は `artifacts/` に保存し、compact evidence packets は `subagent-results/` に返させる。
+- canonical CSV/JSONL/Markdown files を直接編集させず、state update recommendation を返させる。
+- Parent が evidence packet を review し、interpretation を採択するか決め、accepted updates を canonical bundle に反映する。

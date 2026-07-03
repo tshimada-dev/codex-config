@@ -1,6 +1,6 @@
 ---
 source: skills/codex-field-investigation-loop/references/investigation-state.md
-source_commit: d0188c88d6321b69f96dad47cdcd7f741eb2bd06
+source_commit: e5e94281a1ddd5da7ee18af955acae50319ce47b
 canonical: false
 ---
 
@@ -33,6 +33,8 @@ hypotheses.csv
 timeline.csv
 connections.csv
 workbook.xlsx        # optional generated view
+artifacts/           # optional raw-safe evidence files
+subagent-results/    # optional evidence packets awaiting parent integration
 ```
 
 ## STATE.md
@@ -186,6 +188,53 @@ workbook には次の sheets を含める。
 - `接続情報`
 
 人間が workbook を編集した場合は、その edits を canonical files に反映してから evidence として使う。spreadsheet formatting、filters、hidden rows だけから facts を推測しない。
+
+## Subagent Evidence
+
+subagents が hypotheses を verify する、または assumptions を review する場合は `subagent-results/` を使う。各 file は parent が raw logs を読み込まずに確認できる程度に compact にする。
+
+Recommended evidence packet shape:
+
+```markdown
+# <Hypothesis ID> Verification
+
+Hypothesis: ...
+Assigned scope: ...
+Safety class: read-only | artifact-analysis | blocked
+Mutation or secret handling: none
+
+## Probe / Analysis
+
+- Method:
+- Target:
+- Timestamp:
+
+## Observed Result
+
+...
+
+## Evidence Artifacts
+
+- artifacts/<file>
+
+## Interpretation
+
+supported | weakened | disproved | inconclusive
+
+## Recommended Canonical Updates
+
+- command-log.jsonl:
+- checks.csv:
+- hypotheses.csv:
+- timeline.csv:
+- STATE.md:
+
+## Open Questions
+
+- ...
+```
+
+Subagents は large raw-safe outputs を `artifacts/` に書き、packet から参照する。Parent Codex が packet を review し、interpretation を accept / reject して、canonical files を更新する。
 
 ## Minimal Empty Bundle
 
