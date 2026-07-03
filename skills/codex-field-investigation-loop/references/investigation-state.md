@@ -8,7 +8,9 @@ The bundle is text-first for LLM reliability and spreadsheet-friendly for human 
 
 - Use one active bundle directory per investigation.
 - Prefer a repo-local path when the investigation concerns a repository or files in a repository.
-- Use `$HOME/.codex/runs/<topic>/YYYYMMDD-HHMM-<short-task>/` when there is no repo convention.
+- Name the bundle directory `YYYYMMDD-HHMM-<short-task>` so repeated incidents have separate durable state.
+- Use `docs/investigations/YYYYMMDD-HHMM-<short-task>/` for repository investigations when there is no repo convention.
+- Use `$HOME/.codex/runs/<topic>/YYYYMMDD-HHMM-<short-task>/` for non-repository investigations.
 - Keep `STATE.md` concise enough for Codex and humans to reread quickly.
 - Link to large raw logs instead of pasting them when safe local files exist.
 - Never store secrets in any bundle file or generated workbook.

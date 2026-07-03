@@ -48,10 +48,10 @@ Use an investigation state bundle as the canonical source of truth. Treat chat a
 
 Read `references/investigation-state.md` before creating or reorganizing an investigation state bundle.
 
-Create the bundle directory in the most relevant durable location:
+Create the bundle directory in the most relevant durable location. Use a timestamped leaf directory named `YYYYMMDD-HHMM-<short-task>` so each investigation has one durable bundle and repeated incidents do not collide.
 
-- Repository investigations: under the repo's documented notes location, or `docs/investigations/<topic>/` when no convention exists.
-- Non-repository investigations: under `$HOME/.codex/runs/<topic>/`.
+- Repository investigations: under the repo's documented notes location, or `docs/investigations/YYYYMMDD-HHMM-<short-task>/` when no convention exists.
+- Non-repository investigations: under `$HOME/.codex/runs/<topic>/YYYYMMDD-HHMM-<short-task>/`.
 - Long-running work: align with the user's run-note convention if one exists.
 
 Use these canonical files:
