@@ -66,6 +66,11 @@ Use these canonical files:
 
 For long investigations, keep the bundle outside chat so another Codex session or teammate can resume.
 
+Use optional support directories when they reduce parent context pressure:
+
+- `artifacts/`: raw-safe command outputs, screenshots, excerpts, or logs referenced from summaries.
+- `subagent-results/`: subagent evidence packets and verification notes awaiting parent integration.
+
 ## Spreadsheet View
 
 Prefer text files for Codex edits and XLSX for human review.
@@ -83,7 +88,16 @@ Good subagent tasks:
 
 - Challenge assumptions from the current investigation state bundle.
 - Propose hypotheses from a specific viewpoint, such as network, device, cloud, app, security, or operations.
+- Verify one assigned hypothesis with read-only probes or log analysis.
 - Review whether the next proposed probe actually distinguishes hypotheses.
 - Check whether evidence supports the current conclusion.
 
-Do not ask subagents to mutate production or run risky commands. Parent Codex owns probe selection, safety, integration, and final reporting.
+Parent Codex owns investigation direction, safety, approval boundaries, canonical state updates, integration, and final reporting.
+
+Subagents may verify hypotheses to reduce parent context load, but only within the scope parent assigns:
+
+- Prefer read-only commands, log analysis, local artifact inspection, and reasoning checks.
+- Do not ask subagents to mutate production, restart services, run destructive commands, deploy, migrate, or handle secrets.
+- Ask subagents to store large raw-safe outputs under `artifacts/` and return compact evidence packets under `subagent-results/`.
+- Require subagents to recommend state updates instead of editing canonical CSV/JSONL/Markdown files directly.
+- Parent reviews the evidence packet, decides whether to accept the interpretation, and applies accepted updates to the canonical bundle.

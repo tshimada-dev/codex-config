@@ -25,6 +25,8 @@ hypotheses.csv
 timeline.csv
 connections.csv
 workbook.xlsx        # optional generated view
+artifacts/           # optional raw-safe evidence files
+subagent-results/    # optional evidence packets awaiting parent integration
 ```
 
 ## STATE.md
@@ -178,6 +180,53 @@ The workbook should contain these sheets:
 - `接続情報`
 
 If a human edits the workbook, reconcile the edits back into the canonical files before using them as evidence. Do not infer facts only from spreadsheet formatting, filters, or hidden rows.
+
+## Subagent Evidence
+
+Use `subagent-results/` when subagents verify hypotheses or review assumptions. Each file should be compact enough for the parent to read without loading raw logs.
+
+Recommended evidence packet shape:
+
+```markdown
+# <Hypothesis ID> Verification
+
+Hypothesis: ...
+Assigned scope: ...
+Safety class: read-only | artifact-analysis | blocked
+Mutation or secret handling: none
+
+## Probe / Analysis
+
+- Method:
+- Target:
+- Timestamp:
+
+## Observed Result
+
+...
+
+## Evidence Artifacts
+
+- artifacts/<file>
+
+## Interpretation
+
+supported | weakened | disproved | inconclusive
+
+## Recommended Canonical Updates
+
+- command-log.jsonl:
+- checks.csv:
+- hypotheses.csv:
+- timeline.csv:
+- STATE.md:
+
+## Open Questions
+
+- ...
+```
+
+Subagents should write large raw-safe outputs under `artifacts/` and reference them from the packet. Parent Codex reviews the packet, accepts or rejects the interpretation, and updates the canonical files.
 
 ## Minimal Empty Bundle
 
