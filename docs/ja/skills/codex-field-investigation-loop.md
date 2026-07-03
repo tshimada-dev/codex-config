@@ -1,6 +1,6 @@
 ---
 source: skills/codex-field-investigation-loop/SKILL.md
-source_commit: e5e94281a1ddd5da7ee18af955acae50319ce47b
+source_commit: 441c349630d60943942900039f8d7a483d205005
 canonical: false
 ---
 
@@ -55,10 +55,10 @@ canonical: false
 
 investigation state bundle を作成または再構成する前に `references/investigation-state.md` を読む。
 
-bundle directory は最も永続的で自然な場所に作る。
+bundle directory は最も永続的で自然な場所に作る。各 investigation が1つの durable bundle を持ち、繰り返し発生する incident が衝突しないよう、leaf directory は `YYYYMMDD-HHMM-<short-task>` という timestamp 付き名前にする。
 
-- Repository investigation: repo の documented notes location、慣習がなければ `docs/investigations/<topic>/`。
-- Non-repository investigation: `$HOME/.codex/runs/<topic>/`。
+- Repository investigation: repo の documented notes location、慣習がなければ `docs/investigations/YYYYMMDD-HHMM-<short-task>/`。
+- Non-repository investigation: `$HOME/.codex/runs/<topic>/YYYYMMDD-HHMM-<short-task>/`。
 - Long-running work: user の run-note convention があればそれに合わせる。
 
 canonical files:

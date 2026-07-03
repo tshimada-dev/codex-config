@@ -1,6 +1,6 @@
 ---
 source: skills/codex-field-investigation-loop/references/investigation-state.md
-source_commit: e5e94281a1ddd5da7ee18af955acae50319ce47b
+source_commit: 441c349630d60943942900039f8d7a483d205005
 canonical: false
 ---
 
@@ -16,7 +16,9 @@ bundle は LLM reliability のために text-first、human review のために s
 
 - investigation ごとに active bundle directory を1つ使う。
 - investigation が repository または repository 内 file に関係する場合は repo-local path を優先する。
-- repo convention がない場合は `$HOME/.codex/runs/<topic>/YYYYMMDD-HHMM-<short-task>/` を使う。
+- leaf directory は `YYYYMMDD-HHMM-<short-task>` と名付け、繰り返し発生する incident の durable state を分ける。
+- repo convention がない repository investigation では `docs/investigations/YYYYMMDD-HHMM-<short-task>/` を使う。
+- non-repository investigation では `$HOME/.codex/runs/<topic>/YYYYMMDD-HHMM-<short-task>/` を使う。
 - `STATE.md` は Codex と人間が素早く読み返せる程度に簡潔に保つ。
 - large raw logs は、安全な local file がある場合は貼り付けずに link する。
 - bundle file や generated workbook に secret を保存しない。
