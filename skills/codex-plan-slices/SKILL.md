@@ -15,18 +15,23 @@ Use after `codex-task-intake` and usually after `codex-repo-scout`. Hand off to 
 
 1. State the objective and non-goals.
 2. List constraints from the user, repo, branch, tests, and external systems.
-3. Split work into slices. Each slice must have:
+3. Draft candidate slices, then challenge the initial decomposition before accepting it:
+   - check whether slices optimize isolated files or components at the expense of the system-level outcome
+   - identify cross-cutting invariants, duplicated ownership, and temporary solutions that would become long-term liabilities
+   - compare immediate implementation cost with maintenance, extension, operational, and migration costs
+   - keep the analysis proportional to the task and avoid speculative architecture for hypothetical future needs
+4. Finalize the slices. Each slice must have:
    - intent
    - write scope
    - dependencies
    - acceptance criteria
    - focused verification
    - risk
-4. Mark slices as:
+5. Mark slices as:
    - `serial`: depends on earlier work or shares files.
    - `parallel-safe`: disjoint write scope and no ordering dependency.
    - `human-decision`: blocked on product, design, security, or external access.
-5. Keep parent-owned work explicit: integration, final verification, release judgment, and user report.
+6. Keep parent-owned work explicit: integration, final verification, release judgment, and user report.
 
 ## Subagent Rules
 

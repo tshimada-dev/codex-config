@@ -25,12 +25,17 @@ When subagents are available, prefer worker agents for bounded implementation sl
 
 1. Reconfirm the target behavior and files from context.
 2. Inspect the current file before editing.
-3. Prefer the smallest change that matches local style.
-4. Edit with `apply_patch` for manual changes.
-5. Add or update tests when behavior changes or risk is nontrivial; for behavior changes, prefer writing the focused test before the implementation when practical.
-6. Run the narrowest meaningful check first. If it differs from the CI command or is only a local substitute, record that difference instead of treating it as equivalent to CI.
-7. Broaden checks when shared contracts, state, CLI behavior, UI flows, or public APIs changed.
-8. Summarize changed files, checks, and residual risk.
+3. Before adopting or implementing the first plausible solution, pause and challenge it:
+   - identify the assumptions it depends on
+   - inspect affected callers, shared contracts, and neighboring abstractions
+   - compare at least one reasonable alternative when the choice has architectural consequences
+4. Choose the smallest coherent change that improves the system-level outcome within the agreed scope and constraints, not merely the smallest local diff. Prefer consistency with the repository's architecture over a patch that solves only the immediate symptom.
+5. Consider the relevant time horizon: maintenance, likely extension, migration cost, operational burden, and technical debt. Keep this proportional to the task; do not use hypothetical future needs to justify speculative abstractions or unrelated refactors.
+6. Edit with `apply_patch` for manual changes.
+7. Add or update tests when behavior changes or risk is nontrivial; for behavior changes, prefer writing the focused test before the implementation when practical.
+8. Run the narrowest meaningful check first. If it differs from the CI command or is only a local substitute, record that difference instead of treating it as equivalent to CI.
+9. Broaden checks when shared contracts, state, CLI behavior, UI flows, or public APIs changed.
+10. Summarize changed files, checks, and residual risk.
 
 ## Loopback Conditions
 
@@ -38,12 +43,13 @@ Return to an earlier step when:
 
 - New information changes the target behavior: go back to step 1, reconfirm the target behavior and files.
 - The file has changed or is dirty in a relevant area: go back to step 2, inspect the current file before editing.
-- The diff grows beyond the requested scope: go back to step 3, choose the smallest change again.
-- A check fails because of your change: fix the cause and go back to step 6, run the narrowest meaningful check.
-- A broader check exposes a shared-contract issue: go back to step 1 or step 3, depending on whether the expected behavior changed.
+- The diff grows beyond the requested scope: go back to step 4, choose the smallest coherent change again.
+- A check fails because of your change: fix the cause and go back to step 8, run the narrowest meaningful check.
+- A broader check exposes a shared-contract issue: go back to step 1 or step 4, depending on whether the expected behavior changed.
 
 ## Change Discipline
 
+- Treat "smallest change" as the smallest architecturally coherent change, not the fewest edited lines. A slightly broader change is justified when it preserves a shared invariant, prevents duplicated logic, or avoids knowingly creating short-lived technical debt.
 - Preserve user changes in the worktree.
 - Before editing a dirty target file, inspect its diff and identify user-owned hunks. Edit around them when possible.
 - If the requested change conflicts with unknown user edits, ask one concise question before proceeding.
