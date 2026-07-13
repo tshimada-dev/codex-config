@@ -1,6 +1,6 @@
 ---
 source: skills/codex-implementation-loop/SKILL.md
-source_commit: 19c15b99d16f1e7fb1d3d795442637b05693ca81
+source_commit: 9cac093822dba4974f2cce50dd91c4e70b49a05e
 canonical: false
 ---
 
@@ -32,12 +32,17 @@ subagents が使える場合は、parent の次 step を妨げない bounded sli
 
 1. target behavior と files を再確認する。
 2. 編集前に current file を読む。
-3. local style に合う最小の変更を選ぶ。
-4. manual changes は `apply_patch` で編集する。
-5. behavior change や nontrivial risk がある場合は tests を追加または更新する。behavior change では、実務上可能なら implementation 前に focused test を書くことを優先する。
-6. 最小の意味ある check から実行する。CI command と異なる、または local substitute にすぎない場合は、CI と同等として扱わず、その差分を記録する。
-7. shared contracts、state、CLI behavior、UI flows、public APIs に触れたら broader checks を実行する。
-8. changed files、checks、residual risk をまとめる。
+3. 最初に思いついたもっともらしい解決策を採用または実装する前に立ち止まり、次の観点からその案を疑う。
+   - どのような前提に依存しているかを特定する。
+   - 影響を受ける callers、shared contracts、neighboring abstractions を確認する。
+   - architecture に影響する選択では、少なくとも1つの合理的な代替案と比較する。
+4. 単に local diff が最小の変更ではなく、合意した scope と constraints の中で system-level outcome を改善する最小の一貫した変更を選ぶ。目先の症状だけを解決する patch より、repository の architecture との整合性を優先する。
+5. maintenance、想定される extension、migration cost、operational burden、technical debt という適切な時間軸を考慮する。task に見合う範囲に留め、仮想的な将来ニーズを speculative abstractions や無関係な refactor の理由にしない。
+6. manual changes は `apply_patch` で編集する。
+7. behavior change や nontrivial risk がある場合は tests を追加または更新する。behavior change では、実務上可能なら implementation 前に focused test を書くことを優先する。
+8. 最小の意味ある check から実行する。CI command と異なる、または local substitute にすぎない場合は、CI と同等として扱わず、その差分を記録する。
+9. shared contracts、state、CLI behavior、UI flows、public APIs に触れたら broader checks を実行する。
+10. changed files、checks、residual risk をまとめる。
 
 ## Loopback Conditions
 
@@ -45,12 +50,13 @@ subagents が使える場合は、parent の次 step を妨げない bounded sli
 
 - 新しい情報で target behavior が変わった場合: step 1 に戻り、target behavior と files を再確認する。
 - file が変わった、または関連箇所が dirty になった場合: step 2 に戻り、編集前に current file を読む。
-- diff が requested scope を超えて大きくなった場合: step 3 に戻り、最小の変更を選び直す。
-- 自分の変更が原因で check が失敗した場合: 原因を修正し、step 6 に戻って最小の意味ある check を実行する。
-- broader check で shared-contract issue が見つかった場合: expected behavior が変わったかどうかに応じて、step 1 または step 3 に戻る。
+- diff が requested scope を超えて大きくなった場合: step 4 に戻り、最小の一貫した変更を選び直す。
+- 自分の変更が原因で check が失敗した場合: 原因を修正し、step 8 に戻って最小の意味ある check を実行する。
+- broader check で shared-contract issue が見つかった場合: expected behavior が変わったかどうかに応じて、step 1 または step 4 に戻る。
 
 ## Change Discipline
 
+- 「最小変更」は編集行数が最少という意味ではなく、architecture 上一貫した最小の変更として扱う。shared invariant を守る、duplicated logic を防ぐ、または短命な technical debt を意図的に作らずに済む場合は、少し広い変更を正当化できる。
 - user changes を保持する。
 - dirty target file を編集する前に diff を確認し、user-owned hunks を把握する。
 - unknown user edits と衝突する場合は、進める前に簡潔に1つ質問する。

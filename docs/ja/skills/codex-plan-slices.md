@@ -1,6 +1,6 @@
 ---
 source: skills/codex-plan-slices/SKILL.md
-source_commit: 747e954d067ae3c02d63e4b611dcce9da8ed39c8
+source_commit: 9cac093822dba4974f2cce50dd91c4e70b49a05e
 canonical: false
 ---
 
@@ -12,13 +12,18 @@ canonical: false
 
 広い engineering work を、安全な vertical slices、TODO、必要なら subagent assignments に分解する。
 
-## Planning Loop
+## Planning Steps
 
-1. objective と done condition を明確にする。
-2. work を小さな slices に分ける。
-3. slice ごとに scope、dependencies、risk、verification を持たせる。
-4. 並列化できるものと sequential なものを分ける。
-5. parent-owned work を明確にする。integration、final verification、release judgment、user report は parent が持つ。
+1. objective と non-goals を明確にする。
+2. user、repo、branch、tests、external systems から constraints を列挙する。
+3. 候補 slices を作り、initial decomposition を確定する前に次の観点から疑う。
+   - 個別の file や component の最適化が system-level outcome を損なっていないか確認する。
+   - cross-cutting invariants、duplicated ownership、長期的な負債になる一時的解決を特定する。
+   - immediate implementation cost と maintenance、extension、operational、migration costs を比較する。
+   - task に見合う分析に留め、仮想的な将来ニーズのために speculative architecture を作らない。
+4. slices を確定し、slice ごとに intent、write scope、dependencies、acceptance criteria、focused verification、risk を持たせる。
+5. slices を `serial`、`parallel-safe`、`human-decision` に分類する。
+6. parent-owned work を明確にする。integration、final verification、release judgment、user report は parent が持つ。
 
 ## Slice Design
 
