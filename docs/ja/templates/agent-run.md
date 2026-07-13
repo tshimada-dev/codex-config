@@ -1,6 +1,6 @@
 ---
 source: templates/agent-run.md
-source_commit: 19c15b99d16f1e7fb1d3d795442637b05693ca81
+source_blob: 9d6f4591de6f88df9a3fbdec1d594fd18cc3e9f6
 canonical: false
 ---
 
@@ -21,6 +21,19 @@ Phase: `research | implementation | verification | paused | handoff`
 
 - In scope:
 - Out of scope:
+
+## Expected Outcome and Evidence
+
+小さく低リスクな変更では `Outcome: ...; Evidence: ...` の1行でよい。
+
+広い、曖昧、高リスクな作業では次の対応表を使う。
+
+| ID | Acceptance criterion | Evidence | Status |
+| --- | --- | --- | --- |
+| AC-1 | | | pending |
+
+- Non-goals / constraints:
+- Open decisions or authority conflicts:
 
 ## Research
 
@@ -52,12 +65,15 @@ Phase: `research | implementation | verification | paused | handoff`
 
 ## Verification
 
+- Implementation feedback:
 - Format:
 - Lint:
 - Typecheck:
 - Test:
 - Build:
 - CI:
+- Readiness: `ready | conditionally-ready | not-ready`
+- Residual risk:
 
 ## Current State
 

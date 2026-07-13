@@ -7,6 +7,13 @@ description: Break broad engineering work into safe vertical slices, TODOs, and 
 
 Use this skill to convert broad work into ordered, verifiable slices. Prefer vertical slices that deliver observable behavior over horizontal layer-only tasks.
 
+## Shared Development Contract
+
+<!-- workflow-invariant: shared-contract -->
+<!-- workflow-invariant: acceptance-evidence -->
+
+Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md) before planning development work. Plans trace the shared expected outcome to implementation slices and evidence without duplicating the contract.
+
 ## Composition
 
 Use after `codex-task-intake` and usually after `codex-repo-scout`. Hand off to `codex-implementation-loop` for actual edits. For bugs, let `codex-debug-discipline` find the cause before slicing implementation work.
@@ -24,9 +31,10 @@ Use after `codex-task-intake` and usually after `codex-repo-scout`. Hand off to 
    - intent
    - write scope
    - dependencies
-   - acceptance criteria
-   - focused verification
+   - applicable acceptance criteria identified with stable IDs such as `AC1`
+   - named focused evidence for each applicable acceptance criterion
    - risk
+   Keep acceptance IDs stable when revising the plan. If an acceptance criterion spans slices, identify which slice supplies each part of its evidence and where the criterion is finally closed.
 5. Mark slices as:
    - `serial`: depends on earlier work or shares files.
    - `parallel-safe`: disjoint write scope and no ordering dependency.
@@ -85,6 +93,12 @@ Minimal structure:
   "objective": "",
   "non_goals": [],
   "constraints": [],
+  "acceptance_criteria": [
+    {
+      "id": "AC1",
+      "outcome": ""
+    }
+  ],
   "slices": [
     {
       "id": "S1",
@@ -92,8 +106,14 @@ Minimal structure:
       "write_scope": [],
       "dependencies": [],
       "parallel": false,
-      "acceptance": [],
-      "verification": [],
+      "acceptance_ids": ["AC1"],
+      "evidence": [
+        {
+          "name": "focused-check",
+          "acceptance_ids": ["AC1"],
+          "method": ""
+        }
+      ],
       "risk": "",
       "status": "pending"
     }

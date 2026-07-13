@@ -7,6 +7,13 @@ description: Prepare local changes for review, commit, pull request, CI follow-u
 
 Use this skill to turn finished work into a reviewable change.
 
+## Shared Development Contract
+
+<!-- workflow-invariant: shared-contract -->
+<!-- workflow-invariant: readiness-states -->
+
+Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md). PR readiness evaluates the implementation and evidence against that contract; it does not weaken or replace required evidence.
+
 ## Subagent Review
 
 When subagents are available, prefer a reviewer agent for a focused pre-PR pass before staging or committing:
@@ -24,13 +31,19 @@ When subagents are available, prefer a reviewer agent for a focused pre-PR pass 
 2. Separate your changes from unrelated user changes.
 3. Confirm the diff tells one coherent story. If not, propose splitting.
 4. Run relevant verification unless impossible or explicitly skipped by the user. If local verification differs from CI, state the discrepancy instead of claiming the CI contract was satisfied.
-5. Prepare a concise summary:
+5. Trace applicable acceptance IDs or expected outcomes to the named evidence and its result.
+6. Assign one evidence-based status:
+   - `ready`: all required evidence is complete and passing, with no unresolved blocking finding.
+   - `conditionally-ready`: all required evidence passes, but explicitly optional evidence was skipped or an accepted residual risk remains. Name the condition and who or what can close it.
+   - `not-ready`: required evidence is missing or failing, or an unresolved expected-outcome, safety, or correctness issue remains.
+7. Prepare a concise summary:
+   - readiness status and any closing condition
    - what changed
    - why it changed
    - tests/checks
    - known risks
 
-If verification is skipped or unavailable, state the exact reason, what would have been run, and residual risk.
+If verification is skipped or unavailable, state the exact reason, what would have been run, and residual risk. Do not report `ready` when required evidence was skipped or is unavailable.
 
 Before packaging a dirty target file, inspect its diff and separate user-owned hunks from your hunks.
 

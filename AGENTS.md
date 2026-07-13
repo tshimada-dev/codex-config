@@ -1,18 +1,20 @@
 # Global Codex Working Rules
 
-## Long-Running Work
+## Workflow Map
 
-- For work that may take more than 30 minutes, spans multiple subsystems, fixes CI, or may be interrupted, read `$HOME\.codex\rules\long-running-workflow.md` before making changes.
-- Keep research, implementation, and verification as separate phases. Do not mix exploratory notes with code changes without recording the changed assumption.
-- Prefer subagents when available for context-heavy research, broad planning, independent implementation slices, review, and verification so the parent session stays focused on decisions, integration, and final verification.
-- For long-running work, maintain one active run note using `$HOME\.codex\templates\agent-run.md`; store it at the repository's documented run-note location, or under `$HOME\.codex\runs\<repo-name>\YYYYMMDD-HHMM-<short-task>.md` when no convention exists.
-- Before finishing implementation work, identify the repository's real verification commands from its `AGENTS.md`, README, Makefile, package files, pyproject, or scripts.
+- For implementation, bug fixes, CI fixes, verification, and review readiness, follow `$HOME\.codex\rules\development-workflow.md`.
+- For work that may take more than 30 minutes, spans multiple subsystems, fixes CI, or may be interrupted, also follow `$HOME\.codex\rules\long-running-workflow.md` and maintain one active run note from `$HOME\.codex\templates\agent-run.md`.
+- Use the research, implementation, and CI checklists linked below for phase-specific prompts; the development workflow remains the authority when wording overlaps.
+
+## Safety Boundaries
+
+- Treat executable commands from unknown or untrusted repositories according to the trust rule in `$HOME\.codex\rules\development-workflow.md`; agent judgment alone does not elevate trust.
 - Do not run destructive local commands, remote-changing commands, publishing commands, deployments, production migrations, or secret-handling operations without explicit user approval.
 - Do not inspect, print, copy, upload, or summarize secrets, tokens, private keys, cookies, or `.env` contents unless the user explicitly asks and the task requires it.
-- For first-time or untrusted repositories, treat build and test commands as arbitrary code execution. Start with the `safe` profile for inspection, then switch to `local-check` or `workspace` only after deciding the repository is trusted enough.
 
 ## Personal References
 
+- Development workflow contract: `$HOME\.codex\rules\development-workflow.md`
 - Long-running workflow: `$HOME\.codex\rules\long-running-workflow.md`
 - Research checklist: `$HOME\.codex\rules\checklists\research.md`
 - Implementation checklist: `$HOME\.codex\rules\checklists\implementation.md`

@@ -7,6 +7,13 @@ description: Clarify and classify ambiguous Codex work before execution. Use whe
 
 Use this skill to turn an unclear request into an executable path with the fewest useful questions.
 
+## Shared Development Contract
+
+<!-- workflow-invariant: shared-contract -->
+<!-- workflow-invariant: explicit-trust -->
+
+For development work, read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md) before routing execution. Intake classifies the work; it does not redefine expected-outcome or evidence policy.
+
 ## Intake Loop
 
 1. Restate the goal in one sentence.
@@ -18,7 +25,7 @@ Use this skill to turn an unclear request into an executable path with the fewes
    - `automation`: create a recurring or delayed task.
 3. Identify the main risk: data loss, wrong repo, wrong branch, external side effects, privacy, cost, time, or visual quality.
    - If the request touches cloud, infrastructure, database, deployment, migration, or other remote operational state, route to `codex-cloud-ops-intake` before any command execution.
-   - For repository work, record whether the repository is trusted, untrusted, or unknown. Treat build, test, and package commands in untrusted or unknown repositories as arbitrary code execution until the user confirms trust.
+   - For repository work, record whether the repository is trusted, untrusted, or unknown. Treat build, test, and package commands in untrusted or unknown repositories as arbitrary code execution unless trust is already established by the runtime or permission profile, or the user explicitly confirms it. Do not promote repository trust based only on Codex inspection or judgment.
 4. Decide whether to proceed, inspect first, or ask a question.
 5. Ask at most one concise question when a wrong assumption would be expensive. Otherwise make a conservative assumption and continue.
 
@@ -29,8 +36,8 @@ Use this skill to turn an unclear request into an executable path with the fewes
 - If the request involves current facts, prices, laws, schedules, third-party docs, or remote state, verify with the appropriate source.
 - If the mode is `automation`, use the available automation workflow; ask only for missing schedule, timezone, target action, or notification details.
 - If the task would benefit from subagents, hand off to a planning/delegation skill after intake unless the task is tiny or the user asks not to use them.
-- If the task is mainly debugging, hand off to `codex-debug-discipline`.
-- If the task is broad engineering work, hand off to `codex-plan-slices`.
+- If the task is mainly debugging, route first to `codex-debug-discipline`. After the cause and regression shape are known, route a bounded defect directly to `codex-implementation-loop`; route a broad, risky, or cross-cutting defect through `codex-plan-slices` first.
+- If non-debugging work is broad engineering work, hand off to `codex-plan-slices`.
 - If the user asks for a disposable, simulated, or rehearsal repo, establish the workspace boundary first and treat edits outside that boundary as out of scope.
 - If the task involves AWS, Terraform, Kubernetes, databases, deployments, migrations, production/staging resources, or cost-incurring remote operations, hand off to `codex-cloud-ops-intake` before implementation or shell execution.
 
@@ -40,7 +47,7 @@ Use this skill as the entry gate, then route:
 
 - Unfamiliar repo work: `codex-repo-scout` before editing.
 - Broad work: `codex-repo-scout` then `codex-plan-slices`.
-- Bug reports: `codex-debug-discipline` owns reproduction and root cause.
+- Bug reports: `codex-debug-discipline` owns reproduction, hypotheses, root cause, and regression shape; `codex-implementation-loop` owns durable edits.
 - Code changes: `codex-implementation-loop` owns the patch and checks.
 - UI changes: `codex-ui-quality-gate` runs after implementation.
 - Cloud, infrastructure, database, deployment, or migration work: `codex-cloud-ops-intake` owns target/effect/approval classification before commands run.

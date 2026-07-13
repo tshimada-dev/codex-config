@@ -1,6 +1,6 @@
 ---
 source: skills/codex-debug-discipline/SKILL.md
-source_commit: 747e954d067ae3c02d63e4b611dcce9da8ed39c8
+source_blob: d25b37d9fd77e71df00dedb87942ddc0a8aa0844
 canonical: false
 ---
 
@@ -10,17 +10,21 @@ canonical: false
 
 ## 目的
 
-bug、failing tests、flaky behavior、performance regression、wrong output、crash、壊れているという user report を、再現、観察、仮説、修正、回帰確認の順で扱う。
+bug、failing tests、flaky behavior、performance regression、wrong output、crash、壊れているという user report について、再現、仮説、root-cause evidence、regression-test shape を確立する。恒久的な product edit は所有せず `codex-implementation-loop` へ渡す。
+
+## 共通開発契約
+
+`rules/development-workflow.md` に従い、expected/actual と authority conflict を記録する。stable な test seam がある場合は regression check が意図した理由で失敗する形を作る。
 
 ## Debug Loop
 
-- 原因が明らかで影響範囲が小さい trivial defect では、軽量 loop を使う。症状または code path を確認し、最小修正を行い、最も近い check を実行し、full hypothesis branching が不要だった理由を報告する。
+- 原因が明らかで影響範囲が小さい trivial defect では、症状または code path を確認して regression shape を記録し、恒久修正前に `codex-implementation-loop` へ切り替える。
 - まず症状を再現または観察する。
 - 失敗している command、route、input、state、expected/actual を切り分ける。
 - static inspection だけで飛びつかず、可能な限り runnable reproduction を作る。
 - subagents が使える場合は、異なる仮説や独立した証拠収集を並列 probe として任せる。
 - 必要なら最小限の instrumentation を入れ、最後に削除する。
-- root cause が見えたら `codex-implementation-loop` で patch する。
+- root cause と scope が見えたら、bounded work は `codex-implementation-loop`、広い work は `codex-plan-slices` へ遷移する。
 - UI behavior の defect では fix 後に `codex-ui-quality-gate` を使う。
 
 ## Evidence

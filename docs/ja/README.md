@@ -12,6 +12,7 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [AGENTS.md](AGENTS.md): グローバル Codex 作業ルール
 - [rules/command-policy.md](rules/command-policy.md): コマンド許可ポリシー
 - [rules/default.md](rules/default.md): 最小のデフォルト許可ルール
+- [rules/development-workflow.md](rules/development-workflow.md): 開発ワークフロー共通契約
 - [rules/long-running-workflow.md](rules/long-running-workflow.md): 長時間作業の進め方
 - [rules/checklists/research.md](rules/checklists/research.md): 調査チェックリスト
 - [rules/checklists/implementation.md](rules/checklists/implementation.md): 実装チェックリスト
@@ -47,9 +48,9 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - live `config.toml` は丸ごと同期せず、共有可能な baseline だけを明示 merge する。
 - 通常開発は生産性のため network access を許可し、初見・未信頼 repo では `safe` profile を使う。
 - 初期調査後にローカル検証だけ行いたい場合は、workspace-write だが network access を閉じる `local-check` profile を使う。
-- 各ファイル冒頭の `source` と `source_commit` を確認し、どの英語版に対応する訳か分かるようにする。
-- `source_commit` の確認と更新には `scripts/check-ja-source-commits.ps1` を使う。
-- `-Update` は、訳文ファイルに未コミットの本文変更がある場合だけ `source_commit` を更新する。
+- 各ファイル冒頭の `source` と source revision metadata を確認し、どの英語版に対応する訳か分かるようにする。既存の確定版を指す場合は `source_commit`、source と訳文を同一コミットで変更または追加する場合は `source_blob` を使う。
+- source revision metadata の確認と更新には `scripts/check-ja-source-commits.ps1` を使う。
+- `-Update` は、訳文ファイルに未コミットの本文変更がある場合だけ `source_commit` または `source_blob` を更新する。
 - 訳文の変更が不要だと確認済みの場合だけ、`-Update -AllowMetadataOnlyUpdate` で metadata だけを同期する。
 
 ```powershell

@@ -7,6 +7,13 @@ description: Verify frontend and visual changes with browser-based checks. Use w
 
 Use this skill after frontend changes and before the final report.
 
+## Shared Development Contract
+
+<!-- workflow-invariant: shared-contract -->
+<!-- workflow-invariant: ui-handoff -->
+
+Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md). This skill supplies UI verification evidence; durable product edits remain owned by `codex-implementation-loop`.
+
 ## Subagent UI Checks
 
 When subagents are available, prefer delegating focused UI verification to a worker after the changed route and expected states are clear:
@@ -33,7 +40,7 @@ When subagents are available, prefer delegating focused UI verification to a wor
    - console errors
 5. For canvas, WebGL, maps, or generated media, verify pixels are nonblank and correctly framed.
 6. For normal DOM UI, capture or inspect visual evidence for each changed viewport when tooling supports it.
-7. Fix issues found during the check and re-test the affected viewport.
+7. Record any finding with the affected route, viewport, state, and observed evidence. Return findings that require durable edits to `codex-implementation-loop`, then re-run this quality gate on the affected viewport and state.
 
 ## Browser Probes
 
@@ -67,6 +74,7 @@ Keep browser verification artifacts tidy:
 
 Mention:
 
+- acceptance IDs or expected outcomes covered by the UI evidence
 - URL checked
 - viewport sizes or device classes checked
 - visible changed surfaces inspected
@@ -74,5 +82,7 @@ Mention:
 - interactions or states exercised
 - tests or browser checks run
 - any UI states not verified
+
+Do not report the UI gate as passing while a finding has been returned for implementation and not re-verified.
 
 If a browser check could not run, say why and provide the strongest substitute check that did run.

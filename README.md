@@ -12,6 +12,7 @@
 - [`skills/codex-*`](skills/): 調査、計画、実装、デバッグ、レビュー準備、UI 検証を分離したマルチエージェント向け Skill 群。
 - [`skills/codex-effort-estimator`](skills/codex-effort-estimator/): 見積もりにおける独立観測、バイアス制御、AI 補正、監査可能な workbook 出力を扱う代表的な実証対象。
 - [`scripts/install.ps1`](scripts/install.ps1): tracked file だけを `$HOME/.codex` に反映し、manifest と prune で安全に同期する PowerShell 7 ベースの配布ツール。
+- [`rules/development-workflow.md`](rules/development-workflow.md): 仕様、テスト、実装、最終検証が競合しないよう、期待結果・証拠・所有権・ready 判定を統一する共通契約。
 - [`rules/`](rules/) と [`templates/`](templates/): 長時間作業、CI 差分、意思決定記録、危険コマンド境界を Codex が再利用できる形に落とし込んだ運用設計。
 - [`scripts/install-copilot-skills.ps1`](scripts/install-copilot-skills.ps1): Codex 用 Skill を GitHub Copilot Agent Skills として試すためのアダプター実験。
 
@@ -28,13 +29,14 @@
 `codex-*` スキル、共有可能な config baseline だけを管理します。
 
 - `AGENTS.md`: グローバルな Codex 作業ルール
-- `rules/`: 共通のコマンドポリシーと長時間作業用の手順
+- `rules/`: 開発ワークフロー契約、共通のコマンドポリシー、長時間作業用の手順
 - `templates/`: run note や repository instruction のテンプレート
 - `skills/codex-*`: 汎用的な Codex ワークフロースキル
 - `config/`: 共有可能な `config.toml` baseline と profile files
 - `scripts/install.ps1`: 管理対象ファイルを `$HOME\.codex` にコピーする導入スクリプト
 - `scripts/install-copilot-skills.ps1`: `skills/codex-*` を `copilot-*` 名に変換して GitHub Copilot Agent Skills として導入する実験用スクリプト
 - `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` 検査スクリプト
+- `scripts/validate-development-workflow.ps1`: 開発スキル間の所有権、証拠、readiness、配布対象の整合性検査
 - `docs/ja/`: 人間が読むための日本語参考訳
 
 管理しないもの:
@@ -112,13 +114,18 @@ publish、migration、破壊的な local command は `rules/command-policy.rules
 確認を挟む方針です。
 
 初見・未信頼 repo では、build/test も任意コード実行として扱います。まず `safe` で
-調査し、信頼できると判断した後に `local-check` または `workspace` へ切り替えます。
+調査し、runtime/profile が trust を明示している場合、またはユーザーが明示的に確認した場合にだけ
+`local-check` または `workspace` へ切り替えます。エージェント自身の判断だけでは trust を昇格させません。
 
 ## Codex スキルだけをインストールする場合
 
 `skills/codex-*` だけを配布したい場合は、GitHub CLI の
 [`gh skill install`](https://cli.github.com/manual/gh_skill_install) も利用できます。
 全体設定ではなく、特定 skill だけを Codex の user scope に入れたいときに使います。
+
+ただし、主要な開発 skill は skill ディレクトリ外の共通契約
+`rules/development-workflow.md` を参照します。単独の `gh skill install` はその契約を同梱しないため、
+完全なワークフローとして使う場合は `scripts/install.ps1` で rules と skills をまとめて導入してください。
 
 ```powershell
 gh skill install tshimada-dev/codex-config codex-repo-scout --agent codex --scope user
@@ -140,6 +147,11 @@ source repository 側の `codex-*` Skill を保ったまま、Copilot 側へ `co
 `ui-quality-gate` だけを導入します。`codex-claude-code-reviewer` や
 `codex-wsl-command-bridge` のような Codex/環境結合の強い Skill は、明示指定しない限り
 Copilot 側へ入れません。
+
+共通契約を参照する skill では、installer が canonical な
+`rules/development-workflow.md` を各 `copilot-*` skill の
+`references/development-workflow.md` に同梱し、参照先も変換します。これにより Codex 用の相対パスを
+Copilot 側へ漏らさず、契約本文の重複管理も避けます。
 
 既存の Copilot Skill と内容が異なる場合、デフォルトでは上書きせず停止します。
 置き換える場合は `-Overwrite`、置き換え前に退避する場合は `-Overwrite -Backup` を
@@ -179,9 +191,12 @@ VS Code の `settings.json` に JSONC コメントが含まれる場合、merge 
 - 端末固有の上書き設定は、git 管理外の local ファイルに置く。
 - live `config.toml` は丸ごと同期せず、共有可能な baseline だけを明示 merge する。
 - 通常開発は生産性のため network access を許可し、初見・未信頼 repo では `safe` profile を使う。
+- 仕様、既存テスト、現在挙動が食い違う場合は `rules/development-workflow.md` の authority order に従い、重要な競合を推測で解消しない。
+- 安定して安価な test seam がある場合は focused test-first を優先し、ない場合は理由と代替証拠を実装前に記録する。
+- 実装中の feedback と統合後の final verification を分け、`ready` / `conditionally-ready` / `not-ready` を証拠から判定する。
 - 危険なコマンドは broad allow にせず、prompt または forbidden のルールに入れる。
 - Codex が実行時に読む canonical な定義は英語版のままにし、日本語訳は `docs/ja/` に置く。
-- 英語版を変更したら日本語参考訳を更新し、訳文ファイルに未コミットの本文変更がある状態で `.\scripts\check-ja-source-commits.ps1 -Update` を実行して `source_commit` を同期する。
+- 英語版を変更したら日本語参考訳を更新し、訳文ファイルに未コミットの本文変更がある状態で `.\scripts\check-ja-source-commits.ps1 -Update` を実行して source revision metadata を同期する。既存の確定版を指す場合は `source_commit`、source と訳文を同一コミットで変更または追加する場合は `source_blob` を使う。
 - 訳文の変更が不要だと確認済みの場合だけ、`.\scripts\check-ja-source-commits.ps1 -Update -AllowMetadataOnlyUpdate` で metadata だけを同期する。
 
 ## 日本語参考訳

@@ -28,15 +28,19 @@ the same profile-driven execution boundary.
 - [`rules/`](rules/) and [`templates/`](templates/) capture repeatable working
   rules for long-running work, CI parity, command safety, decision notes, and
   repository-specific Codex instructions.
+- [`rules/development-workflow.md`](rules/development-workflow.md) is the shared
+  contract for expected outcomes, acceptance evidence, test-first exceptions,
+  phase ownership, and final readiness.
 
 ## Repository Map
 
 - `AGENTS.md`: global working rules for Codex sessions.
-- `rules/`: command policy, long-running workflow, and checklists.
+- `rules/`: development workflow contract, command policy, long-running workflow,
+  and checklists.
 - `templates/`: run-note and repository-instruction templates.
 - `skills/codex-*`: reusable Codex workflow skills.
 - `config/`: shareable baseline config and profiles.
-- `scripts/`: installer and Japanese reference-doc checks.
+- `scripts/`: installers, workflow validation, and Japanese reference-doc checks.
 - `docs/ja/`: Japanese reference documentation for human readers.
 
 ## Portfolio Notes
@@ -77,6 +81,10 @@ To try the workflow skills in GitHub Copilot, use:
 
 The Copilot installer leaves the source `codex-*` skills untouched and installs
 transformed copies under `$HOME/.copilot/skills` using `copilot-*` skill names.
+For skills that use the shared development contract, it also packages the
+canonical rule as `references/development-workflow.md` and rewrites the relative
+link. The rule therefore remains single-sourced while each Copilot skill stays
+self-contained.
 It refuses to overwrite different existing files unless `-Overwrite` is passed.
 By default, it installs only the more tool-neutral workflow skills:
 `task-intake`, `repo-scout`, `implementation-loop`, `debug-discipline`,
@@ -109,6 +117,26 @@ existing settings file and opt in explicitly:
 If VS Code `settings.json` contains JSONC comments, the automatic merge stops by
 default because comments cannot be preserved. Add `-AllowJsoncRewrite` only when
 you accept rewriting the settings file as plain JSON.
+
+## Development Workflow Contract
+
+The workflow treats specifications and tests as different forms of evidence,
+not rival methodologies. Every non-trivial change starts with an expected
+outcome and observable evidence. A focused test-first loop is preferred when the
+test seam is stable, deterministic, relevant, and reasonably cheap; otherwise
+the exception and the narrowest credible alternative evidence are recorded
+before the permanent change.
+
+Debugging owns reproduction and root-cause evidence, implementation owns durable
+edits, and UI/PR gates verify the integrated result. Material conflicts between
+an approved outcome, a designated specification, tests, and current behavior are
+resolved using the authority order in the contract rather than by agent
+assumption. Final status is reported as `ready`, `conditionally-ready`, or
+`not-ready`.
+
+Unknown repositories remain under the `safe` profile until trust is explicitly
+established by the runtime/profile or the user. Agent judgment alone does not
+promote repository trust.
 
 ## Portability
 

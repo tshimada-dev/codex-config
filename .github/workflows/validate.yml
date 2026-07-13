@@ -24,6 +24,7 @@ jobs:
             'scripts/install-copilot-skills.ps1',
             'scripts/install-copilot-guardrails.ps1',
             'scripts/check-ja-source-commits.ps1',
+            'scripts/validate-development-workflow.ps1',
             'skills/codex-claude-code-reviewer/scripts/invoke-claude-review.ps1',
             'skills/codex-wsl-command-bridge/scripts/Invoke-WslScript.ps1'
           )
@@ -51,6 +52,47 @@ jobs:
 
           ./scripts/install.ps1 -CodexHome $codexHome -WhatIf
           ./scripts/install.ps1 -CodexHome $codexHome -InstallConfig -WhatIf
+
+      - name: Validate development workflow invariants
+        shell: pwsh
+        run: ./scripts/validate-development-workflow.ps1
+
+      - name: Validate Copilot workflow packaging
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $copilotHome = Join-Path $env:RUNNER_TEMP 'copilot-skills'
+          ./scripts/install-copilot-skills.ps1 -CopilotSkillsHome $copilotHome
+
+          $installedSkills = @(Get-ChildItem -LiteralPath $copilotHome -Directory -Filter 'copilot-*')
+          if ($installedSkills.Count -ne 7) {
+            throw "Expected 7 default Copilot skills, found $($installedSkills.Count)."
+          }
+
+          $canonical = Get-Content -LiteralPath 'rules/development-workflow.md' -Raw
+          foreach ($skill in $installedSkills) {
+            $skillFile = Join-Path $skill.FullName 'SKILL.md'
+            $referenceFile = Join-Path $skill.FullName 'references/development-workflow.md'
+            $skillContent = Get-Content -LiteralPath $skillFile -Raw
+            if (-not $skillContent.Contains('references/development-workflow.md') -or
+                $skillContent.Contains('../../rules/development-workflow.md')) {
+              throw "Invalid development workflow link in $skillFile"
+            }
+            if ((Get-Content -LiteralPath $referenceFile -Raw) -ne $canonical) {
+              throw "Packaged development workflow differs from canonical source: $referenceFile"
+            }
+          }
+
+          $manifestPath = Join-Path $copilotHome '.codex-config-copilot-managed-files'
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          $workflowReferences = @($manifest.managed_files | Where-Object {
+            $_ -like '*/references/development-workflow.md'
+          })
+          if ($manifest.managed_files.Count -ne 14 -or $workflowReferences.Count -ne 7) {
+            throw 'Copilot managed-file manifest does not cover all skills and workflow references.'
+          }
+
+          ./scripts/install-copilot-skills.ps1 -CopilotSkillsHome $copilotHome
 
       - name: Validate Japanese reference metadata
         shell: pwsh

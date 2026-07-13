@@ -1,6 +1,6 @@
 ---
 source: skills/codex-task-intake/SKILL.md
-source_commit: 1b6919b924b6a9dd5b2a6e1721a31421f97a9094
+source_blob: dcf61d71bcf04c0017b37545488359d7fd6d951d
 canonical: false
 ---
 
@@ -11,6 +11,10 @@ canonical: false
 ## 目的
 
 曖昧な依頼を、最小限の質問で実行可能な進め方に変える。
+
+## 共通開発契約
+
+重要な開発作業では `rules/development-workflow.md` を共通契約とし、期待結果、証拠、authority conflict、ownership transition、repository trust を intake から引き継ぐ。
 
 ## Intake Loop
 
@@ -23,7 +27,7 @@ canonical: false
    - `automation`: recurring/delayed task を作る。
 3. 主な risk を特定する。data loss、wrong repo、wrong branch、external side effects、privacy、cost、time、visual quality など。
    - cloud、infrastructure、database、deployment、migration、その他 remote operational state に触れる依頼は、command 実行前に `codex-cloud-ops-intake` へ route する。
-   - repo 作業では、その repo が trusted、untrusted、unknown のどれかを記録する。untrusted または unknown repo では、build/test/package command を user が trust 確認するまで任意コード実行として扱う。
+   - repo 作業では、その repo が trusted、untrusted、unknown のどれかを記録する。runtime/profile の明示または user の trust 確認なしに、エージェント判断だけで trust を昇格させない。
 4. 進めるか、まず調査するか、質問するかを決める。
 5. 間違った前提が高くつく場合だけ、簡潔な質問を最大1つする。それ以外は保守的に仮定して進める。
 
@@ -34,7 +38,7 @@ canonical: false
 - current facts、prices、laws、schedules、third-party docs、remote state を含む場合は、適切な source で確認する。
 - `automation` では automation workflow を使い、不足している schedule、timezone、target action、notification details だけ質問する。
 - subagents が有効な作業では、task が小さい場合や user が使わないよう求めた場合を除き、planning/delegation skill に渡す。
-- debugging が主なら `codex-debug-discipline` に渡す。
+- debugging が主なら reproduction と root cause は `codex-debug-discipline` に渡し、原因と scope が明確になったら bounded work は `codex-implementation-loop`、広い work は `codex-plan-slices` へ遷移する。
 - broad engineering work は `codex-plan-slices` に渡す。
 - disposable/simulated/rehearsal repo では workspace boundary を先に確定し、範囲外編集を out of scope とする。
 - AWS、Terraform、Kubernetes、database、deployment、migration、production/staging resource、cost-incurring remote operation を含む場合は、implementation や shell execution の前に `codex-cloud-ops-intake` に渡す。

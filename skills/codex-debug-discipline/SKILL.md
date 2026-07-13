@@ -7,9 +7,16 @@ description: Diagnose bugs, failing tests, flaky behavior, performance regressio
 
 Use this skill to debug from evidence instead of vibes.
 
+## Shared Development Contract
+
+<!-- workflow-invariant: shared-contract -->
+<!-- workflow-invariant: debug-handoff -->
+
+Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md). Debugging establishes the observed failure, likely cause, and regression shape; it does not own durable product edits.
+
 ## Composition
 
-This skill owns reproduction, root cause analysis, probes, and regression shape. Use `codex-implementation-loop` for the actual patch once the likely cause is known. If the defect is in UI behavior, run `codex-ui-quality-gate` after the fix.
+This skill owns reproduction, falsifiable hypotheses, root cause analysis, probes, and regression shape. Use `codex-implementation-loop` for the durable patch once the likely cause is known. A trivial defect may continue directly in the same session without a formal handoff, but switch to the implementation loop before editing durable files. If the defect is in UI behavior, run `codex-ui-quality-gate` after the fix.
 
 ## Subagent Debugging
 
@@ -25,9 +32,10 @@ When subagents are available, prefer delegating parallel debug probes if they te
 For trivial defects with an obvious cause and low blast radius, use a lightweight loop:
 
 1. Confirm the symptom or code path.
-2. Make the smallest fix.
-3. Run the nearest meaningful check.
-4. Report why full hypothesis branching was unnecessary.
+2. Identify the nearest regression evidence and whether a stable test seam exists.
+3. Switch to `codex-implementation-loop`; establish the failing focused test first when the stable seam exists, then make the smallest fix.
+4. Re-run the original symptom check and regression evidence.
+5. Report why full hypothesis branching was unnecessary.
 
 For nontrivial defects, use the full loop:
 
@@ -41,10 +49,11 @@ For nontrivial defects, use the full loop:
 2. Confirm the loop matches the user's reported symptom.
 3. Generate 2 to 5 falsifiable hypotheses.
 4. Test one hypothesis at a time.
-5. Fix the cause.
-6. Add a regression test at the closest correct seam when possible.
-7. Remove temporary instrumentation.
-8. Re-run the original loop and the regression check.
+5. Establish the root cause and define regression evidence at the closest correct seam.
+6. When a stable test seam exists, specify the focused regression test and the failure reason it should expose.
+7. Switch to `codex-implementation-loop` to establish that failing test and make the durable fix. If no stable test seam exists, carry the recorded reason and narrowest credible alternative evidence into that loop.
+8. Remove temporary instrumentation.
+9. Re-run the original loop and the regression evidence.
 
 ## Isolation
 

@@ -1,6 +1,6 @@
 ---
 source: skills/codex-pr-readiness/SKILL.md
-source_commit: 19c15b99d16f1e7fb1d3d795442637b05693ca81
+source_blob: 6c0d91da03df8760385a25f9212d3e1bac6290f0
 canonical: false
 ---
 
@@ -11,6 +11,10 @@ canonical: false
 ## 目的
 
 完了した作業を reviewable change に整える。commit、PR、CI follow-up、review comments 対応などで使う。
+
+## 共通開発契約
+
+`rules/development-workflow.md` に従い、acceptance criteria と evidence を追跡し、統合結果を `ready`、`conditionally-ready`、`not-ready` のいずれかに分類する。この skill は不足している verification の代替にはならない。
 
 ## Review Pass
 
@@ -26,6 +30,7 @@ canonical: false
    - why it changed
    - tests/checks
    - known risks
+6. 必須 evidence の結果と未解決 conflict を確認して readiness を分類する。必須 evidence が unavailable/failing の場合は `ready` にしない。
 
 verification を skip した場合は、理由、実行すべきだった command、残る risk を明示する。
 

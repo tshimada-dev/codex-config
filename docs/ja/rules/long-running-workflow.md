@@ -1,6 +1,6 @@
 ---
 source: rules/long-running-workflow.md
-source_commit: 747e954d067ae3c02d63e4b611dcce9da8ed39c8
+source_blob: 058fa1d60d5e2de29c92bf17a4049d630392517c
 canonical: false
 ---
 
@@ -12,8 +12,9 @@ canonical: false
 
 ## 原則
 
+- 期待結果、証拠、phase ownership、final readiness、repository trust は `$HOME\.codex\rules\development-workflow.md` に従う。
 - ゴール、現在の状態、次の手順、検証状況を書き残す。
-- 調査、実装、検証を分ける。同じ Codex セッションで行う場合でも分離して扱う。
+- 調査、実装、検証の責任と記録を分ける。この分離は、実装中の focused red/green feedback を禁止するものではない。
 - subagents が使える場合は、context-heavy research、広い planning、独立した implementation slice、review、verification で優先して使う。
 - 親セッションは意思決定、統合、conflict resolution、最終検証、user report に集中させる。
 - 小さく review しやすい変更と、リポジトリローカルの慣習を優先する。
@@ -41,12 +42,14 @@ canonical: false
 ## 実装
 
 - 調査メモに基づいて変更する。
+- 期待結果、acceptance evidence、適用した focused feedback または記録済みの代替証拠に基づいて変更する。
 - 変更範囲は狭く保ち、既存 style に合わせる。
 - 新しい発見で計画が変わった場合は run note を更新する。
 - 必要でない限り broad refactor は避ける。
 
 ## 検証
 
+- 統合結果を期待結果と acceptance evidence に対して独立に検証し、readiness を判定する。
 - 実行前に、リポジトリの実際の check command を確認する。
 - まず最小限の有用な check を実行し、共有挙動に触れた場合は広げる。
 - command、結果、skip した check を active run note に記録する。

@@ -1,6 +1,6 @@
 ---
 source: skills/codex-plan-slices/SKILL.md
-source_commit: 9cac093822dba4974f2cce50dd91c4e70b49a05e
+source_blob: 3de6f5e6baa6ce55a327b2c68adc2567117e37a1
 canonical: false
 ---
 
@@ -12,6 +12,10 @@ canonical: false
 
 広い engineering work を、安全な vertical slices、TODO、必要なら subagent assignments に分解する。
 
+## 共通開発契約
+
+`rules/development-workflow.md` に従い、期待結果、non-goals、authority conflict、acceptance criteria と evidence を planning artifact に保持する。
+
 ## Planning Steps
 
 1. objective と non-goals を明確にする。
@@ -21,9 +25,10 @@ canonical: false
    - cross-cutting invariants、duplicated ownership、長期的な負債になる一時的解決を特定する。
    - immediate implementation cost と maintenance、extension、operational、migration costs を比較する。
    - task に見合う分析に留め、仮想的な将来ニーズのために speculative architecture を作らない。
-4. slices を確定し、slice ごとに intent、write scope、dependencies、acceptance criteria、focused verification、risk を持たせる。
-5. slices を `serial`、`parallel-safe`、`human-decision` に分類する。
-6. parent-owned work を明確にする。integration、final verification、release judgment、user report は parent が持つ。
+4. acceptance criteria に安定した ID を付け、各 ID を named focused evidence に対応付ける。
+5. slices を確定し、slice ごとに intent、write scope、dependencies、`acceptance_ids`、evidence、risk を持たせる。
+6. slices を `serial`、`parallel-safe`、`human-decision` に分類する。重要な specification/test/current-behavior conflict は `human-decision` とする。
+7. parent-owned work を明確にする。integration、final verification、release judgment、user report は parent が持つ。
 
 ## Slice Design
 
@@ -31,8 +36,8 @@ canonical: false
 
 - 単独で理解できる。
 - 変更ファイルの範囲が明確。
-- acceptance criteria がある。
-- focused verification がある。
+- stable ID の acceptance criteria がある。
+- acceptance criteria に対応する named evidence がある。
 - 他の slice への依存が見える。
 
 ## Subagent Use

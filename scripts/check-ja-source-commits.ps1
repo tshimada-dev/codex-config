@@ -87,7 +87,7 @@ function Test-GitPathAtCommit {
     return $LASTEXITCODE -eq 0
 }
 
-function Test-HasNonSourceCommitDiff {
+function Test-HasNonSourceRevisionDiff {
     param(
         [Parameter(Mandatory = $true)]
         [string]$Path
@@ -102,7 +102,7 @@ function Test-HasNonSourceCommitDiff {
         if ($line -match "^[+-]" -and
             $line -notmatch "^\+\+\+ " -and
             $line -notmatch "^--- " -and
-            $line -notmatch "^[+-]source_commit:\s*") {
+            $line -notmatch "^[+-]source_(commit|blob):\s*") {
             return $true
         }
     }
@@ -139,26 +139,84 @@ foreach ($doc in $docs) {
         continue
     }
 
-    if (-not $metadata.ContainsKey("source_commit")) {
-        $errors.Add("${relativeDoc}: missing source_commit")
+    if (-not $metadata.ContainsKey("canonical") -or $metadata["canonical"] -ne "false") {
+        $errors.Add("${relativeDoc}: expected canonical: false")
+    }
+
+    $dirtySource = [bool](Invoke-Git -Arguments @("status", "--porcelain", "--", $sourcePath))
+    $dirtyTranslation = [bool](Invoke-Git -Arguments @("status", "--porcelain", "--", $relativeDoc))
+    $translationHasContentChanges = Test-HasNonSourceRevisionDiff -Path $relativeDoc
+
+    if ($metadata.ContainsKey("source_blob")) {
+        if ($metadata.ContainsKey("source_commit")) {
+            $errors.Add("${relativeDoc}: use either source_blob or source_commit, not both")
+            continue
+        }
+
+        $sourceBlob = $metadata["source_blob"]
+        $currentBlob = (Invoke-Git -Arguments @("hash-object", "--", $sourcePath) | Select-Object -First 1)
+        if ($Update -and $sourceBlob -ne $currentBlob) {
+            if (-not $translationHasContentChanges -and -not $AllowMetadataOnlyUpdate) {
+                $errors.Add("${relativeDoc}: refusing to update source_blob without Japanese content changes. Update the Japanese reference text first, or re-run with -AllowMetadataOnlyUpdate when a metadata-only refresh is intentional.")
+                continue
+            }
+
+            $newContent = $content -replace "(?m)^source_blob:\s*.+$", "source_blob: $currentBlob"
+            if ($PSCmdlet.ShouldProcess($relativeDoc, "Update source_blob to $currentBlob")) {
+                Set-Content -LiteralPath $doc.FullName -Value $newContent -NoNewline
+                $updated++
+                $sourceBlob = $currentBlob
+                $dirtyTranslation = $true
+            }
+        }
+
+        if ($sourceBlob -notmatch "^[0-9a-f]{40,64}$") {
+            $errors.Add("${relativeDoc}: source_blob is not a valid Git object id: $sourceBlob")
+        }
+        elseif ($sourceBlob -ne $currentBlob) {
+            $errors.Add("${relativeDoc}: stale source_blob $sourceBlob; current source blob is $currentBlob")
+        }
+
+        if ($dirtySource) {
+            $warnings.Add("${relativeDoc}: source has uncommitted changes; source_blob validates the current content")
+        }
+        if ($dirtyTranslation) {
+            $warnings.Add("${relativeDoc}: translation file has uncommitted changes")
+        }
         continue
     }
 
-    if (-not $metadata.ContainsKey("canonical") -or $metadata["canonical"] -ne "false") {
-        $errors.Add("${relativeDoc}: expected canonical: false")
+    if (-not $metadata.ContainsKey("source_commit")) {
+        $errors.Add("${relativeDoc}: missing source_commit or source_blob")
+        continue
     }
 
     $sourceCommit = $metadata["source_commit"]
     $latestCommit = (Invoke-Git -Arguments @("log", "-1", "--format=%H", "--", $sourcePath) | Select-Object -First 1)
     if (-not $latestCommit) {
-        $errors.Add("${relativeDoc}: no git history for source: $sourcePath")
+        $errors.Add("${relativeDoc}: no git history for source; use source_blob for a new source: $sourcePath")
         continue
     }
 
-    $dirtySource = [bool](Invoke-Git -Arguments @("status", "--porcelain", "--", $sourcePath))
+    if ($Update -and $dirtySource) {
+        if (-not $translationHasContentChanges -and -not $AllowMetadataOnlyUpdate) {
+            $errors.Add("${relativeDoc}: refusing to replace source_commit with source_blob without Japanese content changes. Update the Japanese reference text first, or re-run with -AllowMetadataOnlyUpdate when a metadata-only refresh is intentional.")
+            continue
+        }
 
-    $dirtyTranslation = [bool](Invoke-Git -Arguments @("status", "--porcelain", "--", $relativeDoc))
-    $translationHasContentChanges = Test-HasNonSourceCommitDiff -Path $relativeDoc
+        $currentBlob = (Invoke-Git -Arguments @("hash-object", "--", $sourcePath) | Select-Object -First 1)
+        $newContent = $content -replace "(?m)^source_commit:\s*.+$", "source_blob: $currentBlob"
+        if ($PSCmdlet.ShouldProcess($relativeDoc, "Replace source_commit with source_blob $currentBlob")) {
+            Set-Content -LiteralPath $doc.FullName -Value $newContent -NoNewline
+            $updated++
+            $dirtyTranslation = $true
+        }
+        $warnings.Add("${relativeDoc}: source has uncommitted changes; source_blob validates the current content")
+        if ($dirtyTranslation) {
+            $warnings.Add("${relativeDoc}: translation file has uncommitted changes")
+        }
+        continue
+    }
 
     if ($Update -and $sourceCommit -ne $latestCommit) {
         if (-not $translationHasContentChanges -and -not $AllowMetadataOnlyUpdate) {
@@ -211,5 +269,5 @@ if ($errors.Count -gt 0) {
 
 Write-Host "Checked $checked Japanese reference files."
 if ($Update) {
-    Write-Host "Updated $updated source_commit value(s)."
+    Write-Host "Updated $updated source revision value(s)."
 }

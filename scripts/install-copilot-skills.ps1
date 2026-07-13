@@ -38,6 +38,9 @@ if ($AllSkills -and $SkillName -and $SkillName.Count -gt 0) {
 
 $ManifestRelativePath = ".codex-config-copilot-managed-files"
 $ManifestVersion = 1
+$DevelopmentWorkflowSourceRelativePath = "rules/development-workflow.md"
+$DevelopmentWorkflowSkillReference = "../../rules/development-workflow.md"
+$CopilotDevelopmentWorkflowSkillReference = "references/development-workflow.md"
 
 $DefaultCopilotSkillNames = @(
     "codex-task-intake",
@@ -216,8 +219,36 @@ function ConvertTo-CopilotSkillContent {
     $escapedSourceName = [regex]::Escape($SourceSkillName)
     $converted = $Content -replace "(?m)^name:\s+$escapedSourceName\s*$", "name: $CopilotSkillName"
     $converted = $converted -replace "\b$escapedSourceName\b", $CopilotSkillName
+    $converted = $converted.Replace(
+        $DevelopmentWorkflowSkillReference,
+        $CopilotDevelopmentWorkflowSkillReference
+    )
 
     return $converted
+}
+
+function Test-SourceSkillUsesDevelopmentWorkflow {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceSkillName
+    )
+
+    $skillPath = Join-ManagedPath -Root $RepoRoot -RelativePath "skills/$SourceSkillName/SKILL.md"
+    if (-not (Test-Path -LiteralPath $skillPath -PathType Leaf)) {
+        throw "Missing source skill file: $skillPath"
+    }
+
+    return (Get-Content -LiteralPath $skillPath -Raw).Contains($DevelopmentWorkflowSkillReference)
+}
+
+function Get-CopilotDevelopmentWorkflowRelativePath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceSkillName
+    )
+
+    $copilotName = ConvertTo-CopilotSkillName -SourceSkillName $SourceSkillName
+    return "$copilotName/$CopilotDevelopmentWorkflowSkillReference"
 }
 
 function Test-SameFileContent {
@@ -418,6 +449,60 @@ function Copy-CopilotSkillFile {
     }
 }
 
+function Copy-CopilotDevelopmentWorkflowReference {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceSkillName,
+
+        [string]$BackupRoot
+    )
+
+    $destinationRelativePath = Get-CopilotDevelopmentWorkflowRelativePath -SourceSkillName $SourceSkillName
+    $source = Join-ManagedPath -Root $RepoRoot -RelativePath $DevelopmentWorkflowSourceRelativePath
+    $destination = Join-ManagedPath -Root $CopilotSkillsHome -RelativePath $destinationRelativePath
+    $destinationExists = Test-Path -LiteralPath $destination
+
+    if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+        throw "Missing development workflow contract: $source"
+    }
+
+    if ($destinationExists) {
+        if (-not (Test-Path -LiteralPath $destination -PathType Leaf)) {
+            throw "Destination exists and is not a file: $destination"
+        }
+
+        if (Test-SameFileContent -Left $source -Right $destination) {
+            $script:UnchangedFileCount++
+            Write-Host "Unchanged: $destinationRelativePath"
+            return
+        }
+
+        if (-not $Overwrite) {
+            throw "Refusing to overwrite existing file with different content: $destination. Re-run with -Overwrite to replace Copilot skill files."
+        }
+
+        Backup-ManagedFile -Source $destination -RelativePath $destinationRelativePath -BackupRoot $BackupRoot
+    }
+
+    $destinationParent = Split-Path -Parent $destination
+    if ($destinationParent -and -not (Test-Path -LiteralPath $destinationParent)) {
+        if ($PSCmdlet.ShouldProcess($destinationParent, "Create directory")) {
+            New-Item -ItemType Directory -Path $destinationParent -Force | Out-Null
+        }
+    }
+
+    $action = if ($destinationExists) { "Overwrite generated development workflow reference" } else { "Copy generated development workflow reference" }
+    if ($PSCmdlet.ShouldProcess($destination, $action)) {
+        Copy-Item -LiteralPath $source -Destination $destination -Force
+        if ($destinationExists) {
+            $script:OverwrittenFileCount++
+        }
+        else {
+            $script:CopiedFileCount++
+        }
+    }
+}
+
 function Remove-PrunedManagedFiles {
     param(
         [string[]]$PreviousRelativePaths,
@@ -539,7 +624,13 @@ foreach ($name in $selectedSkillNames) {
 $selectedFiles = @($trackedFiles | Where-Object {
     $selected.Contains((Get-SourceSkillNameFromRelativePath -RelativePath $_))
 })
-$managedRelativeFiles = @($selectedFiles | ForEach-Object { ConvertTo-CopilotRelativePath -SourceRelativePath $_ })
+$developmentWorkflowSkillNames = @($selectedSkillNames | Where-Object {
+    Test-SourceSkillUsesDevelopmentWorkflow -SourceSkillName $_
+})
+$managedRelativeFiles = @(
+    @($selectedFiles | ForEach-Object { ConvertTo-CopilotRelativePath -SourceRelativePath $_ })
+    @($developmentWorkflowSkillNames | ForEach-Object { Get-CopilotDevelopmentWorkflowRelativePath -SourceSkillName $_ })
+) | Sort-Object -Unique
 $previousManagedRelativeFiles = @(Read-ManagedManifest)
 
 if (-not (Test-Path -LiteralPath $CopilotSkillsHome)) {
@@ -559,6 +650,10 @@ Remove-EmptyPrunedDirectories -PreviousRelativePaths $previousManagedRelativeFil
 
 foreach ($relativePath in $selectedFiles) {
     Copy-CopilotSkillFile -SourceRelativePath $relativePath -BackupRoot $backupRoot
+}
+
+foreach ($sourceSkillName in $developmentWorkflowSkillNames) {
+    Copy-CopilotDevelopmentWorkflowReference -SourceSkillName $sourceSkillName -BackupRoot $backupRoot
 }
 
 Write-ManagedManifest -RelativePaths $managedRelativeFiles

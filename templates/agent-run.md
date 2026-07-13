@@ -14,6 +14,19 @@ Phase: `research | implementation | verification | paused | handoff`
 - In scope:
 - Out of scope:
 
+## Expected Outcome and Evidence
+
+For a small, low-risk change, one line is enough: `Outcome: ...; Evidence: ...`.
+
+For broad, ambiguous, or high-risk work, use the matrix:
+
+| ID | Acceptance criterion | Evidence | Status |
+| --- | --- | --- | --- |
+| AC1 | | | pending |
+
+- Non-goals and constraints:
+- Open decisions or authority conflicts:
+
 ## Research
 
 ### Relevant Files
@@ -44,12 +57,15 @@ Phase: `research | implementation | verification | paused | handoff`
 
 ## Verification
 
+- Implementation feedback:
 - Format:
 - Lint:
 - Typecheck:
 - Test:
 - Build:
 - CI:
+- Readiness: `ready | conditionally-ready | not-ready`
+- Residual risk or skipped optional evidence:
 
 ## Current State
 

@@ -7,6 +7,13 @@ description: Implement code or file changes with tight scope, repo conventions, 
 
 Use this skill to make changes without losing the plot or disturbing user work.
 
+## Shared Development Contract
+
+<!-- workflow-invariant: shared-contract -->
+<!-- workflow-invariant: implementation-test-first -->
+
+Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md) before editing. This skill owns durable implementation edits and must preserve the shared expected-outcome and evidence trace.
+
 ## Composition
 
 Use after `codex-repo-scout` for unfamiliar code. For bugs, use after `codex-debug-discipline` has produced a reproduction or code-path finding. For UI changes, run `codex-ui-quality-gate` before final delivery.
@@ -23,29 +30,30 @@ When subagents are available, prefer worker agents for bounded implementation sl
 
 ## Loop
 
-1. Reconfirm the target behavior and files from context.
-2. Inspect the current file before editing.
-3. Before adopting or implementing the first plausible solution, pause and challenge it:
+1. Reconfirm the expected outcome, non-goals, constraints, applicable acceptance IDs, and named evidence from context. Resolve or explicitly escalate material conflicts before editing.
+2. Confirm how each applicable acceptance criterion will be evidenced. When no formal criterion exists, state the focused expected outcome and its check.
+3. Inspect the current file before editing.
+4. Before adopting or implementing the first plausible solution, pause and challenge it:
    - identify the assumptions it depends on
    - inspect affected callers, shared contracts, and neighboring abstractions
    - compare at least one reasonable alternative when the choice has architectural consequences
-4. Choose the smallest coherent change that improves the system-level outcome within the agreed scope and constraints, not merely the smallest local diff. Prefer consistency with the repository's architecture over a patch that solves only the immediate symptom.
-5. Consider the relevant time horizon: maintenance, likely extension, migration cost, operational burden, and technical debt. Keep this proportional to the task; do not use hypothetical future needs to justify speculative abstractions or unrelated refactors.
-6. Edit with `apply_patch` for manual changes.
-7. Add or update tests when behavior changes or risk is nontrivial; for behavior changes, prefer writing the focused test before the implementation when practical.
-8. Run the narrowest meaningful check first. If it differs from the CI command or is only a local substitute, record that difference instead of treating it as equivalent to CI.
-9. Broaden checks when shared contracts, state, CLI behavior, UI flows, or public APIs changed.
-10. Summarize changed files, checks, and residual risk.
+5. Choose the smallest coherent change that improves the system-level outcome within the agreed scope and constraints, not merely the smallest local diff. Prefer consistency with the repository's architecture over a patch that solves only the immediate symptom.
+6. Consider the relevant time horizon: maintenance, likely extension, migration cost, operational burden, and technical debt. Keep this proportional to the task; do not use hypothetical future needs to justify speculative abstractions or unrelated refactors.
+7. Before the behavior implementation edit, establish the focused failing test when a stable, deterministic, low-cost test seam exists. Confirm that it fails for the expected reason. If no such seam exists, record why and identify the narrowest credible alternative evidence before editing.
+8. Edit with `apply_patch` for manual changes, make the focused evidence pass, then refactor only while it remains passing.
+9. Run the narrowest meaningful check first. If it differs from the CI command or is only a local substitute, record that difference instead of treating it as equivalent to CI.
+10. Broaden checks when shared contracts, state, CLI behavior, UI flows, or public APIs changed.
+11. Summarize changed files, acceptance-to-evidence results, checks, and residual risk.
 
 ## Loopback Conditions
 
 Return to an earlier step when:
 
-- New information changes the target behavior: go back to step 1, reconfirm the target behavior and files.
-- The file has changed or is dirty in a relevant area: go back to step 2, inspect the current file before editing.
-- The diff grows beyond the requested scope: go back to step 4, choose the smallest coherent change again.
-- A check fails because of your change: fix the cause and go back to step 8, run the narrowest meaningful check.
-- A broader check exposes a shared-contract issue: go back to step 1 or step 4, depending on whether the expected behavior changed.
+- New information changes the target behavior: go back to step 1, reconfirm the expected outcome and evidence.
+- The file has changed or is dirty in a relevant area: go back to step 3, inspect the current file before editing.
+- The diff grows beyond the requested scope: go back to step 5, choose the smallest coherent change again.
+- A check fails because of your change: fix the cause and go back to step 9, run the narrowest meaningful check.
+- A broader check exposes a shared-contract issue: go back to step 1 or step 5, depending on whether the expected behavior changed.
 
 ## Change Discipline
 

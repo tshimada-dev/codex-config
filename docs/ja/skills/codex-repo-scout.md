@@ -1,6 +1,6 @@
 ---
 source: skills/codex-repo-scout/SKILL.md
-source_commit: 1b6919b924b6a9dd5b2a6e1721a31421f97a9094
+source_blob: 0758a51a246769b6bef9438a01a140279bcd34e0
 canonical: false
 ---
 
@@ -11,6 +11,10 @@ canonical: false
 ## 目的
 
 迷子にならない程度に、実装に必要な repository context を集める。
+
+## 共通開発契約
+
+`rules/development-workflow.md` に従い、scouting は制約、期待結果の候補、実際の verification command を発見するが、product behavior や repository trust を推測で確定しない。
 
 ## Subagent Scouting
 
@@ -28,7 +32,7 @@ subagents が使えて repo が大きい、または不慣れな場合は、cont
    - `Get-Location`
    - `git status --short --branch`
    - disposable rehearsal repo では、後の diff を implementation work と見なす前に clean baseline を作るか確認する。
-   - repository trust を `trusted`、`untrusted`、`unknown` のどれかで記録する。untrusted または unknown repo では、build/test/package command を任意コード実行として扱い、実行前に確認する。
+   - repository trust を `trusted`、`untrusted`、`unknown` のどれかで記録する。runtime/profile の明示または user の確認なしに trust を昇格させず、untrusted/unknown repo の build/test/package command は任意コード実行として扱う。
 2. `rg --files` や directory listing で top-level shape を見る。大きい repo では全出力を貼らず sample/filter する。
 3. build/test entry points を特定する。
    - package manifests
@@ -61,6 +65,6 @@ subagents が使えて repo が大きい、または不慣れな場合は、cont
 - どの existing pattern に従うべきか。
 - どの tests/checks が変更を証明するか。
 - どの runtime、package manager、test command、dev server command が使えるか。
-- build/test/package command を実行できる程度に repo が trusted か、それともまだ approval が必要か。
+- runtime/profile または user が build/test/package command を実行できる trust を明示したか、それともまだ approval が必要か。
 - dependencies は入っているか、明確に不足しているか。
 - どの local changes を保持する必要があるか。
