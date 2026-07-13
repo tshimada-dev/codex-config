@@ -27,14 +27,30 @@ If that loop is impractical, record why before the permanent change and establis
 
 Implementation feedback may run throughout implementation. It does not replace final verification.
 
+## Workflow Phases
+
+Use these phase names in plans, run notes, and handoffs:
+
+- `intake`: classify the request, risk, authority, and execution path.
+- `scouting`: discover repository constraints, conventions, and executable checks.
+- `planning`: record decisions, acceptance evidence, dependencies, and safe slices.
+- `debugging`: reproduce a defect, test hypotheses, establish root cause, and define regression evidence.
+- `implementation`: make durable product or repository behavior changes and obtain focused feedback.
+- `verification`: independently assess the integrated result against the expected outcome.
+- `readiness`: classify evidence, residual risk, and review or release readiness.
+- `paused`: preserve resumable state while work is intentionally inactive.
+- `handoff`: transfer current state, evidence, decisions, and the next owned action.
+
+Phases may loop when evidence changes the expected outcome or verification returns a finding. `paused` and `handoff` are continuity states, not owners of implementation work.
+
 ## Ownership and Transitions
 
-- Research and repository scouting discover constraints and likely verification commands; they do not establish new product behavior by assumption.
-- Planning records outcomes, decisions, acceptance criteria, evidence, and safe implementation slices when the work is broad or risky.
-- Debugging owns reproduction, hypotheses, root-cause evidence, and the regression-test shape. When the cause or scope becomes clear, it transitions to planning if broad or to implementation if bounded.
-- Implementation owns all permanent product, test, configuration, and documentation patches, including fixes returned by verification.
-- Verification independently checks the integrated result against the expected outcome. Findings transition back to implementation, followed by re-verification.
-- PR readiness reports the evidence and residual risk; it does not compensate for missing required verification.
+Distinguish two artifact classes:
+
+- Product or repository behavior artifacts are durable files that define shipped behavior or repository operation, such as source, tests, configuration, migrations, user-facing documentation, scripts, and workflow policy. Implementation owns edits to these artifacts.
+- Workflow or evidence artifacts record how work is understood and assessed, such as intake notes, scouting findings, plans, debug transcripts, run notes, verification results, readiness reports, commit messages, and PR text. The phase producing the evidence owns these artifacts.
+
+Intake and scouting discover constraints and likely verification commands; they do not establish new product behavior by assumption. Planning owns the plan and evidence mapping, not the durable edits described by it. Debugging owns reproduction, hypotheses, root-cause evidence, regression-test shape, and explicitly temporary probes; it transitions to planning if the fix is broad or implementation if bounded. Implementation owns all durable product or repository behavior edits, including fixes returned by verification or readiness. Verification independently checks the integrated result and returns durable-edit findings to implementation before re-verification. Readiness owns classification and packaging evidence, but returns every requested durable file correction to implementation.
 
 ## Final Verification and Readiness
 

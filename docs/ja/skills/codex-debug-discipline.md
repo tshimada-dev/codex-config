@@ -1,6 +1,6 @@
 ---
 source: skills/codex-debug-discipline/SKILL.md
-source_blob: d25b37d9fd77e71df00dedb87942ddc0a8aa0844
+source_blob: 765b05d234f19bb6343e757a3ff6f77f3144155d
 canonical: false
 ---
 
@@ -10,7 +10,7 @@ canonical: false
 
 ## 目的
 
-bug、failing tests、flaky behavior、performance regression、wrong output、crash、壊れているという user report について、再現、仮説、root-cause evidence、regression-test shape を確立する。恒久的な product edit は所有せず `codex-implementation-loop` へ渡す。
+bug、failing tests、flaky behavior、performance regression、wrong output、crash、壊れているという user report について、再現、instrumentation、hypothesis検証、root-cause evidence、regression-test shapeを確立する。恒久的なproduct/repository behavior editは所有せず `codex-implementation-loop` へ渡す。
 
 ## 共通開発契約
 

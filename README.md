@@ -33,9 +33,10 @@
 - `templates/`: run note や repository instruction のテンプレート
 - `skills/codex-*`: 汎用的な Codex ワークフロースキル
 - `config/`: 共有可能な `config.toml` baseline と profile files
+- `config/development-skills.json`: Skill 名、役割、phase、所有権、依存関係、Copilot default entry point の宣言的 manifest
 - `scripts/install.ps1`: 管理対象ファイルを `$HOME\.codex` にコピーする導入スクリプト
 - `scripts/install-copilot-skills.ps1`: `skills/codex-*` を `copilot-*` 名に変換して GitHub Copilot Agent Skills として導入する実験用スクリプト
-- `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` 検査スクリプト
+- `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` / `source_blob` 検査・更新スクリプト
 - `scripts/validate-development-workflow.ps1`: 開発スキル間の所有権、証拠、readiness、配布対象の整合性検査
 - `docs/ja/`: 人間が読むための日本語参考訳
 
@@ -116,6 +117,11 @@ publish、migration、破壊的な local command は `rules/command-policy.rules
 初見・未信頼 repo では、build/test も任意コード実行として扱います。まず `safe` で
 調査し、runtime/profile が trust を明示している場合、またはユーザーが明示的に確認した場合にだけ
 `local-check` または `workspace` へ切り替えます。エージェント自身の判断だけでは trust を昇格させません。
+user-level の command policy では、repository-controlled な npm/uv script と主要な
+project runnerを `prompt` にし、`rg --pre` や `git diff --ext-diff` のような外部command
+実行経路もbroad `allow`にしません。未列挙commandはruntime/sandbox既定へ戻します。
+信頼済み repo で省略する場合だけ、trusted project layer の `.codex/rules/` に限定的な
+`allow` を置きます。
 
 ## Codex スキルだけをインストールする場合
 
@@ -142,9 +148,10 @@ source repository 側の `codex-*` Skill を保ったまま、Copilot 側へ `co
 .\scripts\install-copilot-skills.ps1
 ```
 
-デフォルトでは、ツール中立に使いやすい `task-intake`、`repo-scout`、
+デフォルト entry point は、ツール中立に使いやすい `task-intake`、`repo-scout`、
 `implementation-loop`、`debug-discipline`、`plan-slices`、`pr-readiness`、
-`ui-quality-gate` だけを導入します。`codex-claude-code-reviewer` や
+`ui-quality-gate` です。installer は `config/development-skills.json` の依存関係を再帰的に解決し、
+参照先の support Skill も一緒に導入します。`codex-claude-code-reviewer` や
 `codex-wsl-command-bridge` のような Codex/環境結合の強い Skill は、明示指定しない限り
 Copilot 側へ入れません。
 
@@ -152,12 +159,18 @@ Copilot 側へ入れません。
 `rules/development-workflow.md` を各 `copilot-*` skill の
 `references/development-workflow.md` に同梱し、参照先も変換します。これにより Codex 用の相対パスを
 Copilot 側へ漏らさず、契約本文の重複管理も避けます。
+Skill 間の exact `codex-*` identifier も manifest の map で `copilot-*` へ変換し、
+参照先が導入集合に存在することを事前検証します。
 
 既存の Copilot Skill と内容が異なる場合、デフォルトでは上書きせず停止します。
 置き換える場合は `-Overwrite`、置き換え前に退避する場合は `-Overwrite -Backup` を
 指定します。特定 Skill だけ入れる場合は `-SkillName repo-scout,implementation-loop`
 のように指定できます。管理対象の `codex-*` Skill をすべて変換したい場合は、
 移植できる意味を確認したうえで `-AllSkills` を指定します。
+
+部分導入で `-Prune` を付けない場合、managed manifest は以前と今回の管理 path の和集合を保持します。
+`-Prune` を付けた場合は今回の選択と依存 closure を正としますが、source、path containment、content conflict、
+overwrite/backup 条件をすべて preflight してから削除・copy を行い、manifest は最後に atomic replace します。
 
 Copilot では Codex profile と同じ粒度の権限切り替えは再現しにくいため、このアダプターは
 完全な移植ではありません。初心者向けに、read-only ではなく「本当に危険な操作だけ

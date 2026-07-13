@@ -3,7 +3,7 @@
 Location: `$HOME\.codex\runs\<repo-name>\YYYYMMDD-HHMM-<short-task>.md`, unless the repository documents a run-note convention
 Started: `<YYYY-MM-DD HH:MM local>`
 Last updated: `<YYYY-MM-DD HH:MM local>`
-Phase: `research | implementation | verification | paused | handoff`
+Phase: `intake | scouting | planning | debugging | implementation | verification | readiness | paused | handoff`
 
 ## Goal
 
@@ -53,7 +53,8 @@ For broad, ambiguous, or high-risk work, use the matrix:
 
 ## Changes
 
--
+- Product or repository behavior artifacts (implementation-owned):
+- Workflow or evidence artifacts (phase-owned):
 
 ## Verification
 

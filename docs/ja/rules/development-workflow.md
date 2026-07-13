@@ -1,6 +1,6 @@
 ---
 source: rules/development-workflow.md
-source_blob: dddc610a6499ed50775beeae793cb79b88a4b90a
+source_blob: f99ba4e1f94cafdea89acd5c5a106ee8118480bd
 canonical: false
 ---
 
@@ -31,14 +31,30 @@ canonical: false
 
 この loop が実務上難しい場合は、恒久変更の前に理由を記録し、characterization test、CLI/HTTP reproduction、fixture、static/policy check、render inspection、browser probe、manual procedure など最小の信頼できる代替 feedback を用意する。flaky、無関係、理由不明の failure は有効な test-first の Red として扱わない。実装中の feedback は final verification の代わりにはならない。
 
+## ワークフローphase
+
+plan、run note、handoff では次のphase名を使う。
+
+- `intake`: request、risk、authority、execution pathを分類する。
+- `scouting`: repository constraints、conventions、実行可能なcheckを発見する。
+- `planning`: decision、acceptance evidence、dependencies、安全なsliceを記録する。
+- `debugging`: defectを再現し、hypothesisを検証し、root causeとregression evidenceを確立する。
+- `implementation`: product/repository behaviorの恒久変更を行い、focused feedbackを得る。
+- `verification`: 統合結果を期待結果に対して独立に評価する。
+- `readiness`: evidence、残存risk、review/release readinessを分類する。
+- `paused`: 意図的な中断中に再開可能な状態を保存する。
+- `handoff`: current state、evidence、decision、次のowned actionを引き継ぐ。
+
+evidenceにより期待結果が変わる場合やverification findingが戻る場合、phaseは前段へloopしてよい。`paused`と`handoff`はcontinuity stateであり、implementation workを所有しない。
+
 ## 所有権と遷移
 
-- 調査は制約と検証候補を発見するが、product behavior を推測で決めない。
-- planning は期待結果、判断、acceptance criteria、証拠、安全な slice を記録する。
-- debugging は reproduction、hypothesis、root-cause evidence、regression-test shape を所有し、恒久変更は implementation へ渡す。
-- implementation は product、test、configuration、documentation の恒久 patch と、verification から戻った修正を所有する。
-- verification は統合結果を独立して確認する。finding は implementation へ戻し、その後再検証する。
-- PR readiness は証拠と残存リスクを報告し、不足している必須検証を補ったことにはしない。
+成果物を2種類に分ける。
+
+- product/repository behavior artifactは、source、test、configuration、migration、user-facing documentation、script、workflow policyなど、出荷挙動またはrepository operationを定義する恒久fileである。これらのeditはimplementationが所有する。
+- workflow/evidence artifactは、intake note、scouting finding、plan、debug transcript、run note、verification result、readiness report、commit message、PR textなど、作業の理解と評価を記録する。これらはevidenceを生成するphaseが所有する。
+
+intake/scoutingは制約とverification候補を発見するが、product behaviorを推測で決めない。planningはplanとevidence mappingを所有するが、planに記載した恒久editは所有しない。debuggingはreproduction、hypothesis、root-cause evidence、regression-test shape、明示的にtemporaryなprobeを所有し、広いfixはplanning、bounded fixはimplementationへ渡す。implementationはverification/readinessから戻った修正を含むすべての恒久editを所有する。verificationは統合結果を独立確認し、恒久edit findingをimplementationへ戻して再検証する。readinessはclassificationとpackaging evidenceを所有するが、恒久file correctionはimplementationへ戻す。
 
 ## 最終検証と readiness
 

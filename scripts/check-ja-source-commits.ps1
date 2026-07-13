@@ -2,7 +2,9 @@
 param(
     [switch]$Update,
 
-    [switch]$AllowMetadataOnlyUpdate
+    [switch]$AllowMetadataOnlyUpdate,
+
+    [string]$RepositoryRoot
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,7 +14,12 @@ if ($AllowMetadataOnlyUpdate -and -not $Update) {
 }
 
 $ScriptDir = Split-Path -Parent $PSCommandPath
-$RepoRoot = Split-Path -Parent $ScriptDir
+$RepoRoot = if ($RepositoryRoot) {
+    (Resolve-Path -LiteralPath $RepositoryRoot).Path
+}
+else {
+    Split-Path -Parent $ScriptDir
+}
 
 function Invoke-Git {
     param(
@@ -93,6 +100,22 @@ function Test-HasNonSourceRevisionDiff {
         [string]$Path
     )
 
+    $trackedPaths = @(Invoke-Git -Arguments @("ls-files", "--", $Path) | Where-Object { $_ })
+    if ($trackedPaths.Count -eq 0) {
+        $fullPath = Join-Path $RepoRoot $Path
+        if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+            return $false
+        }
+
+        $normalized = (Get-Content -LiteralPath $fullPath -Raw) -replace "`r`n", "`n"
+        $documentMatch = [regex]::Match($normalized, "(?s)\A---\n.*?\n---\n(?<body>.*)\z")
+        if ($documentMatch.Success) {
+            return -not [string]::IsNullOrWhiteSpace($documentMatch.Groups["body"].Value)
+        }
+
+        return -not [string]::IsNullOrWhiteSpace($normalized)
+    }
+
     $diffs = @(
         Invoke-Git -Arguments @("diff", "--unified=0", "--", $Path)
         Invoke-Git -Arguments @("diff", "--cached", "--unified=0", "--", $Path)
@@ -116,6 +139,7 @@ $errors = New-Object System.Collections.Generic.List[string]
 $warnings = New-Object System.Collections.Generic.List[string]
 $checked = 0
 $updated = 0
+$proposed = 0
 
 foreach ($doc in $docs) {
     $content = Get-Content -LiteralPath $doc.FullName -Raw
@@ -146,6 +170,7 @@ foreach ($doc in $docs) {
     $dirtySource = [bool](Invoke-Git -Arguments @("status", "--porcelain", "--", $sourcePath))
     $dirtyTranslation = [bool](Invoke-Git -Arguments @("status", "--porcelain", "--", $relativeDoc))
     $translationHasContentChanges = Test-HasNonSourceRevisionDiff -Path $relativeDoc
+    $currentBlob = (Invoke-Git -Arguments @("hash-object", "--", $sourcePath) | Select-Object -First 1)
 
     if ($metadata.ContainsKey("source_blob")) {
         if ($metadata.ContainsKey("source_commit")) {
@@ -154,7 +179,6 @@ foreach ($doc in $docs) {
         }
 
         $sourceBlob = $metadata["source_blob"]
-        $currentBlob = (Invoke-Git -Arguments @("hash-object", "--", $sourcePath) | Select-Object -First 1)
         if ($Update -and $sourceBlob -ne $currentBlob) {
             if (-not $translationHasContentChanges -and -not $AllowMetadataOnlyUpdate) {
                 $errors.Add("${relativeDoc}: refusing to update source_blob without Japanese content changes. Update the Japanese reference text first, or re-run with -AllowMetadataOnlyUpdate when a metadata-only refresh is intentional.")
@@ -165,9 +189,16 @@ foreach ($doc in $docs) {
             if ($PSCmdlet.ShouldProcess($relativeDoc, "Update source_blob to $currentBlob")) {
                 Set-Content -LiteralPath $doc.FullName -Value $newContent -NoNewline
                 $updated++
-                $sourceBlob = $currentBlob
-                $dirtyTranslation = $true
             }
+            elseif ($WhatIfPreference) {
+                $proposed++
+            }
+            else {
+                $errors.Add("${relativeDoc}: source_blob update was not applied")
+                continue
+            }
+            $sourceBlob = $currentBlob
+            $dirtyTranslation = $true
         }
 
         if ($sourceBlob -notmatch "^[0-9a-f]{40,64}$") {
@@ -193,10 +224,6 @@ foreach ($doc in $docs) {
 
     $sourceCommit = $metadata["source_commit"]
     $latestCommit = (Invoke-Git -Arguments @("log", "-1", "--format=%H", "--", $sourcePath) | Select-Object -First 1)
-    if (-not $latestCommit) {
-        $errors.Add("${relativeDoc}: no git history for source; use source_blob for a new source: $sourcePath")
-        continue
-    }
 
     if ($Update -and $dirtySource) {
         if (-not $translationHasContentChanges -and -not $AllowMetadataOnlyUpdate) {
@@ -204,17 +231,32 @@ foreach ($doc in $docs) {
             continue
         }
 
-        $currentBlob = (Invoke-Git -Arguments @("hash-object", "--", $sourcePath) | Select-Object -First 1)
         $newContent = $content -replace "(?m)^source_commit:\s*.+$", "source_blob: $currentBlob"
         if ($PSCmdlet.ShouldProcess($relativeDoc, "Replace source_commit with source_blob $currentBlob")) {
             Set-Content -LiteralPath $doc.FullName -Value $newContent -NoNewline
             $updated++
-            $dirtyTranslation = $true
+        }
+        elseif ($WhatIfPreference) {
+            $proposed++
+        }
+        else {
+            $errors.Add("${relativeDoc}: source revision migration was not applied")
+            continue
+        }
+        $dirtyTranslation = $true
+
+        if ($currentBlob -notmatch "^[0-9a-f]{40,64}$") {
+            $errors.Add("${relativeDoc}: proposed source_blob is not a valid Git object id: $currentBlob")
         }
         $warnings.Add("${relativeDoc}: source has uncommitted changes; source_blob validates the current content")
         if ($dirtyTranslation) {
             $warnings.Add("${relativeDoc}: translation file has uncommitted changes")
         }
+        continue
+    }
+
+    if (-not $latestCommit) {
+        $errors.Add("${relativeDoc}: no git history for source; run with -Update to migrate to source_blob: $sourcePath")
         continue
     }
 
@@ -228,9 +270,16 @@ foreach ($doc in $docs) {
         if ($PSCmdlet.ShouldProcess($relativeDoc, "Update source_commit to $latestCommit")) {
             Set-Content -LiteralPath $doc.FullName -Value $newContent -NoNewline
             $updated++
-            $sourceCommit = $latestCommit
-            $dirtyTranslation = $true
         }
+        elseif ($WhatIfPreference) {
+            $proposed++
+        }
+        else {
+            $errors.Add("${relativeDoc}: source_commit update was not applied")
+            continue
+        }
+        $sourceCommit = $latestCommit
+        $dirtyTranslation = $true
     }
 
     if (-not (Test-GitCommit -Commit $sourceCommit)) {
@@ -270,4 +319,7 @@ if ($errors.Count -gt 0) {
 Write-Host "Checked $checked Japanese reference files."
 if ($Update) {
     Write-Host "Updated $updated source revision value(s)."
+    if ($WhatIfPreference) {
+        Write-Host "Validated $proposed proposed source revision change(s)."
+    }
 }

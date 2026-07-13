@@ -1,6 +1,6 @@
 ---
 source: skills/codex-plan-slices/SKILL.md
-source_blob: 3de6f5e6baa6ce55a327b2c68adc2567117e37a1
+source_blob: 7a3e7e5f297b973fe1bc4f382fe0542929dbcfe8
 canonical: false
 ---
 
@@ -51,5 +51,7 @@ subagents が使える場合は、広い作業、複数ファイル、不慣れ�
 - 小さな作業や一本道の作業では、subagent が使える場合でも parent session で直接進める。
 
 ## Output
+
+planはplanningが所有するworkflow/evidence artifactである。write scopeを割り当てても、恒久的なproduct/repository behavior editは `codex-implementation-loop` が所有する。
 
 小さな edits や skill evaluation では、conversation 内の checklist で十分。広い work では、JSON など再利用しやすい structured plan を使う。

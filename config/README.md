@@ -5,6 +5,7 @@
 ## Files
 
 - `config.base.toml`: `$CODEX_HOME/config.toml` に merge できる共有 baseline key
+- `development-skills.json`: development Skill の role、phase、durable-edit ownership、Copilot 名、default、dependency を定義する宣言的 manifest
 - `profiles/*.config.toml`: `-InstallConfig` 実行時に `$CODEX_HOME/<profile>.config.toml` へコピーされる profile file
 
 ## Scope

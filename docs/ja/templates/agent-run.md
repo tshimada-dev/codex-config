@@ -1,6 +1,6 @@
 ---
 source: templates/agent-run.md
-source_blob: 9d6f4591de6f88df9a3fbdec1d594fd18cc3e9f6
+source_blob: dcfd9c1c257657c5df9c755591e32646e8b4d983
 canonical: false
 ---
 
@@ -11,7 +11,7 @@ canonical: false
 Location: `$HOME\.codex\runs\<repo-name>\YYYYMMDD-HHMM-<short-task>.md`。ただし repository が run-note convention を定めている場合はそれを優先する。
 Started: `<YYYY-MM-DD HH:MM local>`
 Last updated: `<YYYY-MM-DD HH:MM local>`
-Phase: `research | implementation | verification | paused | handoff`
+Phase: `intake | scouting | planning | debugging | implementation | verification | readiness | paused | handoff`
 
 ## Goal
 
@@ -61,7 +61,8 @@ Phase: `research | implementation | verification | paused | handoff`
 
 ## Changes
 
--
+- Product/repository behavior artifacts (implementation-owned):
+- Workflow/evidence artifacts (phase-owned):
 
 ## Verification
 

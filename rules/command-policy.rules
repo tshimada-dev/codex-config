@@ -1,25 +1,77 @@
 # Personal command policy examples.
 #
 # Keep this file conservative. Specific safe commands can be added as they become routine.
-# Add allow rules only for read-only commands or trusted verification commands in already trusted
-# repositories. Build and test commands are trusted-repository shortcuts: in first-time or
-# untrusted repositories, treat them as arbitrary code execution and ask before running them.
+# Add allow rules only for read-only commands. Repository-controlled build and test commands can
+# execute arbitrary code, so the user layer keeps them behind an explicit trust confirmation.
+# A trusted repository may add narrower project-local allow rules after its config layer is trusted.
 # Package install, networked tools, publishing, deployment, migration, remote mutation, cost
 # incurring cloud operations, and destructive commands must remain prompt or forbidden.
 
 prefix_rule(pattern=["git", "status"], decision="allow")
-prefix_rule(pattern=["git", "diff"], decision="allow")
-prefix_rule(pattern=["git", "log"], decision="allow")
-prefix_rule(pattern=["git", "show"], decision="allow")
-prefix_rule(pattern=["rg"], decision="allow")
-prefix_rule(pattern=["npm", "run", "build"], decision="allow")
-prefix_rule(pattern=["npm", "test"], decision="allow")
-prefix_rule(pattern=["uv", "run", "pytest"], decision="allow")
-prefix_rule(pattern=["uv", "run", "ruff", "check"], decision="allow")
-prefix_rule(pattern=["uv", "run", "mypy"], decision="allow")
-prefix_rule(pattern=["git", "clean", "-n"], decision="allow")
-prefix_rule(pattern=["git", "clean", "--dry-run"], decision="allow")
-prefix_rule(pattern=["git", "restore", "--staged"], decision="allow")
+prefix_rule(
+    pattern=["npm", "run"],
+    decision="prompt",
+    justification="Repository-controlled npm scripts can execute arbitrary code; confirm repository trust first.",
+    match=["npm run build", "npm run lint", "npm run typecheck"],
+    not_match=["npm test"],
+)
+prefix_rule(
+    pattern=["npm", "test"],
+    decision="prompt",
+    justification="Repository-controlled test scripts can execute arbitrary code; confirm repository trust first.",
+    match=["npm test", "npm test -- --watch=false"],
+    not_match=["npm run build"],
+)
+prefix_rule(
+    pattern=["uv", "run"],
+    decision="prompt",
+    justification="Repository-controlled uv commands, tools, and plugins can execute arbitrary code; confirm repository trust first.",
+    match=["uv run pytest", "uv run ruff check .", "uv run mypy src"],
+    not_match=["uv sync"],
+)
+
+# Broad read-looking commands can still execute configured preprocessors or external diff drivers.
+prefix_rule(
+    pattern=["rg"],
+    decision="prompt",
+    justification="ripgrep --pre can execute an arbitrary preprocessor; confirm repository trust before running rg from the user layer.",
+    match=["rg workflow", "rg --pre pwsh workflow"],
+)
+prefix_rule(
+    pattern=["git", "diff"],
+    decision="prompt",
+    justification="git diff can execute configured textconv or external diff drivers; confirm repository trust first.",
+    match=["git diff", "git diff --ext-diff"],
+    not_match=["git status"],
+)
+prefix_rule(
+    pattern=["git", "log"],
+    decision="prompt",
+    justification="git log accepts patch and external diff options that can invoke configured drivers; confirm repository trust first."
+)
+prefix_rule(
+    pattern=["git", "show"],
+    decision="prompt",
+    justification="git show can invoke configured textconv or external diff drivers; confirm repository trust first."
+)
+
+# Common project runners are prompt-gated at the user layer. This list is intentionally not an
+# exhaustive trust model: commands without a matching rule retain the runtime/sandbox default.
+prefix_rule(pattern=["npm", "exec"], decision="prompt", justification="npm exec can run repository or downloaded code.")
+prefix_rule(pattern=["npx"], decision="prompt", justification="npx can run repository or downloaded code.")
+prefix_rule(pattern=["pnpm"], decision="prompt", justification="pnpm commands can run repository scripts or mutate dependencies.")
+prefix_rule(pattern=["yarn"], decision="prompt", justification="Yarn commands can run repository scripts or mutate dependencies.")
+prefix_rule(pattern=["bun"], decision="prompt", justification="Bun commands can run repository scripts or downloaded code.")
+prefix_rule(pattern=["deno"], decision="prompt", justification="Deno commands can execute project code and access configured capabilities.")
+prefix_rule(pattern=["uvx"], decision="prompt", justification="uvx can download and execute tools.")
+prefix_rule(pattern=["make"], decision="prompt", justification="Make targets are repository-controlled arbitrary commands.")
+prefix_rule(pattern=["cargo"], decision="prompt", justification="Cargo commands can execute builds, tests, plugins, and build scripts.")
+prefix_rule(pattern=["go"], decision="prompt", justification="Go project commands can execute tests, generators, and toolchain hooks.")
+prefix_rule(pattern=["dotnet"], decision="prompt", justification="dotnet project commands can execute builds, tests, and tools.")
+prefix_rule(pattern=["mvn"], decision="prompt", justification="Maven goals and plugins can execute repository-controlled code.")
+prefix_rule(pattern=["gradle"], decision="prompt", justification="Gradle builds and plugins can execute repository-controlled code.")
+prefix_rule(pattern=["gradlew"], decision="prompt", justification="The repository Gradle wrapper executes repository-controlled build logic.")
+prefix_rule(pattern=["./gradlew"], decision="prompt", justification="The repository Gradle wrapper executes repository-controlled build logic.")
 
 prefix_rule(
     pattern=["git", "push"],

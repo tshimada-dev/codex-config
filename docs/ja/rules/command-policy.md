@@ -1,6 +1,6 @@
 ---
 source: rules/command-policy.rules
-source_commit: 1b6919b924b6a9dd5b2a6e1721a31421f97a9094
+source_blob: 1e61d727a5e17aa3af17d80845aafe3d5535f94d
 canonical: false
 ---
 
@@ -12,25 +12,13 @@ canonical: false
 
 このファイルは保守的に運用する。日常的に安全だと分かったコマンドだけ、具体的に許可する。
 
-allow rule を追加するのは、読み取り専用 command、または既に信頼済みの repo における trusted verification command に限る。build/test command は trusted repo 前提の shortcut であり、初見または未信頼 repo では任意コード実行として扱い、実行前に確認する。package install、networked tools、publish、deploy、migration、remote mutation、cost-incurring cloud operations、破壊的 command は `prompt` または `forbidden` のままにする。
+allow rule を追加するのは、読み取り専用 command に限る。repository が定義する build/test command は任意コードを実行できるため、user layer では明示的な trust 確認を求める `prompt` にする。信頼済み repository では、その project config layer が trust された後に、より限定的な project-local allow rule を追加できる。package install、networked tools、publish、deploy、migration、remote mutation、cost-incurring cloud operations、破壊的 command は `prompt` または `forbidden` のままにする。
 
 ## allow
 
-以下は読み取りまたは一般的な検証として扱い、許可する。
+以下は読み取り専用操作として扱い、許可する。
 
 - `git status`
-- `git diff`
-- `git log`
-- `git show`
-- `rg`
-- `npm run build`
-- `npm test`
-- `uv run pytest`
-- `uv run ruff check`
-- `uv run mypy`
-- `git clean -n`
-- `git clean --dry-run`
-- `git restore --staged`
 
 ## forbidden
 
@@ -40,6 +28,17 @@ allow rule を追加するのは、読み取り専用 command、または既に�
 
 以下はユーザー確認を挟む。
 
+- `npm run build`: repository-controlled build script を実行するため、repository trust の確認が必要。
+- `npm run <script>`: repository-controlled script を実行するため、repository trust の確認が必要。
+- `npm test`: repository-controlled test script を実行するため、repository trust の確認が必要。
+- `uv run pytest`: test と依存関係が任意コードを実行できるため、repository trust の確認が必要。
+- `uv run ruff check`: repository-controlled tooling や plugin がコードを実行できるため、repository trust の確認が必要。
+- `uv run mypy`: repository-controlled tooling や plugin がコードを実行できるため、repository trust の確認が必要。
+- `rg`: `--pre` が任意のpreprocessorを実行できるため、user layerではrepository trustの確認が必要。
+- `git diff`: `--ext-diff`、textconv、external diff driverが外部commandを実行できるため、repository trustの確認が必要。
+- `git log`、`git show`: patch/textconv/external diff optionが外部commandを実行できるため、repository trustの確認が必要。
+- `npm exec`、`npx`、`pnpm`、`yarn`、`bun`、`deno`、`uvx`: project scriptやdownload済みtoolを実行できる。
+- `make`、`cargo`、`go`、`dotnet`、`mvn`、`gradle`、`gradlew`: repository-controlled build/test/plugin処理を実行できる。
 - `git push`: リモートリポジトリを変更するため、明示的な確認が必要。
 - `git reset --hard`: ローカル作業を破棄する。
 - `git clean`: untracked files を削除する可能性がある。

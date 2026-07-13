@@ -31,6 +31,9 @@ the same profile-driven execution boundary.
 - [`rules/development-workflow.md`](rules/development-workflow.md) is the shared
   contract for expected outcomes, acceptance evidence, test-first exceptions,
   phase ownership, and final readiness.
+- [`config/development-skills.json`](config/development-skills.json) declares
+  workflow roles, phases, durable-edit ownership, Copilot names, defaults, and
+  cross-skill dependencies in one machine-readable source.
 
 ## Repository Map
 
@@ -86,13 +89,20 @@ canonical rule as `references/development-workflow.md` and rewrites the relative
 link. The rule therefore remains single-sourced while each Copilot skill stays
 self-contained.
 It refuses to overwrite different existing files unless `-Overwrite` is passed.
-By default, it installs only the more tool-neutral workflow skills:
+The default entry points are the more tool-neutral workflow skills:
 `task-intake`, `repo-scout`, `implementation-loop`, `debug-discipline`,
-`plan-slices`, `pr-readiness`, and `ui-quality-gate`. Codex- or
+`plan-slices`, `pr-readiness`, and `ui-quality-gate`. The installer recursively
+adds their manifest-declared support dependencies and rewrites exact cross-skill
+`codex-*` identifiers to installed `copilot-*` targets. Codex- or
 environment-coupled skills such as `codex-claude-code-reviewer` and
 `codex-wsl-command-bridge` are not installed unless explicitly requested.
 Use `-SkillName repo-scout,implementation-loop` to install selected skills, or
 `-AllSkills` only after confirming the extra skills make sense in Copilot.
+
+Without `-Prune`, a partial install preserves the union of previously and newly
+managed paths. With `-Prune`, the selected dependency closure becomes
+authoritative. All source, containment, conflict, overwrite, and backup checks
+finish before mutation, and the managed manifest is replaced atomically last.
 
 Because Copilot does not mirror the Codex `safe` / `local-check` / `workspace`
 profile model, this adapter intentionally keeps a narrower scope. For
@@ -137,6 +147,11 @@ assumption. Final status is reported as `ready`, `conditionally-ready`, or
 Unknown repositories remain under the `safe` profile until trust is explicitly
 established by the runtime/profile or the user. Agent judgment alone does not
 promote repository trust.
+The user-level command policy prompt-gates npm/uv scripts and common project
+runners. It also avoids broad allows for external-execution paths such as
+`rg --pre` and `git diff --ext-diff`; unlisted commands retain the runtime and
+sandbox defaults. A trusted repository may add narrowly scoped project-local
+allow rules after its project config layer is trusted.
 
 ## Portability
 

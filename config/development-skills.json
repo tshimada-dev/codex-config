@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "source_name": "codex-claude-code-reviewer",
+      "copilot_name": "copilot-claude-code-reviewer",
+      "default": false,
+      "support": false,
+      "role": "external-reviewer",
+      "phase": "verification",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": false,
+      "dependencies": []
+    },
+    {
+      "source_name": "codex-cloud-ops-intake",
+      "copilot_name": "copilot-cloud-ops-intake",
+      "default": false,
+      "support": true,
+      "role": "operational-intake",
+      "phase": "intake",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": false,
+      "dependencies": []
+    },
+    {
+      "source_name": "codex-context-handoff",
+      "copilot_name": "copilot-context-handoff",
+      "default": false,
+      "support": true,
+      "role": "continuity",
+      "phase": "handoff",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": false,
+      "dependencies": []
+    },
+    {
+      "source_name": "codex-debug-discipline",
+      "copilot_name": "copilot-debug-discipline",
+      "default": true,
+      "support": false,
+      "role": "diagnosis",
+      "phase": "debugging",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": true,
+      "dependencies": ["codex-implementation-loop", "codex-ui-quality-gate"]
+    },
+    {
+      "source_name": "codex-effort-estimator",
+      "copilot_name": "copilot-effort-estimator",
+      "default": false,
+      "support": false,
+      "role": "estimation",
+      "phase": "planning",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": false,
+      "dependencies": []
+    },
+    {
+      "source_name": "codex-field-investigation-loop",
+      "copilot_name": "copilot-field-investigation-loop",
+      "default": false,
+      "support": false,
+      "role": "field-investigation",
+      "phase": "debugging",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": false,
+      "dependencies": []
+    },
+    {
+      "source_name": "codex-implementation-loop",
+      "copilot_name": "copilot-implementation-loop",
+      "default": true,
+      "support": false,
+      "role": "implementation",
+      "phase": "implementation",
+      "owns_durable_product_edits": true,
+      "uses_development_workflow": true,
+      "dependencies": ["codex-debug-discipline", "codex-repo-scout", "codex-ui-quality-gate"]
+    },
+    {
+      "source_name": "codex-plan-slices",
+      "copilot_name": "copilot-plan-slices",
+      "default": true,
+      "support": false,
+      "role": "planning",
+      "phase": "planning",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": true,
+      "dependencies": ["codex-debug-discipline", "codex-implementation-loop", "codex-repo-scout", "codex-task-intake"]
+    },
+    {
+      "source_name": "codex-pr-readiness",
+      "copilot_name": "copilot-pr-readiness",
+      "default": true,
+      "support": false,
+      "role": "readiness",
+      "phase": "readiness",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": true,
+      "dependencies": ["codex-implementation-loop"]
+    },
+    {
+      "source_name": "codex-repo-scout",
+      "copilot_name": "copilot-repo-scout",
+      "default": true,
+      "support": false,
+      "role": "repository-research",
+      "phase": "scouting",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": true,
+      "dependencies": []
+    },
+    {
+      "source_name": "codex-task-intake",
+      "copilot_name": "copilot-task-intake",
+      "default": true,
+      "support": false,
+      "role": "task-intake",
+      "phase": "intake",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": true,
+      "dependencies": [
+        "codex-cloud-ops-intake",
+        "codex-context-handoff",
+        "codex-debug-discipline",
+        "codex-implementation-loop",
+        "codex-plan-slices",
+        "codex-pr-readiness",
+        "codex-repo-scout",
+        "codex-ui-quality-gate"
+      ]
+    },
+    {
+      "source_name": "codex-ui-quality-gate",
+      "copilot_name": "copilot-ui-quality-gate",
+      "default": true,
+      "support": false,
+      "role": "ui-verification",
+      "phase": "verification",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": true,
+      "dependencies": ["codex-implementation-loop"]
+    },
+    {
+      "source_name": "codex-wsl-command-bridge",
+      "copilot_name": "copilot-wsl-command-bridge",
+      "default": false,
+      "support": false,
+      "role": "command-bridge",
+      "phase": null,
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": false,
+      "dependencies": []
+    }
+  ]
+}

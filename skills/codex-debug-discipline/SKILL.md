@@ -1,6 +1,6 @@
 ---
 name: codex-debug-discipline
-description: Diagnose bugs, failing tests, flaky behavior, performance regressions, wrong output, crashes, or user reports that something is broken. Use when Codex must reproduce, instrument, hypothesize, fix, and regression-test a defect.
+description: Diagnose bugs, failing tests, flaky behavior, performance regressions, wrong output, crashes, or user reports that something is broken. Use when Codex must reproduce, instrument, test hypotheses, establish root cause, and define regression evidence for a defect.
 ---
 
 # Codex Debug Discipline

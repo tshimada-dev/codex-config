@@ -80,6 +80,8 @@ Report changed files, tests run, and unresolved issues.
 
 ## Plan Artifact
 
+The plan is a workflow and evidence artifact owned by planning. It may assign write scopes, but every durable product or repository behavior edit remains owned by `codex-implementation-loop`.
+
 Do not create a plan file unless the user requested a durable artifact, the repo already has a matching planning convention, or the work is actively multi-session. Otherwise provide the plan in the response.
 
 For tiny edits or skill evaluations, an in-conversation checklist is enough unless the user asks for a durable plan file.
