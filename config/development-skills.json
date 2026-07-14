@@ -112,6 +112,17 @@
       "dependencies": []
     },
     {
+      "source_name": "codex-secure-ssh-doas-ops",
+      "copilot_name": "copilot-secure-ssh-doas-ops",
+      "default": false,
+      "support": false,
+      "role": "remote-operations",
+      "phase": "implementation",
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": false,
+      "dependencies": ["codex-cloud-ops-intake"]
+    },
+    {
       "source_name": "codex-task-intake",
       "copilot_name": "copilot-task-intake",
       "default": true,

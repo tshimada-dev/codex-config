@@ -26,6 +26,7 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [config/README.md](../../config/README.md): config baseline の管理範囲
 - [skills/codex-task-intake.md](skills/codex-task-intake.md): タスク受け入れ
 - [skills/codex-repo-scout.md](skills/codex-repo-scout.md): リポジトリ調査
+- [skills/codex-secure-ssh-doas-ops.md](skills/codex-secure-ssh-doas-ops.md): 安全な SSH・doas 運用
 - [skills/codex-implementation-loop.md](skills/codex-implementation-loop.md): 実装ループ
 - [skills/codex-debug-discipline.md](skills/codex-debug-discipline.md): デバッグ規律
 - [skills/codex-plan-slices.md](skills/codex-plan-slices.md): 作業分割

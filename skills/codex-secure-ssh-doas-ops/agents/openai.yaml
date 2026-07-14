@@ -1,0 +1,4 @@
+interface:
+  display_name: "Secure SSH + doas Operations"
+  short_description: "Keep SSH and doas passwords out of agent-visible channels"
+  default_prompt: "Use $codex-secure-ssh-doas-ops to run an SSH deployment that needs interactive doas authentication without exposing passwords."
