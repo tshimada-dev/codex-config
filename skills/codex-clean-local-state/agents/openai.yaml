@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Local State Cleanup"
+  short_description: "Safely clean stale Codex sessions and databases"
+  default_prompt: "Use $codex-clean-local-state to diagnose Codex app slowness and safely clean stale local sessions."

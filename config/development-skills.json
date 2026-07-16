@@ -13,6 +13,17 @@
       "dependencies": []
     },
     {
+      "source_name": "codex-clean-local-state",
+      "copilot_name": "copilot-clean-local-state",
+      "default": false,
+      "support": false,
+      "role": "local-state-maintenance",
+      "phase": null,
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": false,
+      "dependencies": []
+    },
+    {
       "source_name": "codex-cloud-ops-intake",
       "copilot_name": "copilot-cloud-ops-intake",
       "default": false,

@@ -28,6 +28,7 @@ jobs:
             'scripts/test-copilot-skill-installer.ps1',
             'scripts/test-ja-source-metadata.ps1',
             'scripts/validate-development-workflow.ps1',
+            'skills/codex-clean-local-state/scripts/wait_and_execute.ps1',
             'skills/codex-claude-code-reviewer/scripts/invoke-claude-review.ps1',
             'skills/codex-wsl-command-bridge/scripts/Invoke-WslScript.ps1'
           )
@@ -59,6 +60,11 @@ jobs:
       - name: Validate development workflow invariants
         shell: pwsh
         run: ./scripts/validate-development-workflow.ps1
+
+      - name: Validate Codex local-state cleanup safety
+        shell: pwsh
+        run: python -m unittest -v test_cleanup_stale_codex_sessions.py
+        working-directory: skills/codex-clean-local-state/scripts
 
       - name: Install pinned Codex CLI for execpolicy checks
         run: npm install --global @openai/codex@0.121.0

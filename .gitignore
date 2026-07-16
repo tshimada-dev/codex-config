@@ -2,6 +2,8 @@
 *.secret.*
 *.local.*
 *.log
+__pycache__/
+*.py[cod]
 
 # Codex runtime/cache state should not be carried between machines.
 automations/
