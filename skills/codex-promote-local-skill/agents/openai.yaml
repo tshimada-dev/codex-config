@@ -1,0 +1,4 @@
+interface:
+  display_name: "Promote Local Skill"
+  short_description: "Assess and promote local Skills into codex-config"
+  default_prompt: "Use $codex-promote-local-skill to assess a local Skill and safely promote it into codex-config."

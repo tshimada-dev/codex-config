@@ -101,6 +101,17 @@
       "dependencies": ["codex-debug-discipline", "codex-implementation-loop", "codex-repo-scout", "codex-task-intake"]
     },
     {
+      "source_name": "codex-promote-local-skill",
+      "copilot_name": "copilot-promote-local-skill",
+      "default": false,
+      "support": false,
+      "role": "skill-promotion-orchestrator",
+      "phase": null,
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": true,
+      "dependencies": ["codex-implementation-loop", "codex-pr-readiness", "codex-repo-scout"]
+    },
+    {
       "source_name": "codex-pr-readiness",
       "copilot_name": "copilot-pr-readiness",
       "default": true,

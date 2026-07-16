@@ -66,6 +66,11 @@ jobs:
         run: python -m unittest -v test_cleanup_stale_codex_sessions.py
         working-directory: skills/codex-clean-local-state/scripts
 
+      - name: Validate local Skill promotion safety
+        shell: pwsh
+        run: python -m unittest -v test_audit_skill_promotion.py
+        working-directory: skills/codex-promote-local-skill/scripts
+
       - name: Install pinned Codex CLI for execpolicy checks
         run: npm install --global @openai/codex@0.121.0
 
