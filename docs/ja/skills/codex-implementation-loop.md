@@ -1,6 +1,6 @@
 ---
 source: skills/codex-implementation-loop/SKILL.md
-source_blob: d1a9f70dad9d29e1c420d2d5eac4f80ed8ee0472
+source_blob: 994b3e6bd9b528870a744a044487391825418eff
 canonical: false
 ---
 
@@ -62,9 +62,7 @@ subagents が使える場合は、parent の次 step を妨げない bounded sli
 ## Change Discipline
 
 - 「最小変更」は編集行数が最少という意味ではなく、architecture 上一貫した最小の変更として扱う。shared invariant を守る、duplicated logic を防ぐ、または短命な technical debt を意図的に作らずに済む場合は、少し広い変更を正当化できる。
-- user changes を保持する。
-- dirty target file を編集する前に diff を確認し、user-owned hunks を把握する。
-- unknown user edits と衝突する場合は、進める前に簡潔に1つ質問する。
+- editing/packaging 前の user work 保持は、共通契約の worktree-preservation rule に従う。
 - disposable repro/rehearsal projects では agreed temp/project directory 内だけを編集する。
 - instruction/skill file への recommendation 依頼では、直接編集を求められていない限り patch を提示するだけにする。
 - 無関係な refactor はしない。

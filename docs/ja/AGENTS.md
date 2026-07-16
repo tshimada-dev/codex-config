@@ -1,6 +1,6 @@
 ---
 source: AGENTS.md
-source_blob: 37f1629f4b3da98acfa9ab2e108ae6178ccbf6e3
+source_blob: 94140f6f0f8c98a5837cba16ad6d804c76a94e83
 canonical: false
 ---
 
@@ -16,9 +16,10 @@ canonical: false
 
 ## 安全境界
 
+- repository trust と repository-controlled command の実行可否は `$HOME\.codex\rules\development-workflow.md` を正とする。
+- cloud、infrastructure、database、deployment、migration command の前に `codex-cloud-ops-intake` で exact target と approval boundary を確立する。
 - 破壊的なローカルコマンド、リモート変更、公開、デプロイ、本番 migration、secret の取り扱いは、明示的なユーザー承認なしに実行しない。
 - secret、token、private key、cookie、`.env` の内容は、ユーザーが明示的に依頼し、かつ task に必要な場合を除き、inspect、print、copy、upload、summary しない。
-- 初見または未信頼 repo では、build/test command も任意コード実行として扱う。`safe` profile で調査し、runtime/profile が trust を明示するか、ユーザーが明示確認した後だけ `local-check` または `workspace` に切り替える。エージェント自身の判断だけでは trust を昇格させない。
 
 ## 個人用リファレンス
 

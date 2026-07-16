@@ -33,6 +33,7 @@ Use an investigation state bundle as the canonical source of truth. Treat chat a
 5. **Probe**
    - Pick the safest, narrowest probe that distinguishes hypotheses.
    - Test one hypothesis at a time.
+   - For cloud, infrastructure, database, deployment, or migration probes, use `codex-cloud-ops-intake` to establish the exact target and approval boundary before commands.
    - Prefer read-only probes first. Stop for explicit approval before production mutations, restarts, destructive commands, deployments, migrations, or secret handling.
 
 6. **Update**

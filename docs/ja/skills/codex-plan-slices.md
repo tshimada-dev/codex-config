@@ -1,6 +1,6 @@
 ---
 source: skills/codex-plan-slices/SKILL.md
-source_blob: 7a3e7e5f297b973fe1bc4f382fe0542929dbcfe8
+source_blob: cc942980de635d0347148df7ff5df22e377a1225
 canonical: false
 ---
 
@@ -15,6 +15,8 @@ canonical: false
 ## 共通開発契約
 
 `rules/development-workflow.md` に従い、期待結果、non-goals、authority conflict、acceptance criteria と evidence を planning artifact に保持する。
+
+explicit slice が必要な広さの作業で使い、repository context が不足する場合は通常 `codex-repo-scout` の後に使う。恒久 edit は `codex-implementation-loop` に渡す。
 
 ## Planning Steps
 

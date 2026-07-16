@@ -13,8 +13,9 @@ the same profile-driven execution boundary.
 ## Why It Matters
 
 - [`skills/codex-*`](skills/) separates repository scouting, planning,
-  implementation, debugging, UI verification, review preparation, handoff, and
-  external review into focused Codex skills.
+  implementation, debugging, UI verification, review preparation, and external
+  review into focused Codex skills, while continuity stays in the long-running
+  workflow and active run note.
 - [`skills/codex-effort-estimator`](skills/codex-effort-estimator/) is the main
   case study for bias control in software estimation: independent passes,
   line-level AI adjustment, audit-friendly workbook output, and follow-up
@@ -90,12 +91,13 @@ link. The rule therefore remains single-sourced while each Copilot skill stays
 self-contained.
 It refuses to overwrite different existing files unless `-Overwrite` is passed.
 The default entry points are the more tool-neutral workflow skills:
-`task-intake`, `repo-scout`, `implementation-loop`, `debug-discipline`,
-`plan-slices`, `pr-readiness`, and `ui-quality-gate`. The installer recursively
+`repo-scout`, `implementation-loop`, `debug-discipline`, `plan-slices`,
+`pr-readiness`, and `ui-quality-gate`. The installer recursively
 adds their manifest-declared support dependencies and rewrites exact cross-skill
-`codex-*` identifiers to installed `copilot-*` targets. Codex- or
-environment-coupled skills such as `codex-claude-code-reviewer` and
-`codex-wsl-command-bridge` are not installed unless explicitly requested.
+`codex-*` identifiers to installed `copilot-*` targets. `task-intake` is an
+optional skill for consequential ambiguity rather than a default classification
+ritual. Codex-coupled skills such as `codex-claude-code-reviewer` are not
+installed unless explicitly requested.
 Use `-SkillName repo-scout,implementation-loop` to install selected skills, or
 `-AllSkills` only after confirming the extra skills make sense in Copilot.
 
@@ -159,11 +161,14 @@ This repository is still optimized for my Windows and PowerShell-based Codex
 environment, but the main installer is PowerShell 7 based and can be run with
 `pwsh` on macOS and Linux.
 
-Some supporting examples are intentionally Windows-specific, especially the WSL
-command bridge skill and parts of the command-policy documentation. If this
-repository becomes a team template or OSS distribution target, deeper
-cross-platform packaging should be handled as its own scoped change. This
-follows the same direction as
+Machine-specific WSL bridge helpers remain local rather than repository-managed.
+The shared workflow keeps only the portable safety contract: canonicalize
+recursive delete/move targets with tools such as `readlink -f`, validate the
+resolved boundary, and prefer `wsl.exe bash -s --` stdin execution for
+non-trivial multi-line Bash from PowerShell. That stdin mode was verified in the
+target Windows/WSL environment. If this repository becomes a team template or
+OSS distribution target, deeper cross-platform packaging should be handled as
+its own scoped change. This follows the same direction as
 [issue #9](https://github.com/tshimada-dev/codex-config/issues/9).
 
 ## License

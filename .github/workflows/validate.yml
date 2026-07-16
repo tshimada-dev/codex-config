@@ -29,8 +29,7 @@ jobs:
             'scripts/test-ja-source-metadata.ps1',
             'scripts/validate-development-workflow.ps1',
             'skills/codex-clean-local-state/scripts/wait_and_execute.ps1',
-            'skills/codex-claude-code-reviewer/scripts/invoke-claude-review.ps1',
-            'skills/codex-wsl-command-bridge/scripts/Invoke-WslScript.ps1'
+            'skills/codex-claude-code-reviewer/scripts/invoke-claude-review.ps1'
           )
 
           foreach ($script in $scripts) {

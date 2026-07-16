@@ -148,11 +148,12 @@ source repository 側の `codex-*` Skill を保ったまま、Copilot 側へ `co
 .\scripts\install-copilot-skills.ps1
 ```
 
-デフォルト entry point は、ツール中立に使いやすい `task-intake`、`repo-scout`、
+デフォルト entry point は、ツール中立に使いやすい `repo-scout`、
 `implementation-loop`、`debug-discipline`、`plan-slices`、`pr-readiness`、
 `ui-quality-gate` です。installer は `config/development-skills.json` の依存関係を再帰的に解決し、
-参照先の support Skill も一緒に導入します。`codex-claude-code-reviewer` や
-`codex-wsl-command-bridge` のような Codex/環境結合の強い Skill は、明示指定しない限り
+参照先の support Skill も一緒に導入します。`task-intake` は、通常の依頼分類をモデル自身に任せ、
+結果や安全境界を大きく変える曖昧さが残る場合だけ明示導入する optional Skill です。
+`codex-claude-code-reviewer` のような Codex 結合の強い Skill も、明示指定しない限り
 Copilot 側へ入れません。
 
 共通契約を参照する skill では、installer が canonical な
@@ -200,6 +201,10 @@ VS Code の `settings.json` に JSONC コメントが含まれる場合、merge 
 このリポジトリは保守的に管理します。
 
 - 再利用できるスキルとドキュメントだけを管理する。
+- 通常の検索、分類、ルーティングなど frontier model が十分に行える挙動は手順として重複させず、missing knowledge、interface contract、停止条件だけを Skill に残す。
+- `codex-repo-scout` は explorer evidence packet と停止条件に絞り、`codex-task-intake` は consequential ambiguity 用の optional gate として default 対象外にする。
+- handoff の正本は long-running workflow と active run note に集約し、独立 Skill は持たない。
+- WSL bridge のような端末固有 helper は keep-local とし、汎用的な `readlink -f` path guard と stdin 実行方針だけを共通契約で管理する。`wsl.exe bash -s --` の stdin mode は Windows/WSL 環境で実行確認済み。
 - シークレット、トークン、`.env`、プラグインキャッシュ、automation の状態はコミットしない。
 - 端末固有の上書き設定は、git 管理外の local ファイルに置く。
 - live `config.toml` は丸ごと同期せず、共有可能な baseline だけを明示 merge する。

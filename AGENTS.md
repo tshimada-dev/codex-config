@@ -8,7 +8,8 @@
 
 ## Safety Boundaries
 
-- Treat executable commands from unknown or untrusted repositories according to the trust rule in `$HOME\.codex\rules\development-workflow.md`; agent judgment alone does not elevate trust.
+- Repository trust and repository-controlled command execution are governed by `$HOME\.codex\rules\development-workflow.md`.
+- Before cloud, infrastructure, database, deployment, or migration commands, use `codex-cloud-ops-intake` to establish the exact target and approval boundary.
 - Do not run destructive local commands, remote-changing commands, publishing commands, deployments, production migrations, or secret-handling operations without explicit user approval.
 - Do not inspect, print, copy, upload, or summarize secrets, tokens, private keys, cookies, or `.env` contents unless the user explicitly asks and the task requires it.
 

@@ -1,6 +1,6 @@
 ---
 source: skills/codex-pr-readiness/SKILL.md
-source_blob: 7a5040a01cb8c1a0016a5bb85a20d9444b17deb6
+source_blob: e5e08d51ddc5e5efb622c2a758fb7d3c56ebc602
 canonical: false
 ---
 
@@ -40,6 +40,8 @@ verification を skip した場合は、理由、実行すべきだった comman
 reviewまたはCI follow-upで恒久修正が判明した場合はfindingを記録して `codex-implementation-loop` へ遷移し、修正と必須verificationの完了後にreadinessを再開する。
 
 subagents が使える場合は、stage/commit 前の focused pre-PR review を reviewer agent に任せる。
+
+packaging 前は共通契約の worktree-preservation rule に従い、requested change と unrelated work を分離する。
 
 ## Commit Discipline
 

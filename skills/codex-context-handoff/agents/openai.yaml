@@ -1,4 +1,0 @@
-interface:
-  display_name: "Codex Context Handoff"
-  short_description: "Capture context for resumes and handoffs."
-  default_prompt: "Use this skill to write concise continuation notes after complex or interrupted work."

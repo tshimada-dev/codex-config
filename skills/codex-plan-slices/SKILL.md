@@ -16,7 +16,7 @@ Read and follow [`../../rules/development-workflow.md`](../../rules/development-
 
 ## Composition
 
-Use after `codex-task-intake` and usually after `codex-repo-scout`. Hand off to `codex-implementation-loop` for actual edits. For bugs, let `codex-debug-discipline` find the cause before slicing implementation work.
+Use when the work is broad enough to need explicit slices, usually after `codex-repo-scout` if repository context is missing. Hand off to `codex-implementation-loop` for actual edits. For bugs, let `codex-debug-discipline` find the cause before slicing implementation work.
 
 ## Planning Steps
 

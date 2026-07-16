@@ -23,6 +23,14 @@ Follow `development-workflow.md` for expected outcomes, evidence, ownership, ver
 - Update the note at phase boundaries, when assumptions or scope change, after each meaningful implementation slice, after verification commands, before pausing, and before handing off.
 - Keep entries brief and decision-focused. Link or name files and commands instead of pasting large logs or diffs.
 
+## Handoff And Resume Context
+
+- Do not create a separate handoff file unless the user requests durable context or the repository has that convention.
+- When an active run note exists, update it with a concise `## Handoff` section instead of creating a second source of truth.
+- Preserve only the goal, current status, important decisions, changed files, verification outcomes, blockers, next concrete step, and any tool gap that affects verification.
+- Exclude transcripts, duplicate specifications, raw logs that are not the artifact, secrets, and speculation without a next action.
+- For completed temporary simulations, the final response is normally enough unless the user asked to retain artifacts.
+
 ## Research
 
 - Restate the request in one sentence.

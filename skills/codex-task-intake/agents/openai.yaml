@@ -1,4 +1,4 @@
 interface:
   display_name: "Codex Task Intake"
-  short_description: "Clarify ambiguous Codex work before execution."
-  default_prompt: "Use this skill to clarify scope, risks, and execution mode for ambiguous Codex tasks."
+  short_description: "Resolve one consequential ambiguity before execution."
+  default_prompt: "Use this optional gate only when a consequential target, authority, or safety ambiguity cannot be resolved from available context."

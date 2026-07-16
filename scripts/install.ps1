@@ -90,7 +90,11 @@ function Get-ManagedRelativeFiles {
         "skills/codex-*"
     )
 
-    return $files | Where-Object { $_ } | Sort-Object
+    return $files |
+        Where-Object {
+            $_ -and (Test-Path -LiteralPath (Join-Path $RepoRoot ($_ -replace "/", [System.IO.Path]::DirectorySeparatorChar)) -PathType Leaf)
+        } |
+        Sort-Object
 }
 
 function Get-ConfigProfileRelativeFiles {

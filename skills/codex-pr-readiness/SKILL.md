@@ -48,7 +48,7 @@ When subagents are available, prefer a reviewer agent for a focused pre-PR pass 
 
 If verification is skipped or unavailable, state the exact reason, what would have been run, and residual risk. Do not report `ready` when required evidence was skipped or is unavailable.
 
-Before packaging a dirty target file, inspect its diff and separate user-owned hunks from your hunks.
+Before packaging, apply the shared contract's worktree-preservation rules and keep the requested change separate from unrelated work.
 
 If review or CI follow-up reveals a durable correction, record the finding and transition to `codex-implementation-loop`. Resume readiness only after the correction and its required verification are complete.
 

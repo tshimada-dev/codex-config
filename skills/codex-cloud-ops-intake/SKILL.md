@@ -5,37 +5,30 @@ description: Classify and gate cloud, infrastructure, database, deployment, and 
 
 # Codex Cloud Ops Intake
 
-Use this skill before any cloud, infrastructure, database, deployment, or migration command. The goal is to make the target, effect, and approval boundary explicit before Codex touches external state.
+Use this skill before cloud, infrastructure, database, deployment, or migration commands. Its narrow purpose is to prevent operations against an assumed target and to produce an exact approval packet for mutations.
 
-## Intake
+## Shared Safety Boundary
 
-Record these facts before choosing commands:
+<!-- workflow-invariant: shared-contract -->
 
-1. Provider or system: AWS, Terraform, Kubernetes, Helm, CDK, SAM, Serverless, Pulumi, database, deployment tool, or other.
-2. Account, profile, project, cluster, context, region, namespace, database, or endpoint.
-3. Environment: production, staging, development, local, or unknown.
-4. Operation class:
-   - `read-only`: list, describe, status, diff, logs, or explain commands that should not mutate state.
-   - `dry-run/plan`: commands such as `terraform plan`, `kubectl diff`, or deployment previews that may read remote state but should not mutate it.
-   - `remote mutation`: create, update, deploy, apply, migrate, scale, restart, write, import, or restore.
-   - `destructive mutation`: delete, destroy, drop, truncate, purge, prune, force replace, rollback with data loss, or volume removal.
-5. Target resources and expected effect.
-6. Cost and blast radius.
-7. Rollback or recovery path, including whether it has been tested.
+General approval, destructive-operation, repository-trust, and secret-handling rules come from [`../../rules/development-workflow.md`](../../rules/development-workflow.md). This skill adds cloud target identity and the approval packet below.
 
-## Decision Rules
+## Target And Operation
 
-- Prefer read-only discovery before plan/dry-run, and prefer plan/dry-run before mutation.
-- Treat production, staging, and unknown environments as high risk. Unknown is not development.
-- Do not run remote mutation or destructive mutation commands without explicit user approval for the exact command, target resources, expected effect, and rollback plan.
-- Do not infer AWS profile, Kubernetes context, Terraform workspace, database endpoint, or region from convenience. Confirm it or read it with a read-only command first.
-- Do not handle secrets, credentials, kubeconfigs, `.env` files, private keys, or tokens unless the user explicitly asks and the task requires it.
-- For database work, prefer transaction-wrapped read-only inspection and backups before any write, migration, or destructive operation.
-- For infrastructure as code, inspect the diff or plan output before apply/deploy. If the plan is unavailable or ambiguous, stop and ask.
+Before choosing a command:
+
+1. Identify the provider or system and environment.
+2. Establish the exact account/profile/project, region, cluster/context/namespace, Terraform workspace, or database endpoint that selects the target.
+3. Classify the operation as `read-only`, `plan/dry-run`, `remote mutation`, or `destructive mutation`.
+4. Record the target resources, expected effect, rollback/recovery path, and material cost or blast radius.
+
+Never infer an AWS profile, Kubernetes context, Terraform workspace, database endpoint, region, account, or environment for convenience. Confirm it from user-provided context or a read-only identity command. Treat an unresolved target as unknown, not development.
+
+Prefer read-only discovery before plan/dry-run and inspect the plan or diff before mutation. Any mutation requires approval for the exact command and target.
 
 ## Approval Prompt
 
-For any remote mutation or destructive mutation, ask for approval in this shape:
+For a remote or destructive mutation, ask in this fixed shape:
 
 ```text
 Please confirm this external operation before I run it:
@@ -49,12 +42,6 @@ Please confirm this external operation before I run it:
 
 Run only the confirmed command. If the command changes, ask again.
 
-## Output
+## Handoff
 
-When handing off to implementation or debugging, include:
-
-- operation class
-- confirmed environment and target
-- safe read-only or dry-run commands already run
-- commands still requiring explicit approval
-- assumptions and unresolved risks
+Carry forward the operation class, confirmed target identity, read-only or plan evidence, exact commands still awaiting approval, and unresolved target risk.

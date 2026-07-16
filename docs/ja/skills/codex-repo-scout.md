@@ -1,6 +1,6 @@
 ---
 source: skills/codex-repo-scout/SKILL.md
-source_blob: 0758a51a246769b6bef9438a01a140279bcd34e0
+source_blob: 74748212e7c574ad7c63b082874bef9280861dd4
 canonical: false
 ---
 
@@ -10,61 +10,31 @@ canonical: false
 
 ## 目的
 
-迷子にならない程度に、実装に必要な repository context を集める。
+relevant files、conventions、ownership boundaries、executable checks が不明な場合だけ、実装に必要な repository context を集める。通常の file search や inspection に formal scouting pass は不要。
 
 ## 共通開発契約
 
-`rules/development-workflow.md` に従い、scouting は制約、期待結果の候補、実際の verification command を発見するが、product behavior や repository trust を推測で確定しない。
+`rules/development-workflow.md` に従う。scouting は constraints と executable evidence を発見し、trust、worktree preservation、expected outcome、verification は共通契約を正とする。
 
-## Subagent Scouting
+## Explorer Evidence Packets
 
-subagents が使えて repo が大きい、または不慣れな場合は、context-heavy scouting を基本的に explorer subagents に任せる。
+subagents が使えて subsystem 単位に分けられる大きさなら、bounded explorer question を割り当てる。
 
 - explorer ごとに subsystem、feature path、question を1つ割り当てる。
-- pasted file contents ではなく、file paths、symbols、commands、confidence 付きの evidence を求める。
-- parent は likely files、existing patterns、commands、risks の map に集中する。
-- 結果が矛盾または実装を妨げる場合以外は explorer result を信頼する。critical path だけ local で確認する。
-- summary を得たら explorer agents を閉じる。
+- pasted file bodies ではなく、file paths、symbols、commands、relevance、confidence を求める。
+- integration decision と critical-path verification は parent が持つ。
+- conflicting、low-confidence、implementation-blocking finding だけ再確認する。
 
-## Scout Pass
+## 返す証拠
 
-1. location と git state を確認する。
-   - `Get-Location`
-   - `git status --short --branch`
-   - disposable rehearsal repo では、後の diff を implementation work と見なす前に clean baseline を作るか確認する。
-   - repository trust を `trusted`、`untrusted`、`unknown` のどれかで記録する。runtime/profile の明示または user の確認なしに trust を昇格させず、untrusted/unknown repo の build/test/package command は任意コード実行として扱う。
-2. `rg --files` や directory listing で top-level shape を見る。大きい repo では全出力を貼らず sample/filter する。
-3. build/test entry points を特定する。
-   - package manifests
-   - project files
-   - CI config
-   - test directories
-   - scripts
-4. user-facing terms を `rg` で検索する。
-5. critical path の files だけを先に読む。
-6. evidence を記録する。
-   - file path
-   - symbol or behavior
-   - why it matters
-
-## Search Rules
-
-- `rg` と `rg --files` を優先する。
-- symbol/file が対象なら content より名前を先に探す。
-- structured formats には可能なら structured tools を使う。
-- 大きな generated files は、それ自体が artifact under test でない限り読まない。
-- dirty worktree の変更は、自分がこの turn で作ったもの以外は user-owned と扱う。
-- dirty target file を編集する前に diff を読み、user-owned hunks を把握する。
-- unknown user edits と衝突する場合は、進める前に簡潔に1つ質問する。
+- likely files、symbols、ownership boundaries。
+- existing patterns と変更を制約する repository instructions。
+- 結果を証明できる build、test、CI、manual checks。
+- 必要な runtime、package manager、service、明確に不足する dependency。
+- 重要な uncertainty と、それを解決する最小の次の read-only inspection。
 
 ## Stop Conditions
 
-以下に答えられるようになったら scouting を止める。
+likely write scope、従う pattern、credible verification path が明確になったら停止する。focused pass 後も material gap が残る場合は、gap を示して質問を1つ行うか、narrow inspection step を1つ提案する。
 
-- どの files が変わりそうか。
-- どの existing pattern に従うべきか。
-- どの tests/checks が変更を証明するか。
-- どの runtime、package manager、test command、dev server command が使えるか。
-- runtime/profile または user が build/test/package command を実行できる trust を明示したか、それともまだ approval が必要か。
-- dependencies は入っているか、明確に不足しているか。
-- どの local changes を保持する必要があるか。
+通常の model behavior を言い直すため、または exhaustive repository inventory を集めるためだけに scouting を続けない。

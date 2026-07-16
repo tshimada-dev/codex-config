@@ -1,6 +1,6 @@
 ---
 source: rules/development-workflow.md
-source_blob: f99ba4e1f94cafdea89acd5c5a106ee8118480bd
+source_blob: e69d7704363bf25346ddb77bd267e7ee5096eb75
 canonical: false
 ---
 
@@ -63,6 +63,16 @@ final verification は実装後の統合結果を評価する。リポジトリ�
 - `ready`: 必須証拠がすべて pass し、未解決の重要な競合がない。
 - `conditionally-ready`: 必須証拠は pass したが、任意の証拠を skip した、または受容済みの残存リスクがある。
 - `not-ready`: 必須証拠がない/失敗している、期待結果が未解決、または重要リスクが未受容。
+
+## Worktree の保持
+
+既存および途中で見つかった local change は、current task で自分が作ったもの以外 user-owned と扱う。変更済み target file を編集する前に現在内容と diff を確認し、自分が所有しない hunk を特定して可能なら避けて編集する。依頼された変更が同じ箇所の unknown user work と重要に衝突する場合は停止し、簡潔な質問を1つ行う。無関係な user work を stage、overwrite、move、delete しない。
+
+## Cross-shell path safety
+
+path discovery、validation、destructive mutation は同じ shell 内で完結させる。recursive delete/move の前に、Windows では `Resolve-Path`、Linux/WSL では `readlink -f` など platform-native canonicalizer で target を解決し、意図した exact path または parent 配下であることを確認する。
+
+PowerShell から WSL へ non-trivial な multi-line Bash script を渡す場合は、plain-text temporary helper file より `wsl.exe bash -s -- <arguments>` への stdin pipe を優先する。どちらの形式にも secret を置かない。
 
 ## Repository Trust
 

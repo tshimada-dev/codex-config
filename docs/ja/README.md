@@ -32,7 +32,6 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [skills/codex-plan-slices.md](skills/codex-plan-slices.md): 作業分割
 - [skills/codex-ui-quality-gate.md](skills/codex-ui-quality-gate.md): UI 品質確認
 - [skills/codex-pr-readiness.md](skills/codex-pr-readiness.md): PR 準備
-- [skills/codex-context-handoff.md](skills/codex-context-handoff.md): 引き継ぎ文脈
 - [skills/codex-claude-code-reviewer.md](skills/codex-claude-code-reviewer.md): Claude Code による外部レビュー
 - [skills/codex-clean-local-state.md](skills/codex-clean-local-state.md): Codex local state の安全な整理
 - [skills/codex-promote-local-skill.md](skills/codex-promote-local-skill.md): local Skill の管理価値評価と安全な repository 昇格
@@ -41,7 +40,6 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [skills/codex-field-investigation-loop/references/hypothesis-loop.md](skills/codex-field-investigation-loop/references/hypothesis-loop.md): 現地障害調査の仮説ループ
 - [skills/codex-field-investigation-loop/references/investigation-state.md](skills/codex-field-investigation-loop/references/investigation-state.md): 現地障害調査状態バンドル
 - [skills/codex-effort-estimator/references/README.md](skills/codex-effort-estimator/references/README.md): 工数見積もり reference 日本語参考訳一覧
-- [skills/codex-wsl-command-bridge.md](skills/codex-wsl-command-bridge.md): WSL command bridge
 
 ## 更新ルール
 

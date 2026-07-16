@@ -111,6 +111,8 @@ if ($null -ne $contractContent) {
         "## Workflow Phases",
         "## Ownership and Transitions",
         "## Final Verification and Readiness",
+        "## Worktree Preservation",
+        "## Cross-Shell Path Safety",
         "## Repository Trust"
     )) {
         if (-not $contractContent.Contains($heading)) {
@@ -186,6 +188,17 @@ foreach ($skill in $skills) {
         $content -match '(?mi)^\s*\d+\.\s+(fix|patch|edit|change|update)\b') {
         Add-ValidationError "${relativePath}: readiness contains a numbered instruction that directly owns a durable edit"
     }
+    if ($content -match '(?i)\bdirty (worktree|target file)\b') {
+        Add-ValidationError "${relativePath}: duplicates worktree-preservation terminology owned by rules/development-workflow.md"
+    }
+    if ($content.Contains("Agent judgment alone does not elevate trust.")) {
+        Add-ValidationError "${relativePath}: duplicates repository-trust wording owned by rules/development-workflow.md"
+    }
+}
+
+$longRunningContent = Read-RequiredFile -RelativePath "rules/long-running-workflow.md"
+if ($null -ne $longRunningContent -and -not $longRunningContent.Contains("## Handoff And Resume Context")) {
+    Add-ValidationError "rules/long-running-workflow.md: missing consolidated handoff context section"
 }
 
 $readmeContent = Read-RequiredFile -RelativePath "README.md"

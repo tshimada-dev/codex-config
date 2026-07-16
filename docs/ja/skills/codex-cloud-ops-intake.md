@@ -1,6 +1,6 @@
 ---
 source: skills/codex-cloud-ops-intake/SKILL.md
-source_commit: 1b6919b924b6a9dd5b2a6e1721a31421f97a9094
+source_blob: da4f25533b3db9036129a31ba2cf1281b9c36c97
 canonical: false
 ---
 
@@ -10,37 +10,28 @@ canonical: false
 
 ## 目的
 
-Cloud、infrastructure、database、deployment、migration command を実行する前に、対象、影響、承認境界を明確にする。
+Cloud、infrastructure、database、deployment、migration command の前に、推測 target への操作を防ぎ、mutation 用の exact approval packet を作る。
 
-## Intake
+## 共通 safety boundary
 
-command を選ぶ前に、以下を記録する。
+一般的な approval、destructive operation、repository trust、secret handling は `rules/development-workflow.md` を正とする。この Skill は cloud target identity と次の approval packet だけを追加する。
 
-1. Provider / system: AWS、Terraform、Kubernetes、Helm、CDK、SAM、Serverless、Pulumi、database、deployment tool など。
-2. Account、profile、project、cluster、context、region、namespace、database、endpoint。
-3. Environment: production、staging、development、local、unknown。
-4. Operation class:
-   - `read-only`: list、describe、status、diff、logs、explain など、state を変更しない command。
-   - `dry-run/plan`: `terraform plan`、`kubectl diff`、deployment preview など、remote state を読む可能性はあるが変更しない command。
-   - `remote mutation`: create、update、deploy、apply、migrate、scale、restart、write、import、restore。
-   - `destructive mutation`: delete、destroy、drop、truncate、purge、prune、force replace、data loss を伴う rollback、volume removal。
-5. Target resources と expected effect。
-6. Cost と blast radius。
-7. Rollback / recovery path と、それが検証済みか。
+## Target と operation
 
-## Decision Rules
+command を選ぶ前に以下を確認する。
 
-- mutation より先に plan/dry-run を優先し、plan/dry-run より先に read-only discovery を優先する。
-- production、staging、unknown environment は high risk として扱う。unknown は development ではない。
-- remote mutation / destructive mutation は、exact command、target resources、expected effect、rollback plan に対する user の明示承認なしに実行しない。
-- AWS profile、Kubernetes context、Terraform workspace、database endpoint、region を便利だからという理由で推測しない。確認するか、read-only command で読む。
-- secrets、credentials、kubeconfigs、`.env` files、private keys、tokens は、user が明示的に依頼し、task に必要な場合だけ扱う。
-- database work では、write、migration、destructive operation より前に、transaction-wrapped read-only inspection と backup を優先する。
-- infrastructure as code では、apply/deploy の前に diff または plan output を確認する。plan が無い、または曖昧なら停止して質問する。
+1. Provider/system と environment。
+2. target を選ぶ exact account/profile/project、region、cluster/context/namespace、Terraform workspace、database endpoint。
+3. `read-only`、`plan/dry-run`、`remote mutation`、`destructive mutation` の operation class。
+4. Target resources、expected effect、rollback/recovery path、material cost/blast radius。
+
+AWS profile、Kubernetes context、Terraform workspace、database endpoint、region、account、environment を便利だからと推測しない。user context または read-only identity command で確認し、未解決 target は development ではなく unknown と扱う。
+
+read-only discovery、plan/dry-run、mutation の順を優先し、mutation の前に plan/diff を確認する。mutation は exact command と target の承認を必要とする。
 
 ## Approval Prompt
 
-remote mutation / destructive mutation では、以下の形で承認を求める。
+remote/destructive mutation では、以下の固定形で承認を求める。
 
 ```text
 Please confirm this external operation before I run it:
@@ -54,6 +45,6 @@ Please confirm this external operation before I run it:
 
 確認された command だけを実行する。command が変わる場合は再確認する。
 
-## Output
+## Handoff
 
-implementation / debugging に渡すときは、operation class、confirmed environment and target、実行済みの safe read-only / dry-run command、まだ承認が必要な command、assumptions and unresolved risks を含める。
+operation class、confirmed target identity、read-only/plan evidence、まだ承認が必要な exact commands、unresolved target risk を引き継ぐ。

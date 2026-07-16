@@ -170,11 +170,12 @@ if (-not (Test-Path -LiteralPath $DefinitionPath -PathType Leaf)) {
 $definition = Get-Content -LiteralPath $DefinitionPath -Raw | ConvertFrom-Json
 $trackedSkillNames = @(
     & git -C $RepoRoot ls-files -- "skills/codex-*/SKILL.md" |
+        Where-Object { Test-Path -LiteralPath (Join-Path $RepoRoot ($_ -replace "/", [System.IO.Path]::DirectorySeparatorChar)) -PathType Leaf } |
         ForEach-Object { if ($_ -match "^skills/(codex-[^/]+)/SKILL\.md$") { $Matches[1] } } |
         Sort-Object -Unique
 )
 Assert-SequenceEqual -Expected $trackedSkillNames -Actual @($definition.skills.source_name | Sort-Object) -Message "definition should map every tracked codex-* skill"
-Assert-SequenceEqual -Expected @("codex-cloud-ops-intake", "codex-context-handoff") -Actual @($definition.skills | Where-Object support | ForEach-Object source_name | Sort-Object) -Message "support skills"
+Assert-SequenceEqual -Expected @("codex-cloud-ops-intake") -Actual @($definition.skills | Where-Object support | ForEach-Object source_name | Sort-Object) -Message "support skills"
 Assert-SequenceEqual -Expected @("codex-implementation-loop") -Actual @($definition.skills | Where-Object owns_durable_product_edits | ForEach-Object source_name) -Message "durable edit owner"
 foreach ($entry in $definition.skills) {
     $skillPath = Join-Path $RepoRoot "skills/$($entry.source_name)/SKILL.md"

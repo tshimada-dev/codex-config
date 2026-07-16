@@ -1,70 +1,28 @@
 ---
 name: codex-task-intake
-description: Clarify and classify ambiguous Codex work before execution. Use when a request is broad, underspecified, risky, multi-step, touches production data or external services, asks for "best practices", "figure out", "make a plan", "use agents", or could be solved in several materially different ways.
+description: Resolve one material ambiguity or authority boundary before execution. Use when a wrong assumption would materially change the target, safety boundary, external effect, or requested deliverable and the answer cannot be discovered safely from available context.
 ---
 
 # Codex Task Intake
 
-Use this skill to turn an unclear request into an executable path with the fewest useful questions.
+Use this skill as an optional ambiguity gate, not as the default entry point for routine work. Capable models should classify ordinary answer, inspection, editing, planning, and automation requests without a separate intake ritual.
 
 ## Shared Development Contract
 
 <!-- workflow-invariant: shared-contract -->
-<!-- workflow-invariant: explicit-trust -->
 
-For development work, read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md) before routing execution. Intake classifies the work; it does not redefine expected-outcome or evidence policy.
+For development work, read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md). Repository trust, worktree preservation, evidence, and mutation approval remain owned by shared rules rather than this skill.
 
-## Intake Loop
+## Narrow Gate
 
-1. Restate the goal in one sentence.
-2. Classify the request:
-   - `answer`: explain or research only.
-   - `inspect`: read local or remote context before proposing changes.
-   - `edit`: make a bounded code or file change.
-   - `workflow`: plan or coordinate a larger multi-step task.
-   - `automation`: create a recurring or delayed task.
-3. Identify the main risk: data loss, wrong repo, wrong branch, external side effects, privacy, cost, time, or visual quality.
-   - If the request touches cloud, infrastructure, database, deployment, migration, or other remote operational state, route to `codex-cloud-ops-intake` before any command execution.
-   - For repository work, record whether the repository is trusted, untrusted, or unknown. Treat build, test, and package commands in untrusted or unknown repositories as arbitrary code execution unless trust is already established by the runtime or permission profile, or the user explicitly confirms it. Do not promote repository trust based only on Codex inspection or judgment.
-4. Decide whether to proceed, inspect first, or ask a question.
-5. Ask at most one concise question when a wrong assumption would be expensive. Otherwise make a conservative assumption and continue.
+1. State the intended outcome in one sentence.
+2. Identify the single unresolved decision or risk that could materially change the result.
+3. Resolve it from existing instructions or safe read-only context when possible.
+4. Ask at most one concise question only when proceeding would require a consequential guess.
+5. Once the target and authority are clear, continue with the naturally applicable task workflow.
 
-## Decision Rules
+For cloud, infrastructure, database, deployment, migration, production/staging, or other remote operational work, use `codex-cloud-ops-intake` before executing commands.
 
-- If the user asks for implementation and the scope is discoverable locally, inspect and proceed.
-- If the user asks for planning, do not edit project files unless planning artifacts are the deliverable.
-- If the request involves current facts, prices, laws, schedules, third-party docs, or remote state, verify with the appropriate source.
-- If the mode is `automation`, use the available automation workflow; ask only for missing schedule, timezone, target action, or notification details.
-- If the task would benefit from subagents, hand off to a planning/delegation skill after intake unless the task is tiny or the user asks not to use them.
-- If the task is mainly debugging, route first to `codex-debug-discipline`. After the cause and regression shape are known, route a bounded defect directly to `codex-implementation-loop`; route a broad, risky, or cross-cutting defect through `codex-plan-slices` first.
-- If non-debugging work is broad engineering work, hand off to `codex-plan-slices`.
-- If the user asks for a disposable, simulated, or rehearsal repo, establish the workspace boundary first and treat edits outside that boundary as out of scope.
-- If the task involves AWS, Terraform, Kubernetes, databases, deployments, migrations, production/staging resources, or cost-incurring remote operations, hand off to `codex-cloud-ops-intake` before implementation or shell execution.
+## Stop Condition
 
-## Composition
-
-Use this skill as the entry gate, then route:
-
-- Unfamiliar repo work: `codex-repo-scout` before editing.
-- Broad work: `codex-repo-scout` then `codex-plan-slices`.
-- Bug reports: `codex-debug-discipline` owns reproduction, hypotheses, root cause, and regression shape; `codex-implementation-loop` owns durable edits.
-- Code changes: `codex-implementation-loop` owns the patch and checks.
-- UI changes: `codex-ui-quality-gate` runs after implementation.
-- Cloud, infrastructure, database, deployment, or migration work: `codex-cloud-ops-intake` owns target/effect/approval classification before commands run.
-- Review packaging: `codex-pr-readiness` runs after verification.
-- Long or interrupted work: `codex-context-handoff` captures durable state.
-
-## Output Shape
-
-For quick tasks, proceed without a visible plan.
-
-For broad tasks, provide:
-
-```text
-Goal: ...
-Mode: answer | inspect | edit | workflow | automation
-Assumption: ...
-Next step: ...
-```
-
-Keep this short. Intake is a gate, not the work itself.
+Stop intake as soon as the execution path is safe and materially unambiguous. Do not produce a classification table or fixed output shape unless the user asked for one.

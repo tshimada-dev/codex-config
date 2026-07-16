@@ -1,6 +1,6 @@
 ---
 source: rules/long-running-workflow.md
-source_blob: 058fa1d60d5e2de29c92bf17a4049d630392517c
+source_blob: fe75fedbdd75f3a85cc0ce35ac542b41fb6eed44
 canonical: false
 ---
 
@@ -29,6 +29,14 @@ canonical: false
 - `$HOME\.codex\templates\agent-run.md` を初期構造としてコピーする。
 - phase boundary、前提や scope の変更、意味のある実装 slice の後、検証 command の後、pause 前、handoff 前に note を更新する。
 - 記録は短く、意思決定中心にする。大きな log や diff は貼らず、file や command をリンクまたは名前で示す。
+
+## Handoff と再開 context
+
+- user が durable context を求めた場合、または repository に慣習がある場合を除き、独立した handoff file は作らない。
+- active run note がある場合は、別の source of truth を作らず、簡潔な `## Handoff` section を更新する。
+- goal、current status、important decisions、changed files、verification outcomes、blockers、next concrete step、verification に影響する tool gap だけを残す。
+- transcript、duplicate specification、artifact ではない raw log、secret、next action のない speculation は除外する。
+- 完了した temporary simulation は、artifact 保持を user が求めない限り final response で十分とする。
 
 ## 調査
 

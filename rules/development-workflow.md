@@ -62,6 +62,16 @@ Classify readiness as:
 - `conditionally-ready`: required evidence passes, but explicitly optional evidence was skipped or an accepted residual risk remains.
 - `not-ready`: required evidence is missing or failing, the expected outcome is unresolved, or a material risk is unaccepted.
 
+## Worktree Preservation
+
+Treat existing and newly discovered local changes as user-owned unless you made them in the current task. Before editing a changed target file, inspect its current content and diff, identify the hunks you do not own, and edit around them when possible. If the requested change materially conflicts with unknown user work in the same area, stop and ask one concise question. Never stage, overwrite, move, or delete unrelated user work.
+
+## Cross-Shell Path Safety
+
+Keep path discovery, validation, and destructive mutation in the same shell. Before a recursive delete or move, resolve the target with the platform-native canonicalizer such as `Resolve-Path` on Windows or `readlink -f` on Linux/WSL, then verify that it is exactly the intended path or inside the intended parent.
+
+When PowerShell must run a non-trivial multi-line Bash script in WSL, prefer piping the script over stdin to `wsl.exe bash -s -- <arguments>` instead of writing a plaintext temporary helper file. Do not place secrets in either form.
+
 ## Repository Trust
 
 Treat commands from an unknown or untrusted repository as arbitrary code execution. Start with read-only inspection under the `safe` profile. Run repository-controlled build, test, install, generation, or other executable commands only when the current runtime or permission profile already marks the repository trusted, or after explicit user confirmation. Agent judgment alone does not elevate trust. Continue to require explicit approval for destructive, remote-changing, publishing, deployment, production-data, migration, or secret-handling operations.

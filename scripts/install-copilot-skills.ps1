@@ -221,7 +221,12 @@ function Get-TextHash {
 
 function Get-TrackedSkillFiles {
     $files = Invoke-Git -Arguments @("ls-files", "--", "skills/codex-*")
-    $tracked = @($files | Where-Object { $_ })
+    $tracked = @(
+        $files |
+            Where-Object {
+                $_ -and (Test-Path -LiteralPath (Join-Path $RepoRoot ($_ -replace "/", [System.IO.Path]::DirectorySeparatorChar)) -PathType Leaf)
+            }
+    )
     if (-not $IncludeCodexAgentMetadata) {
         $tracked = @($tracked | Where-Object { $_ -notmatch "/agents/" })
     }

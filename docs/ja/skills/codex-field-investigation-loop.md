@@ -1,6 +1,6 @@
 ---
 source: skills/codex-field-investigation-loop/SKILL.md
-source_commit: 441c349630d60943942900039f8d7a483d205005
+source_blob: 1547a26ce7383f10407e0cf10170b6e860e52aa2
 canonical: false
 ---
 
@@ -40,6 +40,7 @@ canonical: false
 5. **Probe**
    - 仮説を切り分ける、最も安全で狭い probe を選ぶ。
    - 一度に1つの仮説を test する。
+   - cloud、infrastructure、database、deployment、migration probe では、command の前に `codex-cloud-ops-intake` で exact target と approval boundary を確立する。
    - まず read-only probe を優先する。production mutation、restart、destructive command、deployment、migration、secret handling の前には明示承認で停止する。
 
 6. **Update**

@@ -1,6 +1,6 @@
 ---
 name: codex-implementation-loop
-description: Implement code or file changes with tight scope, repo conventions, test coverage, and dirty-worktree safety. Use when Codex is asked to fix, build, refactor, add a feature, update files, or carry an approved plan through implementation.
+description: Implement code or file changes with tight scope, repository conventions, focused evidence, and preservation of user work. Use when Codex is asked to fix, build, refactor, add a feature, update files, or carry an approved plan through implementation.
 ---
 
 # Codex Implementation Loop
@@ -58,9 +58,7 @@ Return to an earlier step when:
 ## Change Discipline
 
 - Treat "smallest change" as the smallest architecturally coherent change, not the fewest edited lines. A slightly broader change is justified when it preserves a shared invariant, prevents duplicated logic, or avoids knowingly creating short-lived technical debt.
-- Preserve user changes in the worktree.
-- Before editing a dirty target file, inspect its diff and identify user-owned hunks. Edit around them when possible.
-- If the requested change conflicts with unknown user edits, ask one concise question before proceeding.
+- Follow the shared contract's worktree-preservation rules before editing or packaging existing changes.
 - For disposable repro or rehearsal projects, keep all created and edited files inside the agreed temp/project directory.
 - When asked for recommendations to instruction or skill files, provide exact patches without applying them unless direct edits were requested.
 - Do not refactor unrelated code while passing through.

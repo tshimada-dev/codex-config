@@ -31,18 +31,7 @@
       "role": "operational-intake",
       "phase": "intake",
       "owns_durable_product_edits": false,
-      "uses_development_workflow": false,
-      "dependencies": []
-    },
-    {
-      "source_name": "codex-context-handoff",
-      "copilot_name": "copilot-context-handoff",
-      "default": false,
-      "support": true,
-      "role": "continuity",
-      "phase": "handoff",
-      "owns_durable_product_edits": false,
-      "uses_development_workflow": false,
+      "uses_development_workflow": true,
       "dependencies": []
     },
     {
@@ -76,7 +65,7 @@
       "phase": "debugging",
       "owns_durable_product_edits": false,
       "uses_development_workflow": false,
-      "dependencies": []
+      "dependencies": ["codex-cloud-ops-intake"]
     },
     {
       "source_name": "codex-implementation-loop",
@@ -98,7 +87,7 @@
       "phase": "planning",
       "owns_durable_product_edits": false,
       "uses_development_workflow": true,
-      "dependencies": ["codex-debug-discipline", "codex-implementation-loop", "codex-repo-scout", "codex-task-intake"]
+      "dependencies": ["codex-debug-discipline", "codex-implementation-loop", "codex-repo-scout"]
     },
     {
       "source_name": "codex-promote-local-skill",
@@ -147,22 +136,13 @@
     {
       "source_name": "codex-task-intake",
       "copilot_name": "copilot-task-intake",
-      "default": true,
+      "default": false,
       "support": false,
-      "role": "task-intake",
+      "role": "ambiguity-and-authority-gate",
       "phase": "intake",
       "owns_durable_product_edits": false,
       "uses_development_workflow": true,
-      "dependencies": [
-        "codex-cloud-ops-intake",
-        "codex-context-handoff",
-        "codex-debug-discipline",
-        "codex-implementation-loop",
-        "codex-plan-slices",
-        "codex-pr-readiness",
-        "codex-repo-scout",
-        "codex-ui-quality-gate"
-      ]
+      "dependencies": ["codex-cloud-ops-intake"]
     },
     {
       "source_name": "codex-ui-quality-gate",
@@ -174,17 +154,6 @@
       "owns_durable_product_edits": false,
       "uses_development_workflow": true,
       "dependencies": ["codex-implementation-loop"]
-    },
-    {
-      "source_name": "codex-wsl-command-bridge",
-      "copilot_name": "copilot-wsl-command-bridge",
-      "default": false,
-      "support": false,
-      "role": "command-bridge",
-      "phase": null,
-      "owns_durable_product_edits": false,
-      "uses_development_workflow": false,
-      "dependencies": []
     }
   ]
 }
