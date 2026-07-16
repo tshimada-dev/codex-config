@@ -28,6 +28,12 @@ STATE_TABLES = {
     "thread_dynamic_tools": {"thread_id"},
 }
 LOG_TABLES = {"logs": {"id"}}
+MIB = 1024 * 1024
+MIN_VACUUM_RECLAIM_BYTES = 64 * MIB
+MIN_VACUUM_RECLAIM_RATIO = 0.10
+MIN_SPACE_SAFETY_BYTES = 64 * MIB
+SPACE_SAFETY_RATIO = 0.10
+VACUUM_WORKSPACE_MULTIPLIER = 2
 
 
 def utc_now() -> str:
@@ -330,11 +336,18 @@ def remove_empty_parents(path: Path, stop_roots: list[Path]) -> None:
 def sqlite_metrics(path: Path, table: str | None = None) -> dict[str, Any]:
     connection = sqlite3.connect(path, timeout=10)
     try:
+        page_size = connection.execute("PRAGMA page_size").fetchone()[0]
+        page_count = connection.execute("PRAGMA page_count").fetchone()[0]
+        freelist_count = connection.execute("PRAGMA freelist_count").fetchone()[0]
+        reclaimable_bytes = page_size * freelist_count
+        file_bytes = path.stat().st_size
         metrics: dict[str, Any] = {
-            "file_bytes": path.stat().st_size,
-            "page_size": connection.execute("PRAGMA page_size").fetchone()[0],
-            "page_count": connection.execute("PRAGMA page_count").fetchone()[0],
-            "freelist_count": connection.execute("PRAGMA freelist_count").fetchone()[0],
+            "file_bytes": file_bytes,
+            "page_size": page_size,
+            "page_count": page_count,
+            "freelist_count": freelist_count,
+            "reclaimable_bytes_estimate": reclaimable_bytes,
+            "reclaimable_ratio": reclaimable_bytes / file_bytes if file_bytes else 0.0,
         }
         if table:
             metrics["row_signature"] = list(
@@ -345,6 +358,65 @@ def sqlite_metrics(path: Path, table: str | None = None) -> dict[str, Any]:
         return metrics
     finally:
         connection.close()
+
+
+def vacuum_reclaim_is_meaningful(metrics: dict[str, Any]) -> bool:
+    return (
+        int(metrics["reclaimable_bytes_estimate"]) >= MIN_VACUUM_RECLAIM_BYTES
+        and float(metrics["reclaimable_ratio"]) >= MIN_VACUUM_RECLAIM_RATIO
+    )
+
+
+def database_reclaim_snapshot(root: Path) -> dict[str, dict[str, Any]]:
+    return {
+        "state_5.sqlite": sqlite_metrics(root / "state_5.sqlite"),
+        "logs_2.sqlite": sqlite_metrics(root / "logs_2.sqlite", "logs"),
+    }
+
+
+def should_skip_cleanup(plan: dict[str, Any], database_reclaim: dict[str, dict[str, Any]]) -> bool:
+    return (
+        not plan["candidates"]
+        and not any(vacuum_reclaim_is_meaningful(metrics) for metrics in database_reclaim.values())
+    )
+
+
+def estimate_space_preflight(
+    root: Path,
+    plan: dict[str, Any],
+    database_reclaim: dict[str, dict[str, Any]],
+) -> dict[str, int]:
+    index_path = root / "session_index.jsonl"
+    index_bytes = index_path.stat().st_size if index_path.exists() else 0
+    database_bytes = {
+        name: max(int(metrics["file_bytes"]), int(metrics["page_size"]) * int(metrics["page_count"]))
+        for name, metrics in database_reclaim.items()
+    }
+    backup_bytes = sum(database_bytes.values()) + index_bytes
+    vacuum_workspace_bytes = VACUUM_WORKSPACE_MULTIPLIER * max(database_bytes.values(), default=0)
+    plan_metadata_bytes = len(json.dumps(plan, ensure_ascii=False).encode("utf-8")) + MIB
+    estimated_without_margin = backup_bytes + vacuum_workspace_bytes + plan_metadata_bytes
+    safety_margin_bytes = max(MIN_SPACE_SAFETY_BYTES, int(estimated_without_margin * SPACE_SAFETY_RATIO))
+    required_free_bytes = estimated_without_margin + safety_margin_bytes
+    available_free_bytes = int(shutil.disk_usage(root).free)
+    return {
+        "available_free_bytes": available_free_bytes,
+        "required_free_bytes": required_free_bytes,
+        "estimated_backup_bytes": backup_bytes,
+        "estimated_vacuum_workspace_bytes": vacuum_workspace_bytes,
+        "estimated_metadata_bytes": plan_metadata_bytes,
+        "safety_margin_bytes": safety_margin_bytes,
+    }
+
+
+def require_sufficient_free_space(space_preflight: dict[str, int]) -> None:
+    available = space_preflight["available_free_bytes"]
+    required = space_preflight["required_free_bytes"]
+    if available < required:
+        raise RuntimeError(
+            "insufficient free space for guarded cleanup: "
+            f"required={required} bytes, available={available} bytes"
+        )
 
 
 def vacuum_and_check(path: Path, table: str | None = None) -> dict[str, Any]:
@@ -377,6 +449,21 @@ def execute_cleanup(root: Path, cutoff: datetime, output_dir: Path, baseline_pat
     plan = build_plan(root, cutoff)
     baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
     baseline_ids = validate_baseline(baseline, plan, root, cutoff)
+    database_reclaim = database_reclaim_snapshot(root)
+    if should_skip_cleanup(plan, database_reclaim):
+        return {
+            "status": "no-op",
+            "reason": "no cleanup candidates and database reclaim is below threshold",
+            "cutoff": cutoff.isoformat(),
+            "candidate_count": 0,
+            "database_reclaim": database_reclaim,
+            "vacuum_thresholds": {
+                "minimum_reclaim_bytes": MIN_VACUUM_RECLAIM_BYTES,
+                "minimum_reclaim_ratio": MIN_VACUUM_RECLAIM_RATIO,
+            },
+        }
+    space_preflight = estimate_space_preflight(root, plan, database_reclaim)
+    require_sufficient_free_space(space_preflight)
 
     allowed_roots = [(root / "sessions").resolve(), (root / "archived_sessions").resolve()]
     output_dir.mkdir(parents=True)
@@ -410,6 +497,7 @@ def execute_cleanup(root: Path, cutoff: datetime, output_dir: Path, baseline_pat
         else None,
         "candidate_count": len(plan["candidates"]),
         "candidate_bytes": plan["stats"]["candidate_bytes"],
+        "space_preflight": space_preflight,
     }
     write_json(backup_dir / "manifest.json", manifest)
 
@@ -497,6 +585,7 @@ def execute_cleanup(root: Path, cutoff: datetime, output_dir: Path, baseline_pat
         "protected_since_baseline": len(baseline_ids - candidate_ids),
         "state_db": state_vacuum,
         "logs_db": logs_vacuum,
+        "space_preflight": space_preflight,
         "backup_dir": str(backup_dir),
         "quarantine_dir": str(quarantine),
     }
@@ -627,15 +716,26 @@ def main() -> int:
                 pass
         print(f"cleanup failed: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
-    print(
-        json.dumps(
-            {
-                "status": result["status"],
-                "removed_thread_rows": result["removed_thread_rows"],
-                "quarantined_transcripts": result["quarantined_transcripts"],
-            }
+    if result["status"] == "no-op":
+        print(
+            json.dumps(
+                {
+                    "status": result["status"],
+                    "reason": result["reason"],
+                    "candidate_count": result["candidate_count"],
+                }
+            )
         )
-    )
+    else:
+        print(
+            json.dumps(
+                {
+                    "status": result["status"],
+                    "removed_thread_rows": result["removed_thread_rows"],
+                    "quarantined_transcripts": result["quarantined_transcripts"],
+                }
+            )
+        )
     return 0
 
 

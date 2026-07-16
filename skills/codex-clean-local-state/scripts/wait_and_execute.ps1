@@ -66,5 +66,10 @@ if ($exitCode -ne 0) {
     Write-Status ("cleanup-failed exit_code={0}" -f $exitCode)
     exit $exitCode
 }
-Write-Status 'cleanup-succeeded; quarantine retained pending post-restart verification'
+if (Test-Path -LiteralPath $OutputDir) {
+    Write-Status 'cleanup-succeeded; quarantine retained pending post-restart verification'
+}
+else {
+    Write-Status 'cleanup-skipped; no candidates or meaningful database reclaim'
+}
 exit 0

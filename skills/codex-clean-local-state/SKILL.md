@@ -19,6 +19,8 @@ Use aggregate metadata only. Never read transcript contents, `auth.json`, secret
 - Stop Codex desktop processes before mutation. Never edit live SQLite state.
 - Require every output directory to be a unique child of `CODEX_HOME/backups`.
 - Validate all required state/log tables, columns, integrity, and foreign keys before creating the execution output or moving a transcript.
+- Skip execution before creating the output directory when there are no transcript candidates and neither database has at least 64 MiB and 10% reclaimable free pages.
+- Before creating backups, require enough free space for both database backups, the session index, twice the largest database as SQLite VACUUM workspace, plan metadata, and a 10% safety margin of that estimate with a 64 MiB minimum.
 - Back up `state_5.sqlite`, `logs_2.sqlite`, and `session_index.jsonl` before mutation. Keep the backup until recent work has been opened successfully.
 - Keep removed transcripts in the exact quarantine until post-restart verification passes. Purge them only as a separate explicitly approved operation.
 - Prefer the official `codex delete` command for a small named set when the installed CLI supports it. Use the bundled bulk cleaner only for retention-based cleanup where the official CLI is unavailable or impractical.
@@ -57,6 +59,8 @@ Check that:
 - candidate count and bytes match what will be presented to the user.
 
 Present the cutoff, permanent-deletion count, estimated transcript recovery, log compaction estimate, temporary backup/quarantine space, and the two-stage purge behavior. If the user has not already authorized deletion, stop and ask for explicit approval.
+
+If execution returns `status: no-op`, no output directory or backup was created. Report that retention cleanup is already in a steady state; do not force VACUUM or lower the safety thresholds merely to produce a change.
 
 ## 3. Execute only after app exit
 
@@ -113,6 +117,7 @@ The purger removes only the exact planned quarantine files when their paths and 
 ## Failure handling
 
 - If planning or preflight fails on missing tables, columns, integrity, or foreign keys, stop. Do not patch the DB ad hoc.
+- If free-space preflight fails, report required and available bytes and stop before mutation. Do not bypass the check; free space must be created outside this skill's protected scope first.
 - If the waiter reports failure, inspect its status, runner log, `FAILED.json`, backup, and quarantine. Do not start a second run with the same output directory.
 - If failure occurs before metadata commit, the cleaner restores moved transcripts and the index automatically.
 - If failure occurs after metadata commit, preserve the backup and quarantine. Diagnose before retrying or restoring.

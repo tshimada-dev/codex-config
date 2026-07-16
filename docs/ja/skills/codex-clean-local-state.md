@@ -1,6 +1,6 @@
 ---
 source: skills/codex-clean-local-state/SKILL.md
-source_blob: 811336b35b552b6bb5c7673f5b596f3f50e633d1
+source_blob: 576e90b503b4722cb89a254b60b38907fc99592b
 canonical: false
 ---
 
@@ -24,6 +24,8 @@ canonical: false
 - mutation前にCodex Desktop processを停止し、live SQLiteを編集しない。
 - output directoryは`CODEX_HOME/backups`直下の一意なchildに限定する。
 - output作成やtranscript移動より前に、state/log DBの必須table・column・integrity・foreign keyを検証する。
+- transcript候補が0件で、どちらのdatabaseも回収可能領域が64 MiB以上かつ10%以上という条件を満たさない場合は、output directory作成前にno-opで終了する。
+- backup作成前に、両database backup、session index、最大databaseの2倍のVACUUM作業領域、plan metadata、および見積もりの10%（最低64 MiB）の安全余裕を満たす空き容量を要求する。
 - mutation前に`state_5.sqlite`、`logs_2.sqlite`、`session_index.jsonl`をbackupする。recent workを正常に開けるまでbackupを保持する。
 - post-restart verificationが通るまでtranscriptをexact quarantineに残す。quarantine purgeは別の明示承認後に行う。
 - 小さなnamed setでは、installed CLIが対応していればofficial `codex delete`を優先する。bundled bulk cleanerはretention-based cleanupでofficial CLIが使えない、または非実用的な場合だけ使う。
@@ -62,6 +64,8 @@ python scripts/cleanup_stale_codex_sessions.py --root "$CodexHome" --cutoff "$Cu
 - candidate数とbytesがuserに提示する内容と一致する
 
 cutoff、永久削除数、transcript回収見積もり、log compaction見積もり、一時backup/quarantine容量、二段階purgeを説明する。削除承認をまだ得ていなければ停止し、明示承認を求める。
+
+実行結果が`status: no-op`の場合、output directoryとbackupは作成されていない。retention cleanupが定常状態にあると報告し、変更を発生させる目的でVACUUMや安全閾値の引き下げを強制しない。
 
 ## 3. App終了後だけ実行する
 
@@ -116,6 +120,7 @@ purgerはpathとsizeが一致するexact planned quarantine fileだけを削除�
 ## Failure handling
 
 - planning/preflightがtable、column、integrity、foreign keyの不足で失敗したら停止する。DBをその場しのぎでpatchしない。
+- 空き容量preflightが失敗した場合はrequired bytesとavailable bytesを報告し、mutation前に停止する。この検査を迂回せず、skillの保護範囲外で先に空き容量を確保する。
 - waiter失敗時はstatus、runner log、`FAILED.json`、backup、quarantineを確認する。同じoutput directoryで2回目を開始しない。
 - metadata commit前の失敗では、moved transcriptとindexを自動復元する。
 - metadata commit後の失敗では、backupとquarantineを保持してretry/restore前に診断する。

@@ -5,6 +5,8 @@ import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
 
 import cleanup_stale_codex_sessions as cleanup
 import verify_cleanup as verifier
@@ -130,6 +132,9 @@ class CleanupStaleCodexSessionsTest(unittest.TestCase):
         self.assertTrue((output / "backup" / "state_5.sqlite").exists())
         self.assertTrue((output / "backup" / "logs_2.sqlite").exists())
         self.assertEqual(1, result["quarantined_transcripts"])
+        self.assertGreater(result["space_preflight"]["required_free_bytes"], 0)
+        manifest = json.loads((output / "backup" / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(result["space_preflight"], manifest["space_preflight"])
         checks = verifier.verify_cleanup(self.root, output)
         self.assertTrue(checks["passed"])
         self.assertEqual("retained", checks["quarantine_mode"])
@@ -138,6 +143,41 @@ class CleanupStaleCodexSessionsTest(unittest.TestCase):
         self.assertGreater(purged["purged_transcript_bytes"], 0)
         self.assertEqual(0, purged["transcript_bytes_pending_purge"])
         self.assertTrue(verifier.verify_cleanup(self.root, output)["passed"])
+
+    def test_execute_noops_before_output_when_no_candidates_and_reclaim_is_small(self):
+        connection = sqlite3.connect(self.root / "state_5.sqlite")
+        connection.execute("INSERT INTO agent_jobs(id) VALUES ('job-1')")
+        connection.execute(
+            "INSERT INTO agent_job_items(job_id, item_id, assigned_thread_id) VALUES ('job-1', 'item-1', 'old-isolated')"
+        )
+        connection.commit()
+        connection.close()
+        baseline = self._baseline()
+        output = self.root / "backups" / "no-op"
+        state_before = (self.root / "state_5.sqlite").stat().st_size
+        logs_before = (self.root / "logs_2.sqlite").stat().st_size
+
+        result = cleanup.execute_cleanup(self.root, self.cutoff, output, baseline)
+
+        self.assertEqual("no-op", result["status"])
+        self.assertEqual("no cleanup candidates and database reclaim is below threshold", result["reason"])
+        self.assertFalse(output.exists())
+        self.assertEqual(state_before, (self.root / "state_5.sqlite").stat().st_size)
+        self.assertEqual(logs_before, (self.root / "logs_2.sqlite").stat().st_size)
+        self.assertTrue((self.sessions / "rollout-old-isolated.jsonl").exists())
+
+    def test_insufficient_free_space_fails_before_output_or_session_mutation(self):
+        baseline = self._baseline()
+        output = self.root / "backups" / "insufficient-space"
+        with mock.patch.object(
+            cleanup.shutil,
+            "disk_usage",
+            return_value=SimpleNamespace(total=1024, used=1024, free=0),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "insufficient free space"):
+                cleanup.execute_cleanup(self.root, self.cutoff, output, baseline)
+        self.assertFalse(output.exists())
+        self.assertTrue((self.sessions / "rollout-old-isolated.jsonl").exists())
 
     def test_missing_logs_database_fails_before_output_or_session_mutation(self):
         (self.root / "logs_2.sqlite").unlink()
