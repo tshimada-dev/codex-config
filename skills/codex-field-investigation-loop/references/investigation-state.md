@@ -11,7 +11,7 @@ The bundle is text-first for LLM reliability and spreadsheet-friendly for human 
 - Name the bundle directory `YYYYMMDD-HHMM-<short-task>` so repeated incidents have separate durable state.
 - Use `docs/investigations/YYYYMMDD-HHMM-<short-task>/` for repository investigations when there is no repo convention.
 - Use `$HOME/.codex/runs/<topic>/YYYYMMDD-HHMM-<short-task>/` for non-repository investigations.
-- Keep `STATE.md` concise enough for Codex and humans to reread quickly.
+- Replace the current snapshot in `STATE.md` instead of appending history, and keep it at or below 50 lines.
 - Link to large raw logs instead of pasting them when safe local files exist.
 - Never store secrets in any bundle file or generated workbook.
 
@@ -79,6 +79,14 @@ Status: active | paused | resolved | blocked
 
 Keep `STATE.md` current. It is the first file subagents and humans should read.
 
+Replacement rules:
+
+- Rewrite stale facts, conclusions, and next actions in place; never grow `STATE.md` as a running diary.
+- Keep the entire file at or below 50 lines so it remains a one-screen current snapshot.
+- Keep exactly one current next safe probe. Record completed probes in `checks.csv`.
+- Move material history to `timeline.csv` and detailed observations to `command-log.jsonl`.
+- Keep unresolved root-cause questions and residual unknowns until they are resolved or explicitly accepted.
+
 ## checks.csv
 
 Purpose: track planned and completed checks.
@@ -91,6 +99,8 @@ ID,Layer,確認内容,コマンド/方法,Status,結果要約,証跡/参照,Owne
 
 Recommended statuses: `未着手`, `確認中`, `完了`, `要確認`, `保留`, `対象外`.
 
+Use `Mitigation` in the `Layer` column for an approved recovery or containment action. Mark finished probes and mitigation actions `完了`; do not retain them as the current next probe in `STATE.md`.
+
 ## command-log.jsonl
 
 Purpose: append-only record of probes and observations. Use JSONL so appending does not require rewriting a large table.
@@ -98,12 +108,16 @@ Purpose: append-only record of probes and observations. Use JSONL so appending d
 One object per line:
 
 ```json
-{"Timestamp":"","Side/Target":"","Host/IP":"","Command/Method":"","Result":"","stdout要約":"","stderr/error":"","Direct/Inference":"","Next action":""}
+{"occurred_at":"","recorded_at":"","Side/Target":"","Host/IP":"","Command/Method":"","Result":"","stdout要約":"","stderr/error":"","Direct/Inference":"","Next action":""}
 ```
 
 Rules:
 
 - Record every meaningful probe.
+- Use ISO 8601 timestamps with an explicit UTC offset for both time fields.
+- `occurred_at` is when the probe or observation happened. It may be earlier than a preceding row when evidence is captured late.
+- `recorded_at` is when the JSONL row was appended. Keep it monotonically nondecreasing in append order.
+- Append late evidence with its original `occurred_at` and current `recorded_at`; do not reorder or rewrite prior rows.
 - Summarize large outputs.
 - Mark whether the row is a direct observation or an inference.
 - Do not paste secrets.
@@ -155,6 +169,19 @@ Store stable non-secret facts:
 - Source and last-confirmed timestamp
 
 Never store secrets: private keys, passwords, psk, tokens, cookies, `.env`, API keys, secret payloads, or private certificate material.
+
+## Investigation-to-Mitigation Transition
+
+Investigation establishes what is known; mitigation changes state to contain or recover from impact. Do not let a successful workaround imply that root cause is proven.
+
+Before mitigation begins, record in `STATE.md`:
+
+- Why the work is transitioning from observation to intervention.
+- The user's approval and the exact approved target, action, and effect boundary.
+- Which root-cause claims remain unresolved.
+- Which investigation questions remain open after mitigation.
+
+For a bounded mitigation, use an explicit `Mitigation` layer in `checks.csv` and record the action in `command-log.jsonl` and `timeline.csv`. For large, multi-step, or cross-system mitigation, use a separate implementation bundle or an explicit `## Mitigation` section and link it from `STATE.md`. Keep unresolved investigation matters in the current snapshot until they are resolved or explicitly accepted as residual unknowns.
 
 ## Workbook View
 

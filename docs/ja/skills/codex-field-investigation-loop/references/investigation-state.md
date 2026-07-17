@@ -1,6 +1,6 @@
 ---
 source: skills/codex-field-investigation-loop/references/investigation-state.md
-source_commit: 441c349630d60943942900039f8d7a483d205005
+source_blob: 75f75cd68dbc62b682f37b554ce34d2206cf844a
 canonical: false
 ---
 
@@ -19,7 +19,7 @@ bundle は LLM reliability のために text-first、human review のために s
 - leaf directory は `YYYYMMDD-HHMM-<short-task>` と名付け、繰り返し発生する incident の durable state を分ける。
 - repo convention がない repository investigation では `docs/investigations/YYYYMMDD-HHMM-<short-task>/` を使う。
 - non-repository investigation では `$HOME/.codex/runs/<topic>/YYYYMMDD-HHMM-<short-task>/` を使う。
-- `STATE.md` は Codex と人間が素早く読み返せる程度に簡潔に保つ。
+- `STATE.md` は履歴を追記せず current snapshot を置換更新し、50行以内に保つ。
 - large raw logs は、安全な local file がある場合は貼り付けずに link する。
 - bundle file や generated workbook に secret を保存しない。
 
@@ -87,6 +87,14 @@ Status: active | paused | resolved | blocked
 
 `STATE.md` は常に最新に保つ。subagents と humans が最初に読む file である。
 
+Replacement rules:
+
+- 古い fact、conclusion、next action をその場で書き換え、`STATE.md` を running diary として増やさない。
+- 全体を50行以内に保ち、one-screen の current snapshot にする。
+- current next safe probe は1件だけ残す。完了した probe は `checks.csv` に記録する。
+- 重要な履歴は `timeline.csv`、詳細 observation は `command-log.jsonl` に移す。
+- 未解決の root-cause question と residual unknown は、解決するか明示的に受容するまで残す。
+
 ## checks.csv
 
 Purpose: planned and completed checks を追跡する。
@@ -99,6 +107,8 @@ ID,Layer,確認内容,コマンド/方法,Status,結果要約,証跡/参照,Owne
 
 Recommended statuses: `未着手`, `確認中`, `完了`, `要確認`, `保留`, `対象外`.
 
+承認済みの recovery / containment action では `Layer` column に `Mitigation` を使う。完了した probe と mitigation action は `完了` にし、`STATE.md` の current next probe として残さない。
+
 ## command-log.jsonl
 
 Purpose: probes と observations の append-only record。大きな table を書き換えなくてよいように JSONL を使う。
@@ -106,12 +116,16 @@ Purpose: probes と observations の append-only record。大きな table を書
 1行につき1 object:
 
 ```json
-{"Timestamp":"","Side/Target":"","Host/IP":"","Command/Method":"","Result":"","stdout要約":"","stderr/error":"","Direct/Inference":"","Next action":""}
+{"occurred_at":"","recorded_at":"","Side/Target":"","Host/IP":"","Command/Method":"","Result":"","stdout要約":"","stderr/error":"","Direct/Inference":"","Next action":""}
 ```
 
 Rules:
 
 - 意味のある probe はすべて記録する。
+- 両方の時刻 field には UTC offset 付き ISO 8601 を使う。
+- `occurred_at` は probe / observation の発生時刻。evidence の採録が遅れた場合、前の row より古い時刻でもよい。
+- `recorded_at` は JSONL row の追記時刻。append 順で単調非減少に保つ。
+- 遅れて得た evidence は元の `occurred_at` と現在の `recorded_at` で追記し、既存 row を並べ替えたり書き換えたりしない。
 - large outputs は要約する。
 - row が direct observation か inference かを示す。
 - secrets を貼り付けない。
@@ -163,6 +177,19 @@ Category,Item,Value,Notes,Shareability,Source,Last confirmed
 - Source と last-confirmed timestamp
 
 保存してはいけない secrets: private keys、passwords、psk、tokens、cookies、`.env`、API keys、secret payloads、private certificate material。
+
+## Investigation-to-Mitigation Transition
+
+investigation は known / unknown を確立し、mitigation は impact の containment / recovery のために状態を変更する。workaround が成功しても root cause の証明とはみなさない。
+
+mitigation の開始前に `STATE.md` へ次を記録する。
+
+- observation から intervention へ移る理由。
+- user approval と、承認された正確な target、action、effect boundary。
+- 未解決の root-cause claim。
+- mitigation 後も open のまま残る investigation question。
+
+限定的な mitigation は `checks.csv` の明示的な `Mitigation` layer を使い、action を `command-log.jsonl` と `timeline.csv` に記録する。大規模、multi-step、または system 横断の mitigation は、別の implementation bundle か明示的な `## Mitigation` section を使い、`STATE.md` から link する。未解決の investigation matter は、解決するか residual unknown として明示的に受容するまで current snapshot に残す。
 
 ## Workbook View
 

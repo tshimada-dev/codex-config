@@ -28,6 +28,8 @@ SHEETS = [
     ("接続情報", "connections.csv", "csv"),
 ]
 
+COMMAND_LOG_LEADING_COLUMNS = ["occurred_at", "recorded_at"]
+
 
 def read_csv(path: Path) -> list[list[str]]:
     if not path.exists():
@@ -60,6 +62,9 @@ def read_jsonl(path: Path) -> list[list[str]]:
 
     if not rows:
         return [["Empty file"], [path.name]]
+    keys = COMMAND_LOG_LEADING_COLUMNS + [
+        key for key in keys if key not in COMMAND_LOG_LEADING_COLUMNS
+    ]
     return [keys] + [[stringify(row.get(key, "")) for key in keys] for row in rows]
 
 

@@ -1,6 +1,6 @@
 ---
 source: skills/codex-field-investigation-loop/SKILL.md
-source_blob: 1547a26ce7383f10407e0cf10170b6e860e52aa2
+source_blob: deaa1f1046fb167353547881eb5d7739e4e7ffcc
 canonical: false
 ---
 
@@ -46,10 +46,17 @@ canonical: false
 6. **Update**
    - 意味のある結果の直後に investigation state bundle を更新する。
    - hypothesis を supported、weakened、disproved、blocked、still unknown に更新する。
-   - current conclusion と next probe を更新する。
+   - `STATE.md` の current snapshot を置換更新し、調査履歴を追記し続けない。
+   - `STATE.md` に残す next safe probe は現在の1件だけにする。完了した check は `checks.csv`、重要な履歴は `timeline.csv` に移す。
    - spreadsheet review が必要な場合は workbook view を再生成する。
 
-7. **Hand Off**
+7. **Transition to Mitigation**
+   - investigation と mitigation を分離する。workaround や recovery action が成功しても root cause の証明とはみなさない。
+   - mutation または recovery action の前に、移行理由、user approval と承認 scope、未解決の root cause、未解決の調査事項を記録する。
+   - 限定的な recovery work は `checks.csv` で `Mitigation` として記録する。大規模または system 横断の mitigation は別の implementation bundle か明示的な mitigation section に分け、`STATE.md` から link する。
+   - 未解決の調査事項は、解決するか residual unknown として明示的に受容するまで `STATE.md` に残す。
+
+8. **Hand Off**
    - current symptom、verified facts、top hypotheses、rejected hypotheses、next safe command/action、required approvals、open questions、state bundle path を簡潔に残す。
 
 ## Investigation State Bundle
@@ -64,9 +71,9 @@ bundle directory は最も永続的で自然な場所に作る。各 investigati
 
 canonical files:
 
-- `STATE.md`: current summary、current conclusion、next action、安全制約。
-- `checks.csv`: planned and completed checks。
-- `command-log.jsonl`: append-only probe and observation log。
+- `STATE.md`: 置換更新する current snapshot。50行以内に保ち、next safe probe は1件だけ置く。
+- `checks.csv`: planned and completed investigation / mitigation checks。
+- `command-log.jsonl`: event time と recording time を持つ append-only probe and observation log。
 - `hypotheses.csv`: falsifiable hypotheses and status。
 - `timeline.csv`: material incident and investigation events。
 - `connections.csv`: stable non-secret environment facts。
@@ -78,6 +85,14 @@ canonical files:
 
 - `artifacts/`: summary から参照する raw-safe command outputs、screenshots、excerpts、logs。
 - `subagent-results/`: parent integration 待ちの subagent evidence packets と verification notes。
+
+## 状態更新ルール
+
+- `STATE.md` は running diary にせず、古い fact、conclusion、next action を置換する。全体を50行以内に保つ。
+- `STATE.md` の next safe probe は現在の1件だけにし、完了した probe は `checks.csv`、重要な履歴は `timeline.csv`、詳細観測は `command-log.jsonl` に移す。
+- `command-log.jsonl` の `occurred_at` は probe / observation の発生時刻、`recorded_at` は行の追記時刻とする。両方とも UTC offset 付き ISO 8601 を使う。
+- 遅れて得た evidence は元の `occurred_at` と現在の `recorded_at` で追記する。`occurred_at` は行順に前後してよいが、`recorded_at` は追記順で単調非減少に保つ。
+- mitigation への移行時は、移行理由、承認された target / action / effect boundary、未解決 root cause、open questions を `STATE.md` に記録する。
 
 ## Spreadsheet View
 

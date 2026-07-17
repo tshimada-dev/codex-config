@@ -70,6 +70,11 @@ jobs:
         run: python -m unittest -v test_audit_skill_promotion.py
         working-directory: skills/codex-promote-local-skill/scripts
 
+      - name: Validate field investigation workbook renderer
+        shell: pwsh
+        run: python -m unittest -v test_render_workbook.py
+        working-directory: skills/codex-field-investigation-loop/scripts
+
       - name: Install pinned Codex CLI for execpolicy checks
         run: npm install --global @openai/codex@0.121.0
 

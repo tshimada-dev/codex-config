@@ -39,10 +39,17 @@ Use an investigation state bundle as the canonical source of truth. Treat chat a
 6. **Update**
    - Update the investigation state bundle immediately after each meaningful result.
    - Mark hypotheses as supported, weakened, disproved, blocked, or still unknown.
-   - Refresh the current conclusion and next probe.
+   - Replace the current snapshot in `STATE.md`; do not append investigation history there.
+   - Keep only one current next safe probe in `STATE.md`. Move completed checks to `checks.csv` and material history to `timeline.csv`.
    - Regenerate the workbook view when the user needs spreadsheet review.
 
-7. **Hand Off**
+7. **Transition to Mitigation**
+   - Keep investigation and mitigation distinct. A workaround or recovery action does not prove root cause.
+   - Before a mutation or recovery action, record the transition reason, the user's approval and approved scope, unresolved root cause, and open investigation questions.
+   - Tag bounded recovery work as `Mitigation` in `checks.csv`. Move large or cross-system mitigation into a separate implementation bundle or explicit mitigation section and link it from `STATE.md`.
+   - Keep unresolved investigation questions in `STATE.md` until they are resolved or explicitly accepted as residual unknowns.
+
+8. **Hand Off**
    - Leave a concise status: current symptom, verified facts, top hypotheses, rejected hypotheses, next safe command/action, required approvals, open questions, and the state bundle path.
 
 ## Investigation State Bundle
@@ -57,9 +64,9 @@ Create the bundle directory in the most relevant durable location. Use a timesta
 
 Use these canonical files:
 
-- `STATE.md`: short current summary, current conclusion, next action, and safety constraints.
-- `checks.csv`: planned and completed checks.
-- `command-log.jsonl`: append-only probe and observation log.
+- `STATE.md`: replacement-updated current snapshot, limited to 50 lines, with one next safe probe.
+- `checks.csv`: planned and completed investigation or mitigation checks.
+- `command-log.jsonl`: append-only probe and observation log with event and recording times.
 - `hypotheses.csv`: falsifiable hypotheses and status.
 - `timeline.csv`: material incident and investigation events.
 - `connections.csv`: stable non-secret environment facts.
