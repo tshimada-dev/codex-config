@@ -15,6 +15,7 @@ import json
 import re
 import sys
 import zipfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -29,6 +30,10 @@ SHEETS = [
 ]
 
 COMMAND_LOG_LEADING_COLUMNS = ["occurred_at", "recorded_at"]
+INVALID_XML_CHARACTER = re.compile(
+    "[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\ud800-\\udfff\\ufffe\\uffff]"
+)
+MAX_EXCEL_CELL_LENGTH = 32_767
 
 
 def read_csv(path: Path) -> list[list[str]]:
@@ -109,18 +114,57 @@ def column_name(index: int) -> str:
     return name
 
 
-def sheet_xml(rows: list[list[str]]) -> str:
+def sanitize_xml_text(value: object) -> str:
+    return INVALID_XML_CHARACTER.sub("", str(value))[:MAX_EXCEL_CELL_LENGTH]
+
+
+def column_widths(rows: list[list[str]]) -> list[float]:
+    column_count = max((len(row) for row in rows), default=1)
+    widths = []
+    for column_index in range(column_count):
+        longest = max(
+            (
+                max((len(line) for line in sanitize_xml_text(row[column_index]).splitlines()), default=0)
+                for row in rows
+                if column_index < len(row)
+            ),
+            default=0,
+        )
+        widths.append(float(min(60, max(10, longest + 2))))
+    return widths
+
+
+def sheet_xml(rows: list[list[str]], header_rows: Iterable[int] = (1,)) -> str:
+    header_row_numbers = set(header_rows)
+    columns = "".join(
+        f'<col min="{index}" max="{index}" width="{width:g}" customWidth="1"/>'
+        for index, width in enumerate(column_widths(rows), start=1)
+    )
     out = [
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
         '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">',
+        '<sheetViews><sheetView workbookViewId="0">'
+        '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>'
+        '</sheetView></sheetViews>',
+        f"<cols>{columns}</cols>",
         "<sheetData>",
     ]
     for row_index, row in enumerate(rows, start=1):
         out.append(f'<row r="{row_index}">')
         for col_index, value in enumerate(row, start=1):
             ref = f"{column_name(col_index)}{row_index}"
-            escaped = html.escape(str(value), quote=False)
-            out.append(f'<c r="{ref}" t="inlineStr"><is><t>{escaped}</t></is></c>')
+            sanitized = sanitize_xml_text(value)
+            escaped = html.escape(sanitized, quote=False)
+            style = ' s="1"' if row_index in header_row_numbers else ""
+            preserve_space = (
+                ' xml:space="preserve"'
+                if sanitized[:1].isspace() or sanitized[-1:].isspace()
+                else ""
+            )
+            out.append(
+                f'<c r="{ref}" t="inlineStr"{style}><is><t{preserve_space}>'
+                f"{escaped}</t></is></c>"
+            )
         out.append("</row>")
     out.extend(["</sheetData>", "</worksheet>"])
     return "".join(out)
@@ -150,6 +194,11 @@ def workbook_rels_xml(count: int) -> str:
             'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" '
             f'Target="worksheets/sheet{index}.xml"/>'
         )
+    rels.append(
+        f'<Relationship Id="rId{count + 1}" '
+        'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" '
+        'Target="styles.xml"/>'
+    )
     return (
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
@@ -161,7 +210,9 @@ def workbook_rels_xml(count: int) -> str:
 def content_types_xml(count: int) -> str:
     overrides = [
         '<Override PartName="/xl/workbook.xml" '
-        'ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+        'ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>',
+        '<Override PartName="/xl/styles.xml" '
+        'ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>',
     ]
     for index in range(1, count + 1):
         overrides.append(
@@ -175,6 +226,32 @@ def content_types_xml(count: int) -> str:
         '<Default Extension="xml" ContentType="application/xml"/>'
         f"{''.join(overrides)}"
         "</Types>"
+    )
+
+
+def styles_xml() -> str:
+    return (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        '<fonts count="2">'
+        '<font><sz val="11"/><name val="Calibri"/><family val="2"/></font>'
+        '<font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Calibri"/><family val="2"/></font>'
+        '</fonts>'
+        '<fills count="3">'
+        '<fill><patternFill patternType="none"/></fill>'
+        '<fill><patternFill patternType="gray125"/></fill>'
+        '<fill><patternFill patternType="solid"><fgColor rgb="FF1F4E78"/>'
+        '<bgColor indexed="64"/></patternFill></fill>'
+        '</fills>'
+        '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
+        '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+        '<cellXfs count="2">'
+        '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+        '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" '
+        'applyFont="1" applyFill="1"/>'
+        '</cellXfs>'
+        '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>'
+        '</styleSheet>'
     )
 
 
@@ -200,9 +277,33 @@ def load_sheet(bundle_dir: Path, filename: str, kind: str) -> list[list[str]]:
     raise ValueError(f"unsupported sheet kind: {kind}")
 
 
-def render(bundle_dir: Path, output: Path) -> None:
+def source_line_count(path: Path) -> str:
+    if not path.exists():
+        return "Missing"
+    return str(len(path.read_text(encoding="utf-8-sig").splitlines()))
+
+
+def summary_rows(bundle_dir: Path, captured_at: datetime) -> list[list[str]]:
+    metadata = [
+        ["Snapshot timestamp (UTC)", captured_at.astimezone(timezone.utc).isoformat(timespec="seconds")],
+        ["Source file", "Line count"],
+    ]
+    metadata.extend(
+        [filename, source_line_count(bundle_dir / filename)] for _, filename, _ in SHEETS
+    )
+    metadata.append([""])
+    return metadata + read_markdown(bundle_dir / "STATE.md")
+
+
+def render(bundle_dir: Path, output: Path, captured_at: datetime | None = None) -> None:
+    snapshot_at = captured_at or datetime.now(timezone.utc)
     sheet_rows = [
-        (sheet_name, load_sheet(bundle_dir, filename, kind))
+        (
+            sheet_name,
+            summary_rows(bundle_dir, snapshot_at)
+            if filename == "STATE.md"
+            else load_sheet(bundle_dir, filename, kind),
+        )
         for sheet_name, filename, kind in SHEETS
     ]
 
@@ -211,8 +312,12 @@ def render(bundle_dir: Path, output: Path) -> None:
         archive.writestr("_rels/.rels", root_rels_xml())
         archive.writestr("xl/workbook.xml", workbook_xml(name for name, _ in sheet_rows))
         archive.writestr("xl/_rels/workbook.xml.rels", workbook_rels_xml(len(sheet_rows)))
+        archive.writestr("xl/styles.xml", styles_xml())
         for index, (_, rows) in enumerate(sheet_rows, start=1):
-            archive.writestr(f"xl/worksheets/sheet{index}.xml", sheet_xml(rows))
+            header_rows = (1, 2) if index == 1 else (1,)
+            archive.writestr(
+                f"xl/worksheets/sheet{index}.xml", sheet_xml(rows, header_rows)
+            )
 
 
 def parse_args() -> argparse.Namespace:
