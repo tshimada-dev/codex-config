@@ -88,6 +88,11 @@ jobs:
         run: python -m unittest -v test_estimator_sample.py
         working-directory: docs/samples
 
+      - name: Validate estimator case study evidence
+        shell: pwsh
+        run: python -m unittest -v test_estimator_vs_veteran.py
+        working-directory: docs/case-studies
+
       - name: Install pinned Codex CLI for execpolicy checks
         run: npm install --global @openai/codex@0.121.0
 
