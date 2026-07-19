@@ -28,6 +28,22 @@ Compare the current project with historical anchors and return adjustment candid
 5. When organization-specific productivity baselines exist, compare current scope against them, such as person-days per screen, report, integration, CRUD module, migration object, or KLOC.
 6. Explain why the current WBS/PERT should stay unchanged, move up/down, or widen.
 
+## Post-delivery calibration ledger
+
+Use this procedure after actual effort is accepted. It closes the
+estimate-to-actual loop; it is not part of changing an in-flight estimate.
+
+1. Copy `calibration-ledger-template.csv` to the approved project metrics location, or append to the existing approved ledger.
+2. Use a non-sensitive `project_alias` and a stable `scope_fingerprint`. Do not record customer names, prices, credentials, or source-document contents.
+3. Preserve the original estimate, method, size basis, size value, coefficient source, and low/center/high values as they were at the decision date.
+4. Record actual effort only after its reporting period, included lifecycle, and scope are accepted. Set `actual_scope_match` to `false` when delivered scope differs; do not use that row as a direct coefficient without normalization.
+5. When `size_value > 0`, calculate `actual_productivity_pd_per_size = actual_effort_pd / size_value`.
+6. Calculate `signed_relative_error = (estimate_center_pd - actual_effort_pd) / actual_effort_pd` and `absolute_relative_error = abs(signed_relative_error)`.
+7. Keep every observation. Do not overwrite an inconvenient row or promote one result into an organizational baseline.
+8. During the next estimate, prefer comparable local actual rows over compatible measured public benchmarks, and prefer both over heuristic or judgment coefficients.
+
+If the repository cannot store the actual because it is private, record the row in the approved private metrics location and cite only a sanitized aggregate or opaque anchor ID in estimate artifacts.
+
 ## Output Schema
 
 Return:
@@ -39,5 +55,6 @@ Return:
 - Recommended calibration action: keep, shift center, widen range, or reject anchor.
 - Confidence level.
 - What historical data would improve calibration.
+- Ledger status: not yet due, recorded, scope-mismatched, or unavailable, with the approved location or sanitized anchor ID when one exists.
 
 Do not use conclusions from other estimators except the current WBS/PERT total if the assignment explicitly asks you to calibrate it.
