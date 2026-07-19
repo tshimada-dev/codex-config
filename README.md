@@ -11,6 +11,7 @@
 
 - [`skills/codex-*`](skills/): 調査、計画、実装、デバッグ、レビュー準備、UI 検証を分離したマルチエージェント向け Skill 群。
 - [`skills/codex-effort-estimator`](skills/codex-effort-estimator/): 見積もりにおける独立観測、バイアス制御、AI 補正、監査可能な workbook 出力を扱う代表的な実証対象。
+- [`docs/samples/estimator-synthetic-sample.xlsx`](docs/samples/estimator-synthetic-sample.xlsx): 架空データだけで作成した、見積もり workbook の表示・数式・監査線を確認できる成果物サンプル。
 - [`scripts/install.ps1`](scripts/install.ps1): tracked file だけを `$HOME/.codex` に反映し、manifest と prune で安全に同期する PowerShell 7 ベースの配布ツール。
 - [`rules/development-workflow.md`](rules/development-workflow.md): 仕様、テスト、実装、最終検証が競合しないよう、期待結果・証拠・所有権・ready 判定を統一する共通契約。
 - [`rules/`](rules/) と [`templates/`](templates/): 長時間作業、CI 差分、意思決定記録、危険コマンド境界を Codex が再利用できる形に落とし込んだ運用設計。
@@ -39,6 +40,7 @@
 - `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` / `source_blob` 検査・更新スクリプト
 - `scripts/validate-development-workflow.ps1`: 開発スキル間の所有権、証拠、readiness、配布対象の整合性検査
 - `docs/ja/`: 人間が読むための日本語参考訳
+- `docs/samples/`: 実データや秘密情報を含まない、検証済みの合成成果物サンプル
 
 管理しないもの:
 
