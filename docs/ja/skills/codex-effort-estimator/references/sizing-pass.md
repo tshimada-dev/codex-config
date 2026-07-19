@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/sizing-pass.md
-source_commit: e535debff08e37bf3540fa3677f8a8e610fcfb8f
+source_blob: cf54f77174ace18daa44f23d6490b40bd6548a68
 canonical: false
 ---
 
@@ -41,3 +41,11 @@ sizing facts、ambiguity、confidence を返します。明示的に求められ
 - sizing を改善できる confirmation questions。
 
 他 estimator の結論を使わないでください。
+
+## Count provenance guard
+
+count statusは`explicit`, `source-reported aggregate`, `confirmed inferred`,
+`unresolved aggregate`, `sample-only`, `unknown`を使い、source locatorを記録します。
+aggregateの存在は保持できますが、memberの名前・boundary・transaction・complexityを
+発明しません。method-ready countを明示/source-reported countと照合し、untraced inferred
+itemはSTOP、25%超の増加は確認までsensitivity-onlyとします。

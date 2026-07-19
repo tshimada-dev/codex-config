@@ -189,7 +189,7 @@ Include the model equation in a visible note. Use formulas for driver totals and
 
 Columns:
 
-`種別`, `項目群`, `数量Low`, `数量Base`, `数量High`, `複雑度`, `重み`, `FP Low`, `FP Base`, `FP High`, `根拠`, `メモ`
+`種別`, `項目群`, `数量Low`, `数量Base`, `数量High`, `複雑度`, `重み`, `FP Low`, `FP Base`, `FP High`, `Source status`, `Source locator`, `根拠`, `メモ`
 
 Allowed `種別` values: `EI`, `EO`, `EQ`, `ILF`, `EIF`.
 
@@ -203,11 +203,21 @@ Show effort formulas from adjusted function points divided by productivity. Do n
 
 Columns:
 
-`分類`, `項目`, `複雑度`, `数量`, `重み`, `UCP`, `根拠`, `メモ`
+`分類`, `項目`, `複雑度`, `数量`, `重み`, `UCP`, `Source status`, `Source locator`, `根拠`, `メモ`
 
 `分類` values: `Actor`, `Use case`, `TCF`, `ECF`, `Productivity`.
 
 Include rows for UAW, UUCW, UUCP, TCF, ECF, UCP, productivity, and low/base/high effort. Use formulas where practical.
+
+For FP and UCP base-count rows, allowed source statuses are `explicit`,
+`source-reported aggregate`, `confirmed inferred`, and `unresolved aggregate`.
+Do not assign invented members or complexity to an unresolved aggregate. Add a
+visible count-reconciliation row; untraced count or more than 25% inflation is a
+formatter warning and a strict-mode blocker.
+
+The reconciliation table columns are `Metric`, `Explicit count`, `Derived count`,
+`Untraced inferred`, `Inflation ratio`, and `Guard status`. The formatter
+recomputes `(derived - explicit) / explicit` and the expected guard status.
 
 ### `09_トップダウン`
 
@@ -315,9 +325,9 @@ Then include the reconciliation table:
 
 When three or more total-estimate methods are compared, include a method-dependence cluster table:
 
-`Cluster`, `Methods`, `Shared assumptions`, `Independent anchors checked`, `Parent treatment`, `Reason`
+`Cluster`, `Methods`, `Shared assumptions`, `Representative center`, `Effective vote`, `Independent anchors checked`, `Anchor disposition`, `Decision impact`, `Reason`
 
-Use this table to show whether apparent method agreement is real independent convergence or one assumption family repeating itself. If the final recommendation follows a high or low cluster while other plausible anchors disagree, the `Reason` must name the deliverable, lifecycle, productivity, or risk assumption that justifies the choice.
+Use this table to show whether apparent method agreement is real independent convergence or one assumption family repeating itself. Include data rows, set every eligible cluster's numeric `Effective vote` to 1, and show the median representative and neutral cluster-median center. Allowed dispositions are `adopted`, `shifted`, `rejected_scope_mismatch`, `rejected_unit_mismatch`, `rejected_lifecycle_mismatch`, `rejected_evidence_mismatch`, and `sanity_only`. If the final recommendation follows a high or low cluster while other plausible anchors disagree, the `Reason` must name the concrete deliverable, lifecycle, productivity, or risk incompatibility; a generic scope preference is not sufficient.
 
 Also include a range synthesis table whenever three-point data exists:
 
@@ -368,7 +378,8 @@ Before delivery, verify:
 - WBS three-point data produces WBS-derived variance aggregation even when independent PERT was skipped.
 - Baseline and AI-assisted values are separate when AI assistance is assumed.
 - Public/report review findings are not displayed as comparable total estimates unless explicitly additive.
-- `18_親統合` includes a method-dependence cluster table when three or more total-estimate methods are compared.
+- `18_親統合` includes a populated method-dependence decision ledger with one numeric vote per eligible cluster when three or more total-estimate methods are compared.
+- `07_FP` and `08_UCP` base-count rows include source status and source locator; untraced or inflated counts are not silent center votes.
 - Every populated column in every sheet has an intentional width. Check each sheet independently; do not assume a shared width setup covers sheets with different column counts or different long-text columns.
 - No formula errors: `#REF!`, `#VALUE!`, `#DIV/0!`, `#NAME?`, `#N/A`.
 - Header rows, total rows, and risk/assumption colors follow the token table.

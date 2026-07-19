@@ -105,10 +105,10 @@ If the source is WBS, label it `WBS-derived variance aggregation` or `WBS由来C
 
 The synthesis sheet must include a method-dependence cluster table whenever three or more total-estimate methods are compared:
 
-| Cluster | Methods | Shared assumptions | Independent anchors checked | Parent treatment | Reason |
-|---|---|---|---|---|---|
+| Cluster | Methods | Shared assumptions | Representative center | Effective vote | Independent anchors checked | Anchor disposition | Decision impact | Reason |
+|---|---|---|---:|---:|---|---|---|---|
 
-Use this table to prevent false convergence. If WBS, component-unit, UCP, and parametric estimates share the same count or productivity assumptions, list them in one cluster rather than treating their agreement as multiple independent votes. When the final range follows one cluster over plausible anchors from FP, constraint capacity, top-down, analogy, or measured productivity, explain why the other anchors were rejected or why the final range was shifted.
+Use this table to prevent false convergence. If WBS, component-unit, UCP, and parametric estimates share the same count or productivity assumptions, list them in one cluster with `Effective vote = 1` rather than treating their agreement as multiple independent votes. Include at least one data row; a header-only table is not audit evidence. Run the deterministic cluster synthesis and show its neutral center. When the final range follows one cluster over plausible anchors from FP, constraint capacity, top-down, analogy, or measured productivity, use an allowed disposition and explain the concrete scope/unit/lifecycle mismatch or how the final range was shifted.
 
 For PERT, show:
 
@@ -148,8 +148,11 @@ When repeated variants or shared skeletons are detected, the workbook must also 
 For independent anchor passes, show enough detail to audit the method:
 
 - Parametric: model equation, drivers, coefficients, adjustment factors, and calibration confidence.
-- Function point: EI/EO/EQ/ILF/EIF counts, complexity weights, productivity conversion, and boundary ambiguity.
-- Use case points: actor/use-case weights, TCF/ECF, productivity conversion, and actor/workflow ambiguity.
+- Function point: EI/EO/EQ/ILF/EIF counts, complexity weights, productivity conversion, source status/locator, count reconciliation, and boundary ambiguity.
+- Use case points: actor/use-case weights, TCF/ECF, productivity conversion, source status/locator, count reconciliation, and actor/workflow ambiguity.
+- For FP/UCP reconciliation use `Metric`, `Explicit count`, `Derived count`,
+  `Untraced inferred`, `Inflation ratio`, and `Guard status`. Formatter QA
+  recomputes the ratio/status; a non-`PASS` result is a strict-mode blocker.
 - Top-down three-point: delivery class, dominant drivers, optimistic/most-likely/pessimistic totals, expected value, and SD.
 - Constraint capacity: staffing scenarios, workdays, focus factor, review buffers, feasible capacity, and schedule implication.
 - Risk model: independent base anchor, risk register, probability/impact, correlation groups, expected exposure, and P50/P80/P90 or scenario bands.
@@ -197,6 +200,9 @@ Before delivering:
 - Treat formatter `errors` as release blockers. The formatter must detect visible total-row cross-foot mismatches, AI adjustment formula mismatches, and breakdown delta/rate mismatches.
 - When PERT is WBS-derived rather than independently estimated, ensure `04_PERT` includes a visible `WBS由来CI` warning banner.
 - When repeated variants or shared skeletons are detected, ensure `05_単価アンカー` has count/framework/unit/factor audit columns and `18_親統合` has the top-down per-unit reuse cross-check. Formatter warnings for missing variant/reuse factors are release blockers under `--strict`.
+- Treat a header-only method-dependence table, a cluster without numeric effective
+  vote 1, missing anchor disposition/decision impact, and missing FP/UCP count
+  provenance as release blockers under `--strict`.
 - Ensure `01_内訳` AI reducibility tags match `10_AI補正` after canonical alias normalization; mismatches are formatter QA warnings and strict-mode blockers.
 - Render at least the summary and one detailed sheet for visual review.
 - Make long text readable with sensible column widths and wrapping.

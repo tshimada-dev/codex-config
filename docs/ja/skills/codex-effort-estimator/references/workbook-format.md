@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/workbook-format.md
-source_commit: ae5b24b1f8c5427eec7502997bb4d7a580c06b23
+source_blob: 1dd842f89767a62289ab8e089196e39f289049e1
 canonical: false
 ---
 
@@ -349,3 +349,21 @@ delivery 前に確認します。
 - header rows、total rows、risk/assumption colors が token table に従っている。
 - main summary と synthesis sheets の text が manual resizing なしで読める。
 - wide evidence/notes text、多数の numeric columns、optional method-specific columns を持つ sheet を含め、layout が異なる代表的な detailed sheets を render して visual inspect する。
+
+## 追加の固定列とQA
+
+`07_FP`と`08_UCP`のbase-count行には`Source status`と`Source locator`を追加します。
+unresolved aggregateへmember/complexityを発明せず、count reconciliationを表示します。
+
+`18_親統合`のcluster ledger列は次のとおりです。
+
+`Cluster`, `Methods`, `Shared assumptions`, `Representative center`, `Effective vote`,
+`Independent anchors checked`, `Anchor disposition`, `Decision impact`, `Reason`
+
+eligible clusterは実効票1、sanity/rejected clusterは0とし、neutral cluster-median centerを
+表示します。header-only、非数値票、missing disposition/impact、generic scope preferenceは
+strict QA blockerです。
+allowed dispositionには`rejected_scope_mismatch`、`rejected_unit_mismatch`、
+`rejected_lifecycle_mismatch`、`rejected_evidence_mismatch`、`sanity_only`を含みます。
+reconciliation tableは`Metric`, `Explicit count`, `Derived count`, `Untraced inferred`,
+`Inflation ratio`, `Guard status`列を使い、formatterが算式とstatusを再計算します。

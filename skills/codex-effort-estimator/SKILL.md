@@ -291,6 +291,7 @@ The parent should report:
 - Estimate tier (`quick`, `standard`, or `full`) and the reason for that tier.
 - Method results side by side.
 - Method-dependence clusters: group methods that share the same dominant size drivers, productivity assumptions, or risk adders. Agreement inside one cluster is corroboration of that assumption set, not multiple independent votes.
+- Cluster decision ledger: for every cluster show its methods, count/productivity/lifecycle/risk bases, median representative center, numeric effective vote, independent anchors checked, anchor disposition, decision impact, and evidence-specific reason.
 - Range synthesis for any available three-point data, including WBS-derived variance aggregation when independent PERT was skipped.
 - Agreement and disagreement.
 - Scope or assumption differences causing gaps.
@@ -311,9 +312,22 @@ The parent should report:
 - A lower "implementation-only" range if materially different from the full delivery range.
 - Confirmation questions that could narrow the range.
 
-If method outputs conflict, prefer the estimate whose assumptions best match the user's target deliverable. Keep outliers visible when they represent real delivery risk.
+If method outputs conflict, first calculate one median representative per eligible
+assumption cluster and the median of those cluster representatives. Use
+`scripts/synthesize_method_clusters.py` for a reproducible neutral center. Do not
+prefer a high cluster merely because it is described as matching the target
+deliverable. An override must identify a concrete scope, unit, lifecycle, or risk
+incompatibility in every displaced plausible independent cluster and keep the
+neutral center visible. Keep outliers visible when they represent real delivery
+risk.
 
 Do not treat false convergence as confidence. If WBS, component-unit, UCP, or parametric outputs agree because they all rely on the same exposed count, hidden-use-case assumption, productivity coefficient, lifecycle inclusion, or risk uplift, count that agreement once during parent synthesis. Compare that cluster against genuinely different anchors such as function points, constraint capacity, top-down three-point, historical analogy, or measured productivity. When the final center follows a high cluster while lower independent anchors are plausible, explicitly explain why the lower anchors are rejected; otherwise shift the planning center or final range toward the independent anchors.
+
+Agreement may raise convergence confidence only when two different eligible
+clusters are within 20% of their midpoint. Agreement inside one cluster never
+raises confidence. An untraced invented count is a stop condition for the affected
+method. A traceable derived count more than 25% above its explicit source count is
+sensitivity-only until confirmed; it cannot become a center vote.
 
 ### Adjustment Review Rule
 

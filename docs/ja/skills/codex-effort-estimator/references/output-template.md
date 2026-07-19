@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/output-template.md
-source_commit: 9f1e1e87eb56b9888756b3a34432e89d0991fe79
+source_blob: 595cbf79efdd907534af13dc2f2ee239d8c22adc
 canonical: false
 ---
 
@@ -71,3 +71,10 @@ engineering planning 向け:
 - decomposition、dependencies、confidence を示す。
 - base work と contingency を分ける。
 - validation work と unknown を強調する。
+
+## 親統合の必須証跡
+
+method-dependence decision ledgerを含め、clusterごとのmedian代表値、数値の実効票、
+neutral center、independent anchorの採否、decision impactを示します。overrideはneutral
+centerと分離します。FP/UCPではcount provenanceとreconciliation warningを示し、
+untracedまたは25%超inflated countをplanning centerへ暗黙に入れません。

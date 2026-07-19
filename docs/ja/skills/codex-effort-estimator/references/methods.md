@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/methods.md
-source_commit: ae5b24b1f8c5427eec7502997bb4d7a580c06b23
+source_blob: 8d5adf57e80ef6a7a22e4bc2749bcc2ba594fd4b
 canonical: false
 ---
 
@@ -185,3 +185,25 @@ finalize 前に確認します:
 - historical productivity がある場合、current effort が baseline と整合するか、なぜ違うかを示す。
 - requirements が unclear な場合、implementation scope が安定しているふりをせず discovery estimate を出す。
 - AI coding assistance が前提の場合、productivity assumption が auditable になるよう baseline と adjusted effort の両方を示す。
+
+## Method dependenceと機械的な親判断
+
+各methodについてdominant count、productivity、lifecycle、risk basisを記録し、plausibleな
+total methodをちょうど1つのclusterへ割り当てます。cluster代表値はmethod centerのmedian、
+各eligible clusterの`Effective vote`はmethod数に関係なく`1`です。neutral centerはeligible
+cluster代表値のmedianで、`scripts/synthesize_method_clusters.py`により算出します。
+
+methodを棄却する場合、synthesis CLIには`rejection_dimension`、`evidence_locator`、
+`rejection_reason`を記録します。棄却methodだけのclusterもdecision ledgerに残し、
+`Effective vote = 0`、代表centerなしとして、具体的な証拠位置と棄却理由を保持します。
+allowed dispositionには`rejected_evidence_mismatch`も含みます。
+
+異なるfinal centerはoverrideとして扱い、neutral centerを残したうえで、押しのけた各独立
+clusterの具体的なscope/unit/lifecycle/evidence不一致を示します。「accepted scopeに最も合う」
+だけでは棄却根拠になりません。異なるclusterがmidpoint比20%以内の場合だけindependent
+convergenceとします。
+
+decision ledger列は`Cluster`, `Methods`, `Shared assumptions`, `Representative center`,
+`Effective vote`, `Independent anchors checked`, `Anchor disposition`, `Decision impact`,
+`Reason`です。FP/UCPで根拠のないcountを作った場合はSTOP、明示countより25%超の増加は
+確認までsensitivity-onlyとしてcenter voteから除外します。

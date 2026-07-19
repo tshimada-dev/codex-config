@@ -150,6 +150,28 @@ Create method-dependence clusters by grouping methods that share the same domina
 
 Agreement inside one cluster is useful, but it is not several independent votes. For example, WBS, component-unit anchor, UCP, and parametric outputs may all land high because they price the same use-case count with similar productivity assumptions. Treat that as one high cluster, then compare it against function point, constraint capacity, top-down three-point, analogy, or measured productivity anchors that use different evidence.
 
+Use this mechanical default before making a judgment override:
+
+1. Record each method's dominant count, productivity, lifecycle, and risk basis.
+2. Put every plausible total method in exactly one cluster. Reject a method only
+   with a concrete scope, unit, lifecycle, or evidence incompatibility. For the
+   synthesis CLI, record `rejection_dimension`, `evidence_locator`, and
+   `rejection_reason`; a rejected-only cluster remains in the ledger with vote 0
+   and no representative center.
+3. Calculate one cluster representative as the arithmetic median of its plausible
+   method centers. Each eligible cluster has `Effective vote = 1`, regardless of
+   how many methods it contains.
+4. Calculate the neutral planning center as the arithmetic median of eligible
+   cluster representatives. Run `scripts/synthesize_method_clusters.py` to make
+   this calculation reproducible.
+5. A different final center is an override. Keep the neutral center visible and
+   name the evidence-specific reason for displacing every plausible independent
+   cluster. “Best matches accepted delivery scope” without the actual omitted
+   scope or unit difference is not sufficient.
+6. Raise convergence confidence only when at least two different eligible cluster
+   representatives differ by no more than 20% of their midpoint. Within-cluster
+   agreement cannot raise confidence.
+
 Use this reconciliation pattern:
 
 | Pattern | Parent action |
@@ -161,6 +183,12 @@ Use this reconciliation pattern:
 | Risk model is derived from the same base/risk assumptions as WBS | Treat it as a risk scenario, not another independent center vote. |
 
 The final synthesis should state which cluster the selected planning center follows and why. If no measured productivity or historical actuals exist, say the cluster weights are judgment-based.
+
+The decision ledger must contain `Cluster`, `Methods`, `Shared assumptions`,
+`Representative center`, `Effective vote`, `Independent anchors checked`,
+`Anchor disposition`, `Decision impact`, and `Reason`. Allowed dispositions are
+`adopted`, `shifted`, `rejected_scope_mismatch`, `rejected_unit_mismatch`,
+`rejected_lifecycle_mismatch`, `rejected_evidence_mismatch`, and `sanity_only`.
 
 ## Risk Model
 
@@ -177,6 +205,11 @@ Monte Carlo-style outputs are useful when distributions can be stated, but a tra
 - Count each risk once. If line `high` values already embed pessimistic risk, do not also stack a separate reserve line and the correlated endpoint-sum high for the same uncertainty.
 - Cross-check the bottom-up total against the independent component unit anchor when that pass ran. A per-unit cost well above a credible anchor signals under-applied economy of scale or reuse.
 - Compare WBS against parametric, function point, use case point, top-down, constraint, and risk model outputs only after those methods complete. Do not feed WBS results into those passes.
+- For FP/UCP and other derived counts, retain source status and source locator for
+  every base-count row. Never invent unnamed “remaining” items to reach a stated
+  total. Untraced inferred count is a stop condition. If a traceable derived count
+  is more than 25% above the explicit source count, keep it as a sensitivity only
+  until confirmed and exclude the affected method from center voting.
 - If organization-specific actual productivity is available, such as person-days per screen, report, integration, CRUD module, or KLOC, use it as calibration evidence. If no baseline exists, state that the estimate relies on document-derived judgment rather than measured organizational productivity.
 
 ## AI Coding Assistance

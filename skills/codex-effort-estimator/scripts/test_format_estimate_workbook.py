@@ -151,6 +151,125 @@ class FormatEstimateWorkbookTest(unittest.TestCase):
 
         self.assertEqual([], formatter.check_ai_reducibility_bias(workbook))
 
+    @staticmethod
+    def workbook_with_parent_methods():
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "18_親統合"
+        sheet.append(["手法", "Low", "Base", "High"])
+        sheet.append(["WBS", 1000, 1200, 1500])
+        sheet.append(["UCP", 950, 1180, 1450])
+        sheet.append(["FP", 650, 800, 950])
+        sheet.append([])
+        return workbook, sheet
+
+    def test_empty_method_cluster_table_is_not_audit_evidence(self):
+        workbook, sheet = self.workbook_with_parent_methods()
+        sheet.append(
+            [
+                "Cluster",
+                "Methods",
+                "Shared assumptions",
+                "Representative center",
+                "Effective vote",
+                "Independent anchors checked",
+                "Anchor disposition",
+                "Decision impact",
+                "Reason",
+            ]
+        )
+
+        warnings = formatter.check_method_dependence_audit(workbook)
+
+        self.assertTrue(any("has no data rows" in warning for warning in warnings))
+
+    def test_method_cluster_rows_require_one_vote_and_decision_effect(self):
+        workbook, sheet = self.workbook_with_parent_methods()
+        sheet.append(
+            [
+                "Cluster",
+                "Methods",
+                "Shared assumptions",
+                "Representative center",
+                "Effective vote",
+                "Independent anchors checked",
+                "Anchor disposition",
+                "Decision impact",
+                "Reason",
+            ]
+        )
+        sheet.append(
+            [
+                "use-case/lifecycle",
+                "WBS, UCP",
+                "same use-case count and lifecycle",
+                1190,
+                "",
+                "FP",
+                "adopted",
+                "",
+                "best matches accepted delivery scope",
+            ]
+        )
+
+        warnings = formatter.check_method_dependence_audit(workbook)
+
+        self.assertTrue(any("Effective vote" in warning for warning in warnings))
+        self.assertTrue(any("Decision impact" in warning for warning in warnings))
+        self.assertTrue(any("evidence-specific" in warning for warning in warnings))
+        self.assertTrue(any("FP" in warning and "exactly one cluster" in warning for warning in warnings))
+
+    def test_ucp_use_case_rows_require_count_provenance(self):
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "08_UCP"
+        sheet.append(
+            [
+                "分類",
+                "項目",
+                "複雑度",
+                "数量",
+                "重み",
+                "UCP",
+                "Source status",
+                "Source locator",
+                "根拠",
+                "メモ",
+            ]
+        )
+        sheet.append(["Use case", "Related flows", "Average", 6, 10, 60, "", "", "inferred", ""])
+
+        warnings = formatter.check_functional_count_provenance(workbook)
+
+        self.assertTrue(any("Source status" in warning for warning in warnings))
+        self.assertTrue(any("Source locator" in warning for warning in warnings))
+
+    @staticmethod
+    def workbook_with_ucp_reconciliation(derived, untraced, ratio, status):
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "08_UCP"
+        sheet.append(["分類", "項目", "複雑度", "数量", "重み", "UCP", "Source status", "Source locator", "根拠", "メモ"])
+        sheet.append(["Use case", "Published use cases", "Simple", 9, 5, 45, "explicit", "requirements:use-cases", "source", ""])
+        sheet.append([])
+        sheet.append(["Metric", "Explicit count", "Derived count", "Untraced inferred", "Inflation ratio", "Guard status"])
+        sheet.append(["UUCP", 57, derived, untraced, ratio, status])
+        return workbook
+
+    def test_ucp_numeric_count_inflation_is_strict_warning(self):
+        workbook = self.workbook_with_ucp_reconciliation(
+            94, 37, (94 - 57) / 57, "STOP_UNTRACED_COUNT"
+        )
+
+        warnings = formatter.check_functional_count_provenance(workbook)
+
+        self.assertTrue(any("STOP_UNTRACED_COUNT" in warning and "64.9%" in warning for warning in warnings))
+
+    def test_ucp_matching_explicit_count_passes_provenance_qa(self):
+        workbook = self.workbook_with_ucp_reconciliation(57, 0, 0, "PASS")
+
+        self.assertEqual([], formatter.check_functional_count_provenance(workbook))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -898,20 +898,25 @@ def parent_has_reuse_crosscheck(ws: Any) -> bool:
     return False
 
 
-def parent_has_method_dependence_audit(ws: Any) -> bool:
+def find_method_dependence_audit(ws: Any) -> tuple[int | None, dict[str, int]]:
     max_row, max_col = used_bounds(ws)
-    required_sets = [
-        {"Cluster", "Methods", "Shared assumptions", "Independent anchors checked", "Parent treatment", "Reason"},
-        {"クラスタ", "手法", "共有前提", "確認した独立アンカー", "親判断", "根拠"},
+    core_sets = [
+        {"Cluster", "Methods", "Shared assumptions"},
+        {"クラスタ", "手法", "共有前提"},
     ]
     for row in range(1, max_row + 1):
-        headers = {text(ws.cell(row, col).value) for col in range(1, max_col + 1)}
-        if any(required.issubset(headers) for required in required_sets):
-            return True
-    return False
+        headers = header_map(ws, row, max_col)
+        if any(required.issubset(headers) for required in core_sets):
+            return row, headers
+    return None, {}
 
 
-def parent_total_method_count(ws: Any) -> int:
+def parent_has_method_dependence_audit(ws: Any) -> bool:
+    row, _ = find_method_dependence_audit(ws)
+    return row is not None
+
+
+def parent_total_method_names(ws: Any) -> list[str]:
     max_row, max_col = used_bounds(ws)
     for row in range(1, max_row + 1):
         headers = header_map(ws, row, max_col)
@@ -921,16 +926,20 @@ def parent_total_method_count(ws: Any) -> int:
         has_total_range = any(header in headers for header in ("Low", "Base", "High", "中心", "Center"))
         if not has_total_range:
             continue
-        count = 0
+        methods: list[str] = []
         for check_row in range(row + 1, max_row + 1):
             method = text(ws.cell(check_row, method_col).value)
             if not method:
                 break
             if method.lower() in {"source", "論点"}:
                 break
-            count += 1
-        return count
-    return 0
+            methods.append(method)
+        return methods
+    return []
+
+
+def parent_total_method_count(ws: Any) -> int:
+    return len(parent_total_method_names(ws))
 
 
 def check_method_dependence_audit(wb: Any) -> list[str]:
@@ -939,10 +948,209 @@ def check_method_dependence_audit(wb: Any) -> list[str]:
     if parent_ws is None:
         return warnings
     method_count = parent_total_method_count(parent_ws)
-    if method_count >= 3 and not parent_has_method_dependence_audit(parent_ws):
+    header_row, headers = find_method_dependence_audit(parent_ws)
+    if method_count >= 3 and header_row is None:
         warnings.append(
             "18_親統合 compares three or more total-estimate methods but lacks a method-dependence cluster table"
         )
+        return warnings
+    if header_row is None:
+        return warnings
+
+    aliases = {
+        "cluster": ("Cluster", "クラスタ"),
+        "methods": ("Methods", "手法"),
+        "shared": ("Shared assumptions", "共有前提"),
+        "representative": ("Representative center", "代表中心"),
+        "vote": ("Effective vote", "実効票"),
+        "independent": ("Independent anchors checked", "確認した独立アンカー"),
+        "disposition": ("Anchor disposition", "アンカー採否"),
+        "impact": ("Decision impact", "判断への影響"),
+        "reason": ("Reason", "根拠"),
+    }
+    columns: dict[str, int | None] = {
+        key: next((headers[name] for name in names if name in headers), None)
+        for key, names in aliases.items()
+    }
+    for key in ("representative", "vote", "independent", "disposition", "impact", "reason"):
+        if columns[key] is None:
+            warnings.append(f"18_親統合 method-dependence table lacks `{aliases[key][0]}`")
+
+    max_row, _ = used_bounds(parent_ws)
+    data_rows: list[int] = []
+    cluster_col = columns["cluster"]
+    if cluster_col is not None:
+        for row in range(header_row + 1, max_row + 1):
+            cluster = text(parent_ws.cell(row, cluster_col).value)
+            if not cluster:
+                break
+            data_rows.append(row)
+    if not data_rows:
+        warnings.append("18_親統合 method-dependence cluster table has no data rows")
+        return warnings
+
+    allowed_dispositions = {
+        "adopted",
+        "shifted",
+        "rejected_scope_mismatch",
+        "rejected_unit_mismatch",
+        "rejected_lifecycle_mismatch",
+        "rejected_evidence_mismatch",
+        "sanity_only",
+        "採用",
+        "中心移動",
+        "スコープ不一致で棄却",
+        "単位不一致で棄却",
+        "ライフサイクル不一致で棄却",
+        "証拠不一致で棄却",
+        "参考のみ",
+    }
+    for row in data_rows:
+        shared = text(parent_ws.cell(row, columns["shared"]).value) if columns["shared"] else ""
+        if not shared:
+            warnings.append(f"18_親統合 row {row}: Shared assumptions is empty")
+        if columns["representative"] is not None and numeric_cell_value(
+            parent_ws, row, columns["representative"]
+        ) is None:
+            warnings.append(f"18_親統合 row {row}: Representative center must be numeric")
+        if columns["independent"] is not None and not text(parent_ws.cell(row, columns["independent"]).value):
+            warnings.append(f"18_親統合 row {row}: Independent anchors checked is empty")
+        if columns["impact"] is not None and not text(parent_ws.cell(row, columns["impact"]).value):
+            warnings.append(f"18_親統合 row {row}: Decision impact is empty")
+        disposition = (
+            text(parent_ws.cell(row, columns["disposition"]).value) if columns["disposition"] else ""
+        )
+        if columns["disposition"] is not None and disposition not in allowed_dispositions:
+            warnings.append(f"18_親統合 row {row}: Anchor disposition `{disposition}` is not an allowed value")
+        if columns["vote"] is not None:
+            vote = numeric_cell_value(parent_ws, row, columns["vote"])
+            eligible_dispositions = {"adopted", "shifted", "採用", "中心移動"}
+            expected_vote = 1 if disposition in eligible_dispositions else 0
+            if vote != expected_vote:
+                warnings.append(
+                    f"18_親統合 row {row}: Effective vote must be numeric {expected_vote} for `{disposition or 'missing disposition'}`"
+                )
+        reason = text(parent_ws.cell(row, columns["reason"]).value) if columns["reason"] else ""
+        if not reason:
+            warnings.append(f"18_親統合 row {row}: Anchor disposition requires evidence-specific Reason")
+        if "best matches accepted delivery scope" in reason.casefold():
+            warnings.append(
+                f"18_親統合 row {row}: generic scope preference is not evidence-specific rejection evidence"
+            )
+
+    assigned: list[str] = []
+    if columns["methods"] is not None:
+        for row in data_rows:
+            assigned.extend(
+                item.strip()
+                for item in re.split(r"[,;/、]", text(parent_ws.cell(row, columns["methods"]).value))
+                if item.strip()
+            )
+    assigned_folded = [item.casefold() for item in assigned]
+    for method in parent_total_method_names(parent_ws):
+        occurrences = assigned_folded.count(method.casefold())
+        if occurrences != 1:
+            warnings.append(
+                f"18_親統合 method `{method}` must appear in exactly one cluster; found {occurrences}"
+            )
+    return warnings
+
+
+def check_functional_count_provenance(wb: Any) -> list[str]:
+    warnings: list[str] = []
+    configurations = [
+        ("UCP", {"分類", "項目"}, {"Use case", "ユースケース"}),
+        ("FP", {"種別", "項目群"}, {"EI", "EO", "EQ", "ILF", "EIF"}),
+    ]
+    for label, core_headers, row_types in configurations:
+        ws = sheet_by_label(wb, label)
+        if ws is None:
+            continue
+        header_row, headers = find_header_row(ws, core_headers)
+        if header_row is None:
+            continue
+        status_col = headers.get("Source status") or headers.get("出典状態")
+        locator_col = headers.get("Source locator") or headers.get("出典箇所")
+        if status_col is None:
+            warnings.append(f"{ws.title} lacks `Source status` count-provenance column")
+        if locator_col is None:
+            warnings.append(f"{ws.title} lacks `Source locator` count-provenance column")
+        type_col = headers.get("分類") or headers.get("種別")
+        if type_col is None:
+            continue
+        max_row, _ = used_bounds(ws)
+        relevant_rows = 0
+        for row in range(header_row + 1, max_row + 1):
+            row_type = text(ws.cell(row, type_col).value)
+            if row_type not in row_types:
+                continue
+            relevant_rows += 1
+            status = text(ws.cell(row, status_col).value) if status_col else ""
+            locator = text(ws.cell(row, locator_col).value) if locator_col else ""
+            if not status:
+                warnings.append(f"{ws.title} row {row}: Source status is missing")
+            elif status.casefold() in {"untraced", "inferred", "invented", "根拠なし", "推定"}:
+                warnings.append(f"{ws.title} row {row}: Source status `{status}` cannot enter the base count")
+            if not locator:
+                warnings.append(f"{ws.title} row {row}: Source locator is missing")
+
+        if not relevant_rows:
+            continue
+        reconciliation_aliases = {
+            "metric": ("Metric", "指標"),
+            "explicit": ("Explicit count", "明示数"),
+            "derived": ("Derived count", "導出数"),
+            "untraced": ("Untraced inferred", "未追跡推定"),
+            "ratio": ("Inflation ratio", "増加率"),
+            "status": ("Guard status", "ガード状態"),
+        }
+        reconciliation_row = None
+        reconciliation_headers: dict[str, int] = {}
+        for row in range(1, max_row + 1):
+            candidate = header_map(ws, row, used_bounds(ws)[1])
+            if all(any(name in candidate for name in names) for names in reconciliation_aliases.values()):
+                reconciliation_row = row
+                reconciliation_headers = candidate
+                break
+        if reconciliation_row is None:
+            warnings.append(f"{ws.title} lacks numeric count-reconciliation table")
+            continue
+        reconciliation_columns = {
+            key: next(reconciliation_headers[name] for name in names if name in reconciliation_headers)
+            for key, names in reconciliation_aliases.items()
+        }
+        audit_rows = 0
+        for row in range(reconciliation_row + 1, max_row + 1):
+            metric = text(ws.cell(row, reconciliation_columns["metric"]).value)
+            if not metric:
+                break
+            audit_rows += 1
+            explicit = numeric_cell_value(ws, row, reconciliation_columns["explicit"])
+            derived = numeric_cell_value(ws, row, reconciliation_columns["derived"])
+            untraced = numeric_cell_value(ws, row, reconciliation_columns["untraced"])
+            reported_ratio = numeric_cell_value(ws, row, reconciliation_columns["ratio"])
+            status = text(ws.cell(row, reconciliation_columns["status"]).value)
+            if explicit is None or explicit <= 0 or derived is None or untraced is None:
+                warnings.append(f"{ws.title} row {row}: count reconciliation requires positive explicit and numeric derived/untraced values")
+                continue
+            inflation_ratio = (derived - explicit) / explicit
+            expected_status = (
+                "STOP_UNTRACED_COUNT"
+                if untraced > 0
+                else "SENSITIVITY_ONLY_COUNT_INFLATION"
+                if inflation_ratio > 0.25
+                else "PASS"
+            )
+            if reported_ratio is None or abs(reported_ratio - inflation_ratio) > 0.001:
+                warnings.append(f"{ws.title} row {row}: Inflation ratio does not match ({derived} - {explicit}) / {explicit}")
+            if status != expected_status:
+                warnings.append(f"{ws.title} row {row}: Guard status `{status}` must be `{expected_status}`")
+            if expected_status != "PASS":
+                warnings.append(
+                    f"{ws.title} row {row}: count guard {expected_status} ({inflation_ratio:.1%} inflation) blocks base center voting"
+                )
+        if not audit_rows:
+            warnings.append(f"{ws.title} numeric count-reconciliation table has no data rows")
     return warnings
 
 
@@ -1787,6 +1995,7 @@ def validate_workbook(wb: Any) -> tuple[list[str], list[str]]:
                     errors.append(f"{ws.title}!{get_column_letter(col)}{row}: {value}")
     warnings.extend(check_reuse_audit(wb))
     warnings.extend(check_method_dependence_audit(wb))
+    warnings.extend(check_functional_count_provenance(wb))
     warnings.extend(check_breakdown_ai_tags(wb))
     warnings.extend(check_ai_reducibility_bias(wb))
     return warnings, errors

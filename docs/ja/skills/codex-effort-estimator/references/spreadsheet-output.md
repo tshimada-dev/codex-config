@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/spreadsheet-output.md
-source_commit: ae5b24b1f8c5427eec7502997bb4d7a580c06b23
+source_blob: f517c1f75355b7f19687f632e6cc3ed68def2559
 canonical: false
 ---
 
@@ -201,3 +201,19 @@ spreadsheet guidance が estimation workbook structure に関するものだけ�
 - import/export macros
 - multiple estimate workbook styles
 - recurring workbook QA automation
+
+## False-convergence audit
+
+3つ以上のtotal methodを比較するとき、`18_親統合`へ次の列を持つdata row付きledgerを
+出力します。
+
+`Cluster`, `Methods`, `Shared assumptions`, `Representative center`, `Effective vote`,
+`Independent anchors checked`, `Anchor disposition`, `Decision impact`, `Reason`
+
+eligible clusterの`Effective vote`は数値1です。header-only table、票・採否・impactの欠落、
+genericなscope preferenceだけの棄却理由は`--strict`のblockerです。`07_FP`と`08_UCP`は
+source status/locatorとcount reconciliationを表示し、untracedまたは25%超inflated countを
+center voteにしません。
+FP/UCP reconciliationは`Metric`, `Explicit count`, `Derived count`,
+`Untraced inferred`, `Inflation ratio`, `Guard status`列を使い、formatterがratio/statusを
+再計算します。non-PASSはstrict blockerです。

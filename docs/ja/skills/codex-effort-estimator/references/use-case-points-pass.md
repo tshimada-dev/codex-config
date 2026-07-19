@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/use-case-points-pass.md
-source_blob: 50b8282226b2c994b62246381f468761ad8e9899
+source_blob: 1bdab754e9fc8be257c0136e4d042b3ada2926ce
 canonical: false
 ---
 
@@ -61,3 +61,14 @@ effort = UCP * productivity_person_days_per_ucp
 - assumptions、exclusions、uncertainty、confidence、confirmation questions
 
 他estimatorの結論を使わず、WBSへ合わせてproductivityやfactorを調整しません。
+
+## Count provenance guard
+
+base countのactor/use case各行に`Source status`と`Source locator`を記録します。
+名前のないplaceholder、`related`、`remaining` use caseをaggregate補完のために作りません。
+`unresolved aggregate`にはmember complexity weightを付けずsensitivityに保持します。
+explicit/source-reported totalとall-derived total、inflation ratioを表示し、untraced itemは
+`STOP_UNTRACED_COUNT`、25%超の増加は`SENSITIVITY_ONLY_COUNT_INFLATION`として
+parent center voteから除外します。
+reconciliation列は`Metric`, `Explicit count`, `Derived count`, `Untraced inferred`,
+`Inflation ratio`, `Guard status`とし、formatterが数値を再計算できるようにします。
