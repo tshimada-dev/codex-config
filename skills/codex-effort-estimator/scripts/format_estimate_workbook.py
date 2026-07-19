@@ -1230,6 +1230,10 @@ def rebuild_ai_adjustment_sheet(ws: Any, ai_rows: list[dict[str, Any]]) -> None:
 
     for row in ai_rows:
         next_row = ws.max_row + 1
+        wbs_basis = text(row.get("basis"))
+        audit_rationale = row["rationale"]
+        if wbs_basis:
+            audit_rationale = f"WBS根拠: {wbs_basis} / 係数根拠: {audit_rationale}"
         ws.append(
             [
                 row["category"],
@@ -1245,7 +1249,7 @@ def rebuild_ai_adjustment_sheet(ws: Any, ai_rows: list[dict[str, Any]]) -> None:
                 f"=I{next_row}-E{next_row}",
                 "WBS作成者",
                 "固定係数（参照定数）",
-                row["rationale"],
+                audit_rationale,
             ]
         )
 
