@@ -53,12 +53,14 @@ The repository is meant to show workflow design rather than just dotfile
 management. Current portfolio packaging work is tracked in
 [issue #17](https://github.com/tshimada-dev/codex-config/issues/17).
 
-Planned follow-up work includes:
+Published portfolio evidence includes:
 
-- a case study comparing the estimator workflow with a veteran human estimate
-  ([issue #14](https://github.com/tshimada-dev/codex-config/issues/14));
-- a sanitized sample estimator workbook or screenshots
-  ([issue #15](https://github.com/tshimada-dev/codex-config/issues/15)).
+- a [scope-controlled retrospective](docs/case-studies/estimator-vs-veteran.md)
+  that separates recalculable results from source-reported attribution and
+  records the limits of the single sanitized case;
+- a [sanitized synthetic estimator workbook](docs/samples/estimator-synthetic-sample.xlsx)
+  with six audit sheets, formula checks, sensitive-pattern scanning, and no
+  real customer or project data.
 
 ## Installation
 
