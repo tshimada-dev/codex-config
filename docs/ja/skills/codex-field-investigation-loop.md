@@ -1,6 +1,6 @@
 ---
 source: skills/codex-field-investigation-loop/SKILL.md
-source_blob: deaa1f1046fb167353547881eb5d7739e4e7ffcc
+source_blob: 6c8dd8cf4d8bddc72d8e0820765e0266e7f27ee6
 canonical: false
 ---
 
@@ -101,6 +101,8 @@ Codex が編集する正本には text files を使い、人間の review には
 - `STATE.md`、CSV、JSONL files を直接更新する。
 - 新しい facts を `workbook.xlsx` だけに置かない。
 - spreadsheet が有用なときは `scripts/render_workbook.py <bundle-dir>` で canonical files から `workbook.xlsx` を再生成する。
+- workbook 生成には同梱 renderer だけを使う。renderer は snapshot metadata、source line counts、header formatting、実用的な column widths、XML control-character sanitization を追加する。
+- renderer は生成開始時刻を `概要` sheet に記録し、その generated view のために canonical files を読み取る。生成 event を記録するために後から canonical files へ追加した entry は、その workbook に含まれないのが意図した動作である。含める場合は workbook を再生成して新しい snapshot を作る。
 - 人間が spreadsheet を編集した場合は、続行前に変更を canonical text files に反映する。
 
 ## Subagents

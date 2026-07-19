@@ -86,6 +86,8 @@ Prefer text files for Codex edits and XLSX for human review.
 - Update `STATE.md`, CSV, and JSONL files directly.
 - Do not make `workbook.xlsx` the only place where new facts live.
 - Use `scripts/render_workbook.py <bundle-dir>` to regenerate `workbook.xlsx` from the canonical files when a spreadsheet is useful.
+- Use the bundled renderer as the single supported workbook-generation path. It adds snapshot metadata, source line counts, header formatting, practical column widths, and XML control-character sanitization.
+- The renderer records the generation start time in the `概要` sheet and reads the canonical files for that generated view. A later canonical entry that records the generation event is intentionally absent from that workbook; regenerate the workbook to include it in a newer snapshot.
 - If a human edits the spreadsheet, reconcile those changes back into the canonical text files before continuing.
 
 ## Subagents
