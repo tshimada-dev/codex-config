@@ -1,0 +1,55 @@
+{
+  "case_id": "anda-2005-run2-parent-replay",
+  "evidence_boundary": "Public values from codex-config Issue #18 and its Run #2 comment; unavailable private benchmark files are not reconstructed.",
+  "methods": [
+    {
+      "method": "reported-use-case-lifecycle-primary",
+      "cluster": "use-case-lifecycle",
+      "base_hours": 1200,
+      "count_basis": "nine-use-case full-delivery interpretation",
+      "productivity_basis": "shared high productivity assumptions",
+      "lifecycle_basis": "full acceptance",
+      "risk_basis": "shared delivery-risk framing",
+      "status": "plausible"
+    },
+    {
+      "method": "parametric",
+      "cluster": "implementation-light",
+      "base_hours": 696,
+      "count_basis": "driver equation",
+      "productivity_basis": "parametric coefficients",
+      "lifecycle_basis": "implementation-light",
+      "risk_basis": "method-local",
+      "status": "plausible"
+    },
+    {
+      "method": "function-point",
+      "cluster": "implementation-light",
+      "base_hours": 800,
+      "count_basis": "functional transactions",
+      "productivity_basis": "function-point productivity",
+      "lifecycle_basis": "implementation-light",
+      "risk_basis": "method-local",
+      "status": "plausible"
+    },
+    {
+      "method": "constraint-capacity",
+      "cluster": "capacity",
+      "base_hours": 864,
+      "count_basis": "staffing and calendar envelope",
+      "productivity_basis": "capacity",
+      "lifecycle_basis": "delivery window",
+      "risk_basis": "schedule feasibility",
+      "status": "plausible"
+    }
+  ],
+  "count_audits": [
+    {
+      "metric": "UUCP",
+      "explicit_value": 57,
+      "derived_value": 94,
+      "untraced_inferred_value": 37,
+      "note": "Run #2 added untraced related-flow points beyond the published explicit count."
+    }
+  ]
+}

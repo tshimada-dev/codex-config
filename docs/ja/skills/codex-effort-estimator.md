@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/SKILL.md
-source_commit: ae5b24b1f8c5427eec7502997bb4d7a580c06b23
+source_blob: 1c68339ae2d31216b3f3cf104c5a9b169a1609a4
 canonical: false
 ---
 
@@ -82,3 +82,19 @@ PERT の集計では、各 task の期待値を合計し、レンジは端点の
 - 繰り返しの variant（地区・支店・似た帳票や画面）を完全に独立したフルビルドとして見積もらない。共有 framework を一度作り、安い variant を足す形にし、variant factor を明記する。
 - 同じ risk を複数回計上しない。three-point の high に既に risk が含まれるなら、同じ不確実性に対して別個の reserve line を足し、かつ相関 endpoint-sum の high を見出しにする、という重複をしない。
 - 未較正の bottom-up total を anchored であるかのように出さない。top-down の per-unit と突合し、measured productivity baseline が無い場合はそう述べる。
+
+## 偽収束を防ぐ親統合
+
+method結果をcount/productivity/lifecycle/riskの共有前提でcluster化し、各eligible clusterの
+実効票を数値`1`に固定します。cluster内のmethod数で票を増やしません。cluster代表値は
+method中心のmedian、neutral planning centerはcluster代表値のmedianとし、
+`scripts/synthesize_method_clusters.py`で再計算可能にします。
+
+高clusterがtarget deliverableに合うという説明だけではoverrideできません。独立clusterを
+押しのける場合は、具体的なscope、unit、lifecycle、riskの不一致を記録し、neutral centerも
+表示します。異なるeligible clusterの代表値がmidpoint比20%以内の場合だけconvergence
+confidenceを上げられます。cluster内の一致はconfidence根拠になりません。
+
+FP/UCPのbase countにはsource statusとsource locatorを持たせます。根拠のない要素発明は
+affected methodのcenter voteを停止し、明示countより25%を超える導出countは確認まで
+sensitivity-onlyにします。

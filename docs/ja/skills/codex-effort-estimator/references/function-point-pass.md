@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/function-point-pass.md
-source_commit: 17be59e3fe075540200adf764fe1654cf6b3be3d
+source_blob: 1f3e6b449d9d8e8d478b17f550ad64684c2f49d8
 canonical: false
 ---
 
@@ -37,3 +37,13 @@ canonical: false
 - Ambiguities、confidence、confirmation questions
 
 他 estimator の結論を使わず、WBS に合わせて productivity を調整しません。
+
+## Count provenance guard
+
+EI/EO/EQ/ILF/EIFの各base-count行へ`Source status`と`Source locator`を追加します。
+stated aggregateを埋めるためにmemberを発明せず、unresolved aggregateへcomplexityを
+割り当てません。explicit/source-reported countとのreconciliationを表示し、untraced
+inferred itemはSTOP、25%超の増加は確認までsensitivity-onlyとしてcenter voteから
+除外します。
+reconciliation列は`Metric`, `Explicit count`, `Derived count`, `Untraced inferred`,
+`Inflation ratio`, `Guard status`とし、formatterが数値を再計算します。

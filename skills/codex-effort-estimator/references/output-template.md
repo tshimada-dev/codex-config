@@ -39,6 +39,12 @@ Always include:
 - WBS vs component-anchor agreement/disagreement and what caused any material gap
 - Independent parametric, function point, use case point, top-down three-point, constraint capacity, and risk model results when applicable, or explicit skip reasons
 - Cross-method disagreement: which assumptions, counts, coefficients, productivity baselines, constraints, or risk drivers explain the gap
+- Method-dependence decision ledger with one numeric vote per cluster, median
+  representative center, neutral center, independent-anchor disposition, and
+  decision impact. Keep any evidence-backed override separate from the neutral
+  center.
+- FP/UCP count provenance and reconciliation warnings; untraced or greater-than-
+  25% inflated counts cannot silently enter the planning center.
 - Assumptions
 - Exclusions
 - Risks and contingency

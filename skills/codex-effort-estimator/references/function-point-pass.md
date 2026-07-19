@@ -14,6 +14,10 @@ Estimate human engineering effort in person-days from functional size. Do not es
 2. Count functions from source documents and sizing facts only.
 3. Keep function-point count assumptions visible. If data functions or transaction boundaries are ambiguous, use ranges and lower confidence.
 4. Convert function points to effort using an explicit productivity range; do not pick productivity to match another method.
+5. Do not invent EI/EO/EQ/ILF/EIF members to fill a stated aggregate. Every
+   base-count row needs a source locator and one of `explicit`,
+   `source-reported aggregate`, or `confirmed inferred`. Unresolved aggregate
+   members remain sensitivity-only and receive no invented complexity.
 
 ## Procedure
 
@@ -25,6 +29,10 @@ Estimate human engineering effort in person-days from functional size. Do not es
    - Internal Logical Files (ILF): logical data groups maintained by the system.
    - External Interface Files (EIF): referenced external data groups maintained elsewhere.
 3. Count each component as low / base / high when boundaries are uncertain.
+   Preserve `Source status` and `Source locator` for every row. Reconcile the
+   derived base count to the explicit/source-reported count. Untraced inferred
+   items stop this pass from becoming a center vote; more than 25% inflation is
+   sensitivity-only until confirmed.
 4. Assign simple, average, or complex weights. Use a range when complexity is unclear.
 5. Calculate unadjusted function points:
 
@@ -48,7 +56,13 @@ Use a low/base/high productivity range. Faster productivity lowers effort; slowe
 Return:
 
 - Source files inspected.
-- Function count table with `Type`, `Item group`, `Count low/base/high`, `Complexity`, `Weight`, `Function points`, `Basis`, and `Notes`.
+- Function count table with `Type`, `Item group`, `Count low/base/high`,
+  `Complexity`, `Weight`, `Function points`, `Source status`, `Source locator`,
+  `Basis`, and `Notes`.
+- Count reconciliation with explicit/source-reported total, derived total,
+  inflation ratio, unresolved aggregate, and guard status.
+  Use columns `Metric`, `Explicit count`, `Derived count`, `Untraced inferred`,
+  `Inflation ratio`, and `Guard status` so formatter QA can recompute it.
 - Adjustment factors and rationale.
 - Productivity assumption table with low/base/high productivity and source.
 - Overall low / base / high person-days.
