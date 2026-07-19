@@ -35,7 +35,12 @@ effort = UCP * productivity_person_days_per_ucp
 ```
 
 5. Choose Technical Complexity Factor (TCF) and Environmental Complexity Factor (ECF) ranges from source-visible facts such as legacy Office constraints, integration complexity, report fidelity, data quality, team familiarity, user availability, and acceptance rigor.
-6. Use a productivity range in person-days per UCP. Record whether it is local actual, benchmark, heuristic, or judgment.
+6. Choose a productivity range in person-days per adjusted UCP using this source priority:
+   `local actual > compatible measured benchmark > heuristic/judgment`.
+   - Inspect `actual-productivity-calibration.md` and its CSV before selecting a heuristic.
+   - Use the measured Anda coefficient only after its applicability and unit-compatibility gates pass.
+   - Use `person-days per adjusted UCP` with this pass's adjusted-UCP formula; do not mix in a coefficient derived from the unadjusted 57-point denominator.
+   - Record the selected source, compatibility decision, rejected anchors, and confidence.
 7. Compare against WBS and other methods only in parent synthesis after this pass is complete.
 
 ## Output Schema
@@ -46,7 +51,7 @@ Return:
 - Actor table with `Actor`, `Type`, `Weight`, `Basis`, and `Notes`.
 - Use case table with `Use case`, `Complexity`, `Weight`, `Basis`, and `Notes`.
 - TCF/ECF table with low/base/high factors and rationale.
-- Productivity assumption.
+- Productivity assumption, source class, unit basis, and compatibility decision.
 - Overall low / base / high person-days.
 - Assumptions and exclusions.
 - Major uncertainty drivers.

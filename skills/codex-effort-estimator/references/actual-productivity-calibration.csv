@@ -1,0 +1,5 @@
+anchor_id,source_kind,scope_summary,published_unadjusted_points,published_adjusted_ucp,actual_effort_hours,hours_per_unadjusted_point,hours_per_adjusted_ucp,person_days_per_adjusted_ucp,source_doi
+anda2005-company-a,public_peer_reviewed_actual,"Nine-use-case Java web system; actual includes all project activities",57,20.619,587,10.298,28.469,3.559,10.1109/ISESE.2005.1541849
+anda2005-company-b,public_peer_reviewed_actual,"Nine-use-case Java web system; actual includes all project activities",57,20.619,943,16.544,45.735,5.717,10.1109/ISESE.2005.1541849
+anda2005-company-c,public_peer_reviewed_actual,"Nine-use-case Java web system; actual includes all project activities",57,20.619,431,7.561,20.903,2.613,10.1109/ISESE.2005.1541849
+anda2005-company-d,public_peer_reviewed_actual,"Nine-use-case Java web system; actual includes all project activities",57,20.619,829,14.544,40.206,5.026,10.1109/ISESE.2005.1541849

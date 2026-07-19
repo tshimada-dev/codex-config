@@ -1,39 +1,63 @@
 ---
 source: skills/codex-effort-estimator/references/use-case-points-pass.md
-source_commit: 17be59e3fe075540200adf764fe1654cf6b3be3d
+source_blob: 50b8282226b2c994b62246381f468761ad8e9899
 canonical: false
 ---
 
 # Use Case Points Pass 日本語参考訳
 
-この文書は `skills/codex-effort-estimator/references/use-case-points-pass.md` の日本語参考訳です。Codex が実行時に読む canonical な定義は英語版です。
+この文書は `skills/codex-effort-estimator/references/use-case-points-pass.md` の
+日本語参考訳です。実行時の正本は英語版です。
 
-actors、workflows、use cases、scenarios、business processes が分かる場合に、workflow-size anchor を作るために使います。実装 phase ではなく、user-visible functionality から規模を見るため、WBS anchoring の抑制に有効です。
+actors、workflows、use cases、scenarios、business processesが分かる場合に、独立した
+use-case-size見積もりを作ります。workflow中心のsystemで、WBSが実装phaseへ過適合する
+ことを抑えるために使います。
+
+## Scope
+
+use case pointsから人手工数を人日で見積もります。明示的に求められない限りprice、rate、
+AI-agent wall-clock timeは見積もりません。
 
 ## Independence Rules
 
-1. WBS total、WBS line estimate、WBS-derived PERT、component-unit total、parent synthesis、prior estimate artifact、期待する final range を使わない。
-2. actors、use cases、complexity、factors は source documents と sizing facts だけから導く。
-3. productivity を他 method に合わせない。
-4. actor/use-case boundary の不確実性を明示する。
+1. WBS total、WBS line、WBS-derived PERT、component-unit total、parent synthesis、
+   prior estimate artifact、期待するfinal rangeを使わない。
+2. actors、use cases、complexity、factorsはsource documentsとsizing factsだけから導く。
+3. productivityを他methodへ合わせない。
+4. actor/use-case boundaryの不確実性を明示する。
 
 ## Procedure
 
-- actors を simple / average / complex に分類する。
-- use cases を simple / average / complex に分類する。
-- `UUCP = UAW + UUCW`
-- `UCP = UUCP * TCF * ECF`
-- `effort = UCP * productivity_person_days_per_ucp`
-- TCF/ECF は legacy Office、integration complexity、report fidelity、data quality、team familiarity、user availability、acceptance rigor など source-visible facts から決める。
+1. 調査したsourceを列挙する。
+2. actorsをsimple / average / complexに分類して数える。
+3. use casesをsimple / average / complexに分類して数える。
+4. UAWとUUCWを計算し、次の式を使う。
+
+```text
+UUCP = UAW + UUCW
+UCP = UUCP * TCF * ECF
+effort = UCP * productivity_person_days_per_ucp
+```
+
+5. legacy Office、integration、report fidelity、data quality、team familiarity、
+   user availability、acceptance rigorなどsource-visible factsからTCF/ECF rangeを決める。
+6. 調整済みUCPあたり人日のproductivity rangeを、
+   `local actual > compatible measured benchmark > heuristic/judgment`の順で選ぶ。
+   - heuristicを選ぶ前に`actual-productivity-calibration.md`とCSVを確認する。
+   - Anda実測係数は適用条件と単位互換gateを通った場合だけ使う。
+   - このpassの調整済みUCP式には調整済みUCPあたり人日を使い、未調整57-point分母の
+     係数を混ぜない。
+   - 採用source、互換性判断、棄却anchor、confidenceを記録する。
+7. WBSや他methodとの比較は、このpass完了後のparent synthesisだけで行う。
 
 ## Output Schema
 
-- Source files inspected
-- Actor table
-- Use case table
-- TCF/ECF table
-- Productivity assumption
-- Overall low/base/high person-days
-- Uncertainty drivers、confidence、confirmation questions
+- 調査source
+- actor table
+- use case table
+- TCF/ECF low/base/highと根拠
+- productivity assumption、source class、unit basis、互換性判断
+- overall low/base/high人日
+- assumptions、exclusions、uncertainty、confidence、confirmation questions
 
-他 estimator の結論を使わず、WBS に合わせて factors を調整しません。
+他estimatorの結論を使わず、WBSへ合わせてproductivityやfactorを調整しません。

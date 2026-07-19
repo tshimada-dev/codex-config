@@ -7,6 +7,7 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 ## Reference 一覧
 
 - [ai-coding-assistance-adjustment.md](ai-coding-assistance-adjustment.md): AI コーディング補助前提の工数補正
+- [actual-productivity-calibration.md](actual-productivity-calibration.md): 公開実績と local actual による生産性係数の較正
 - [analogy-calibration-pass.md](analogy-calibration-pass.md): 類似案件・過去実績による較正
 - [component-unit-anchor-pass.md](component-unit-anchor-pass.md): component 数と unit anchor による独立 top-down 見積もり
 - [constraint-capacity-pass.md](constraint-capacity-pass.md): deadline、staffing、review gate による capacity/feasibility 見積もり

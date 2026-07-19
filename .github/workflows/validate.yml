@@ -83,6 +83,11 @@ jobs:
         run: python -m unittest -v test_format_estimate_workbook.py
         working-directory: skills/codex-effort-estimator/scripts
 
+      - name: Validate estimator actual productivity calibration
+        shell: pwsh
+        run: python -m unittest -v test_actual_productivity_calibration.py
+        working-directory: skills/codex-effort-estimator/scripts
+
       - name: Validate estimator workbook sample
         shell: pwsh
         run: python -m unittest -v test_estimator_sample.py
