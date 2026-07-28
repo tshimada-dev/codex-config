@@ -1,6 +1,6 @@
 ---
 source: skills/codex-promote-local-skill/SKILL.md
-source_blob: 77253b758c21b60869d893480750bef2353c9431
+source_blob: e7a4979b926771879c308e9e9ce525f8c930f6c5
 canonical: false
 ---
 
@@ -14,7 +14,7 @@ canonical: false
 
 ## 共有開発契約
 
-`rules/development-workflow.md`に従う。repository evidenceには`codex-repo-scout`、永続的な変更には`codex-implementation-loop`、stageとcommit readinessには`codex-pr-readiness`を使う。Skillの新規作成や大幅な再構成では`$skill-creator`を使う。
+`rules/development-workflow.md`に従う。repository evidenceには`codex-repo-scout`、永続的な変更には`codex-implementation`、stageとcommit readinessには`codex-pr-readiness`を使う。Skillの新規作成や大幅な再構成では`$skill-creator`を使う。
 
 ## Authority mode
 
@@ -79,7 +79,7 @@ promotionでは次を行う。
 6. `config/development-skills.json`、関連CI、`docs/ja/skills/<skill-name>.md`、`docs/ja/README.md`へ統合する。
 7. `scripts/check-ja-source-commits.ps1 -Update`で日本語source metadataを更新する。
 
-mergeでは`codex-implementation-loop`を通じて所有Skillを編集し、regression evidenceを追加して、重複Skillを作らない。
+mergeでは`codex-implementation`を通じて所有Skillを編集し、regression evidenceを追加して、重複Skillを作らない。
 
 ## 4. Install前にverifyしてcommitする
 

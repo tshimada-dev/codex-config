@@ -16,7 +16,7 @@ Read and follow [`../../rules/development-workflow.md`](../../rules/development-
 
 ## Composition
 
-This skill owns reproduction, falsifiable hypotheses, root cause analysis, probes, and regression shape. Use `codex-implementation-loop` for the durable patch once the likely cause is known. A trivial defect may continue directly in the same session without a formal handoff, but switch to the implementation loop before editing durable files. If the defect is in UI behavior, run `codex-ui-quality-gate` after the fix.
+This skill owns reproduction, falsifiable hypotheses, root cause analysis, probes, and regression shape. Use `codex-implementation` for the durable patch once the likely cause is known. A trivial defect may continue directly in the same session without a formal handoff, but switch to implementation before editing durable files. If the defect is in UI behavior, run `codex-ui-quality-gate` after the fix.
 
 ## Subagent Debugging
 
@@ -33,7 +33,7 @@ For trivial defects with an obvious cause and low blast radius, use a lightweigh
 
 1. Confirm the symptom or code path.
 2. Identify the nearest regression evidence and whether a stable test seam exists.
-3. Switch to `codex-implementation-loop`; establish the failing focused test first when the stable seam exists, then make the smallest fix.
+3. Switch to `codex-implementation`; establish the failing focused test first when the stable seam exists, then make the smallest fix.
 4. Re-run the original symptom check and regression evidence.
 5. Report why full hypothesis branching was unnecessary.
 
@@ -51,7 +51,7 @@ For nontrivial defects, use the full loop:
 4. Test one hypothesis at a time.
 5. Establish the root cause and define regression evidence at the closest correct seam.
 6. When a stable test seam exists, specify the focused regression test and the failure reason it should expose.
-7. Switch to `codex-implementation-loop` to establish that failing test and make the durable fix. If no stable test seam exists, carry the recorded reason and narrowest credible alternative evidence into that loop.
+7. Switch to `codex-implementation` to establish that failing test and make the durable fix. If no stable test seam exists, carry the recorded reason and narrowest credible alternative evidence into implementation.
 8. Remove temporary instrumentation.
 9. Re-run the original loop and the regression evidence.
 

@@ -1,6 +1,6 @@
 ---
 source: rules/long-running-workflow.md
-source_blob: fe75fedbdd75f3a85cc0ce35ac542b41fb6eed44
+source_blob: badae203f32a17dd45be13f54ab54e05aa732268
 canonical: false
 ---
 
@@ -29,13 +29,26 @@ canonical: false
 - `$HOME\.codex\templates\agent-run.md` を初期構造としてコピーする。
 - phase boundary、前提や scope の変更、意味のある実装 slice の後、検証 command の後、pause 前、handoff 前に note を更新する。
 - 記録は短く、意思決定中心にする。大きな log や diff は貼らず、file や command をリンクまたは名前で示す。
+- 作業に実質的な影響を与えた各 Skill を `## Skills Used` に記録し、purpose、observable effect、evidence を対応付ける。確認しただけの Skill は記録しない。再利用可能な Skill を使っていない場合は `None` row を明記する。
+- 安全な再開に必要な運用識別子だけを残す。IP、instance identifier、public key、credential、raw configuration のコピーより、stable alias や安全な system of record への参照を優先する。
+
+## Run note の整合性
+
+readiness 判定、pause、handoff の前に次を確認する。
+
+- Phase の選択肢一覧を、`development-workflow.md` にある現在の phase 1つへ置き換える。
+- 未解決 placeholder と、`\n\n` のような literal escaped paragraph break を除去する。
+- acceptance criterion の status と verification field を readiness に整合させる。`ready` では、必須証拠に `pending`、`partial`、`blocked`、failure を残さない。
+- `conditionally-ready` では、具体的な residual risk または skip した optional evidence と、それを解消できる action/owner を記録する。
+- `Current State`、`Handoff`、`Next Step` を更新し、完了済み作業を指す古い手順を削除する。
+- current repository が run-note validator を提供する場合は active note に実行し、結果を記録する。
 
 ## Handoff と再開 context
 
 - user が durable context を求めた場合、または repository に慣習がある場合を除き、独立した handoff file は作らない。
 - active run note がある場合は、別の source of truth を作らず、簡潔な `## Handoff` section を更新する。
 - goal、current status、important decisions、changed files、verification outcomes、blockers、next concrete step、verification に影響する tool gap だけを残す。
-- transcript、duplicate specification、artifact ではない raw log、secret、next action のない speculation は除外する。
+- transcript、duplicate specification、artifact ではない raw log、secret、不要な operational identifier、next action のない speculation は除外する。
 - 完了した temporary simulation は、artifact 保持を user が求めない限り final response で十分とする。
 
 ## 調査

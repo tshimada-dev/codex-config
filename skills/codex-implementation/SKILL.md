@@ -1,9 +1,9 @@
 ---
-name: codex-implementation-loop
+name: codex-implementation
 description: Implement code or file changes with tight scope, repository conventions, focused evidence, and preservation of user work. Use when Codex is asked to fix, build, refactor, add a feature, update files, or carry an approved plan through implementation.
 ---
 
-# Codex Implementation Loop
+# Codex Implementation
 
 Use this skill to deliver the requested repository behavior with credible evidence while preserving user work.
 

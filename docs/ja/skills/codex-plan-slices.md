@@ -1,6 +1,6 @@
 ---
 source: skills/codex-plan-slices/SKILL.md
-source_blob: cc942980de635d0347148df7ff5df22e377a1225
+source_blob: 51bbfc3178f12954a567f716a1a8bd8d5b87218a
 canonical: false
 ---
 
@@ -16,7 +16,7 @@ canonical: false
 
 `rules/development-workflow.md` に従い、期待結果、non-goals、authority conflict、acceptance criteria と evidence を planning artifact に保持する。
 
-explicit slice が必要な広さの作業で使い、repository context が不足する場合は通常 `codex-repo-scout` の後に使う。恒久 edit は `codex-implementation-loop` に渡す。
+explicit slice が必要な広さの作業で使い、repository context が不足する場合は通常 `codex-repo-scout` の後に使う。恒久 edit は `codex-implementation` に渡す。
 
 ## Planning Steps
 
@@ -54,6 +54,6 @@ subagents が使える場合は、広い作業、複数ファイル、不慣れ�
 
 ## Output
 
-planはplanningが所有するworkflow/evidence artifactである。write scopeを割り当てても、恒久的なproduct/repository behavior editは `codex-implementation-loop` が所有する。
+planはplanningが所有するworkflow/evidence artifactである。write scopeを割り当てても、恒久的なproduct/repository behavior editは `codex-implementation` が所有する。
 
 小さな edits や skill evaluation では、conversation 内の checklist で十分。広い work では、JSON など再利用しやすい structured plan を使う。

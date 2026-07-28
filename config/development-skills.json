@@ -43,7 +43,7 @@
       "phase": "debugging",
       "owns_durable_product_edits": false,
       "uses_development_workflow": true,
-      "dependencies": ["codex-implementation-loop", "codex-ui-quality-gate"]
+      "dependencies": ["codex-implementation", "codex-ui-quality-gate"]
     },
     {
       "source_name": "codex-effort-estimator",
@@ -68,8 +68,8 @@
       "dependencies": ["codex-cloud-ops-intake"]
     },
     {
-      "source_name": "codex-implementation-loop",
-      "copilot_name": "copilot-implementation-loop",
+      "source_name": "codex-implementation",
+      "copilot_name": "copilot-implementation",
       "default": true,
       "support": false,
       "role": "implementation",
@@ -87,7 +87,7 @@
       "phase": "planning",
       "owns_durable_product_edits": false,
       "uses_development_workflow": true,
-      "dependencies": ["codex-debug-discipline", "codex-implementation-loop", "codex-repo-scout"]
+      "dependencies": ["codex-debug-discipline", "codex-implementation", "codex-repo-scout"]
     },
     {
       "source_name": "codex-promote-local-skill",
@@ -98,7 +98,7 @@
       "phase": null,
       "owns_durable_product_edits": false,
       "uses_development_workflow": true,
-      "dependencies": ["codex-implementation-loop", "codex-pr-readiness", "codex-repo-scout"]
+      "dependencies": ["codex-implementation", "codex-pr-readiness", "codex-repo-scout"]
     },
     {
       "source_name": "codex-pr-readiness",
@@ -109,7 +109,7 @@
       "phase": "readiness",
       "owns_durable_product_edits": false,
       "uses_development_workflow": true,
-      "dependencies": ["codex-implementation-loop"]
+      "dependencies": ["codex-implementation"]
     },
     {
       "source_name": "codex-repo-scout",
@@ -153,7 +153,7 @@
       "phase": "verification",
       "owns_durable_product_edits": false,
       "uses_development_workflow": true,
-      "dependencies": ["codex-implementation-loop"]
+      "dependencies": ["codex-implementation"]
     }
   ]
 }

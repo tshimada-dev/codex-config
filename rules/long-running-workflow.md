@@ -22,13 +22,26 @@ Follow `development-workflow.md` for expected outcomes, evidence, ownership, ver
 - Copy `$HOME\.codex\templates\agent-run.md` as the starting structure.
 - Update the note at phase boundaries, when assumptions or scope change, after each meaningful implementation slice, after verification commands, before pausing, and before handing off.
 - Keep entries brief and decision-focused. Link or name files and commands instead of pasting large logs or diffs.
+- Record each materially applied Skill under `## Skills Used`, including its purpose, observable effect, and evidence. Do not list Skills that were only inspected. Use an explicit `None` row when no reusable Skill was applied.
+- Retain only operational identifiers needed to resume safely. Prefer stable aliases or a secure system-of-record reference over copying IPs, instance identifiers, public keys, credentials, or raw configuration into the note.
+
+## Run-Note Integrity
+
+Before classifying readiness, pausing, or handing off:
+
+- Replace the Phase template taxonomy with exactly one current phase from `development-workflow.md`.
+- Remove unresolved placeholders and literal escaped paragraph breaks such as `\n\n`.
+- Reconcile acceptance-criterion statuses and verification fields with the readiness classification. A `ready` note must not retain required `pending`, `partial`, `blocked`, or failed evidence.
+- For `conditionally-ready`, name the concrete residual risk or skipped optional evidence and the action or owner that can close it.
+- Refresh `Current State`, `Handoff`, and `Next Step`; remove instructions that point to work already completed.
+- When the current repository provides a run-note validator, run it against the active note and record the result.
 
 ## Handoff And Resume Context
 
 - Do not create a separate handoff file unless the user requests durable context or the repository has that convention.
 - When an active run note exists, update it with a concise `## Handoff` section instead of creating a second source of truth.
 - Preserve only the goal, current status, important decisions, changed files, verification outcomes, blockers, next concrete step, and any tool gap that affects verification.
-- Exclude transcripts, duplicate specifications, raw logs that are not the artifact, secrets, and speculation without a next action.
+- Exclude transcripts, duplicate specifications, raw logs that are not the artifact, secrets, unnecessary operational identifiers, and speculation without a next action.
 - For completed temporary simulations, the final response is normally enough unless the user asked to retain artifacts.
 
 ## Research

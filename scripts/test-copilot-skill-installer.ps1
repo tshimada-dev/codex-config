@@ -176,7 +176,7 @@ $trackedSkillNames = @(
 )
 Assert-SequenceEqual -Expected $trackedSkillNames -Actual @($definition.skills.source_name | Sort-Object) -Message "definition should map every tracked codex-* skill"
 Assert-SequenceEqual -Expected @("codex-cloud-ops-intake") -Actual @($definition.skills | Where-Object support | ForEach-Object source_name | Sort-Object) -Message "support skills"
-Assert-SequenceEqual -Expected @("codex-implementation-loop") -Actual @($definition.skills | Where-Object owns_durable_product_edits | ForEach-Object source_name) -Message "durable edit owner"
+Assert-SequenceEqual -Expected @("codex-implementation") -Actual @($definition.skills | Where-Object owns_durable_product_edits | ForEach-Object source_name) -Message "durable edit owner"
 foreach ($entry in $definition.skills) {
     $skillPath = Join-Path $RepoRoot "skills/$($entry.source_name)/SKILL.md"
     $content = Get-Content -LiteralPath $skillPath -Raw
@@ -222,7 +222,7 @@ try {
     $prunedManifest = Read-InstallManifest -DestinationRoot $partialHome
     $expectedPruned = Get-ExpectedManagedPaths -SourceNames @("codex-effort-estimator")
     Assert-SequenceEqual -Expected $expectedPruned -Actual @($prunedManifest.managed_files) -Message "partial prune managed paths"
-    Assert-True -Condition (-not (Test-Path -LiteralPath (Join-Path $partialHome "copilot-implementation-loop/SKILL.md"))) -Message "prune should remove previously managed unselected files"
+    Assert-True -Condition (-not (Test-Path -LiteralPath (Join-Path $partialHome "copilot-implementation/SKILL.md"))) -Message "prune should remove previously managed unselected files"
 
     Write-Host "TEST: conflict plus prune performs no mutation"
     $conflictHome = Join-Path $TestRoot "conflict"

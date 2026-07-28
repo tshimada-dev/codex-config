@@ -12,7 +12,7 @@ Use this skill after frontend changes and before the final report.
 <!-- workflow-invariant: shared-contract -->
 <!-- workflow-invariant: ui-handoff -->
 
-Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md). This skill supplies UI verification evidence; durable product edits remain owned by `codex-implementation-loop`.
+Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md). This skill supplies UI verification evidence; durable product edits remain owned by `codex-implementation`.
 
 ## Subagent UI Checks
 
@@ -40,7 +40,7 @@ When subagents are available, prefer delegating focused UI verification to a wor
    - console errors
 5. For canvas, WebGL, maps, or generated media, verify pixels are nonblank and correctly framed.
 6. For normal DOM UI, capture or inspect visual evidence for each changed viewport when tooling supports it.
-7. Record any finding with the affected route, viewport, state, and observed evidence. Return findings that require durable edits to `codex-implementation-loop`, then re-run this quality gate on the affected viewport and state.
+7. Record any finding with the affected route, viewport, state, and observed evidence. Return findings that require durable edits to `codex-implementation`, then re-run this quality gate on the affected viewport and state.
 
 ## Browser Probes
 

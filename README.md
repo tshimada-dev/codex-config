@@ -40,6 +40,7 @@
 - `scripts/install-copilot-skills.ps1`: `skills/codex-*` を `copilot-*` 名に変換して GitHub Copilot Agent Skills として導入する実験用スクリプト
 - `scripts/check-ja-source-commits.ps1`: 日本語参考訳の `source_commit` / `source_blob` 検査・更新スクリプト
 - `scripts/validate-development-workflow.ps1`: 開発スキル間の所有権、証拠、readiness、配布対象の整合性検査
+- `scripts/validate-run-note.ps1`: active run note の phase、Skill 帰属、placeholder、readiness と未完証拠の整合性検査
 - `docs/ja/`: 人間が読むための日本語参考訳
 - `docs/samples/`: 実データや秘密情報を含まない、検証済みの合成成果物サンプル
 
@@ -81,6 +82,12 @@ tracked されている管理対象ファイルだけをコピーします。`-P
 
 `scripts/install.ps1` は、`AGENTS.md`、`rules/`、`templates/`、複数の `skills/codex-*`
 をまとめて同期し、manifest と `-Prune` で管理対象を保守します。
+
+この repository の active run note は、commit readiness の前に次のように検査できます。
+
+```powershell
+.\scripts\validate-run-note.ps1 -Path $HOME\.codex\runs\<repo-name>\<run-note>.md
+```
 
 ## 共有 config baseline
 
@@ -152,7 +159,7 @@ source repository 側の `codex-*` Skill を保ったまま、Copilot 側へ `co
 ```
 
 デフォルト entry point は、ツール中立に使いやすい `repo-scout`、
-`implementation-loop`、`debug-discipline`、`plan-slices`、`pr-readiness`、
+`implementation`、`debug-discipline`、`plan-slices`、`pr-readiness`、
 `ui-quality-gate` です。installer は `config/development-skills.json` の依存関係を再帰的に解決し、
 参照先の support Skill も一緒に導入します。`task-intake` は、通常の依頼分類をモデル自身に任せ、
 結果や安全境界を大きく変える曖昧さが残る場合だけ明示導入する optional Skill です。
@@ -168,7 +175,7 @@ Skill 間の exact `codex-*` identifier も manifest の map で `copilot-*` へ
 
 既存の Copilot Skill と内容が異なる場合、デフォルトでは上書きせず停止します。
 置き換える場合は `-Overwrite`、置き換え前に退避する場合は `-Overwrite -Backup` を
-指定します。特定 Skill だけ入れる場合は `-SkillName repo-scout,implementation-loop`
+指定します。特定 Skill だけ入れる場合は `-SkillName repo-scout,implementation`
 のように指定できます。管理対象の `codex-*` Skill をすべて変換したい場合は、
 移植できる意味を確認したうえで `-AllSkills` を指定します。
 

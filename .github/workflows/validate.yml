@@ -27,7 +27,9 @@ jobs:
             'scripts/test-command-policy.ps1',
             'scripts/test-copilot-skill-installer.ps1',
             'scripts/test-ja-source-metadata.ps1',
+            'scripts/test-run-note-validator.ps1',
             'scripts/validate-development-workflow.ps1',
+            'scripts/validate-run-note.ps1',
             'skills/codex-clean-local-state/scripts/wait_and_execute.ps1',
             'skills/codex-claude-code-reviewer/scripts/invoke-claude-review.ps1'
           )
@@ -59,6 +61,10 @@ jobs:
       - name: Validate development workflow invariants
         shell: pwsh
         run: ./scripts/validate-development-workflow.ps1
+
+      - name: Validate run-note contract
+        shell: pwsh
+        run: ./scripts/test-run-note-validator.ps1
 
       - name: Validate Codex local-state cleanup safety
         shell: pwsh

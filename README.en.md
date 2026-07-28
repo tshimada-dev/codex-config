@@ -45,6 +45,8 @@ the same profile-driven execution boundary.
 - `skills/codex-*`: reusable Codex workflow skills.
 - `config/`: shareable baseline config and profiles.
 - `scripts/`: installers, workflow validation, and Japanese reference-doc checks.
+- `scripts/validate-run-note.ps1`: checks active run-note phase, skill attribution,
+  placeholders, readiness, and unresolved required evidence.
 - `docs/ja/`: Japanese reference documentation for human readers.
 
 ## Portfolio Notes
@@ -76,6 +78,12 @@ Prerequisites: PowerShell 7+ (`pwsh`) and Git.
 By default, the installer uses `$CODEX_HOME` when set and otherwise installs to
 `$HOME/.codex`.
 
+Before commit readiness, this repository can validate an active run note with:
+
+```powershell
+.\scripts\validate-run-note.ps1 -Path $HOME\.codex\runs\<repo-name>\<run-note>.md
+```
+
 ## Copilot Adapter Experiment
 
 To try the workflow skills in GitHub Copilot, use:
@@ -93,14 +101,14 @@ link. The rule therefore remains single-sourced while each Copilot skill stays
 self-contained.
 It refuses to overwrite different existing files unless `-Overwrite` is passed.
 The default entry points are the more tool-neutral workflow skills:
-`repo-scout`, `implementation-loop`, `debug-discipline`, `plan-slices`,
+`repo-scout`, `implementation`, `debug-discipline`, `plan-slices`,
 `pr-readiness`, and `ui-quality-gate`. The installer recursively
 adds their manifest-declared support dependencies and rewrites exact cross-skill
 `codex-*` identifiers to installed `copilot-*` targets. `task-intake` is an
 optional skill for consequential ambiguity rather than a default classification
 ritual. Codex-coupled skills such as `codex-claude-code-reviewer` are not
 installed unless explicitly requested.
-Use `-SkillName repo-scout,implementation-loop` to install selected skills, or
+Use `-SkillName repo-scout,implementation` to install selected skills, or
 `-AllSkills` only after confirming the extra skills make sense in Copilot.
 
 Without `-Prune`, a partial install preserves the union of previously and newly

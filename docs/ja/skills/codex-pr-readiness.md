@@ -1,6 +1,6 @@
 ---
 source: skills/codex-pr-readiness/SKILL.md
-source_blob: e5e08d51ddc5e5efb622c2a758fb7d3c56ebc602
+source_blob: 3e85e0e6981ad234fe8f5b94c77811d696e4ef08
 canonical: false
 ---
 
@@ -16,7 +16,7 @@ canonical: false
 
 `rules/development-workflow.md` に従い、acceptance criteria と evidence を追跡し、統合結果を `ready`、`conditionally-ready`、`not-ready` のいずれかに分類する。この skill は不足している verification の代替にはならない。
 
-readiness report、commit message、PR textなどのworkflow/evidence artifactはこのskillが所有する。source、test、configuration、script、policy、documentationなどの恒久的なproduct/repository behavior correctionは `codex-implementation-loop` へ戻し、修正後にverificationとreadinessを再実行する。
+readiness report、commit message、PR textなどのworkflow/evidence artifactはこのskillが所有する。source、test、configuration、script、policy、documentationなどの恒久的なproduct/repository behavior correctionは `codex-implementation` へ戻し、修正後にverificationとreadinessを再実行する。
 
 ## Review Pass
 
@@ -26,7 +26,7 @@ readiness report、commit message、PR textなどのworkflow/evidence artifact�
    - targeted `git diff`
 2. 自分の変更と無関係な user changes を分ける。
 3. diff が一つの coherent story になっているか確認する。そうでない場合は分割を提案する。
-   - coherenceのために恒久file correctionが必要ならreadiness内でpatchせず、`codex-implementation-loop`へ戻す。
+- coherenceのために恒久file correctionが必要ならreadiness内でpatchせず、`codex-implementation`へ戻す。
 4. 可能なら relevant verification を実行する。local verification が CI と異なる場合は、CI contract を満たしたと主張せず、差分を明示する。
 5. summary を用意する。
    - what changed
@@ -37,7 +37,7 @@ readiness report、commit message、PR textなどのworkflow/evidence artifact�
 
 verification を skip した場合は、理由、実行すべきだった command、残る risk を明示する。
 
-reviewまたはCI follow-upで恒久修正が判明した場合はfindingを記録して `codex-implementation-loop` へ遷移し、修正と必須verificationの完了後にreadinessを再開する。
+reviewまたはCI follow-upで恒久修正が判明した場合はfindingを記録して `codex-implementation` へ遷移し、修正と必須verificationの完了後にreadinessを再開する。
 
 subagents が使える場合は、stage/commit 前の focused pre-PR review を reviewer agent に任せる。
 
@@ -73,5 +73,5 @@ review comments に対応する場合:
 
 1. exact comment と surrounding diff を読む。
 2. required change ごとに group する。
-3. user が subset を選んだ場合は、選ばれた恒久修正だけを `codex-implementation-loop` へ返し、残りの comments は scope 外として記録する。
+3. user が subset を選んだ場合は、選ばれた恒久修正だけを `codex-implementation` へ返し、残りの comments は scope 外として記録する。
 4. stale、conflicting、product judgment が必要な comment は明記する。

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Implementation"
+  short_description: "Implement scoped changes with tests and safety."
+  default_prompt: "Use $codex-implementation to make scoped code changes with focused verification."

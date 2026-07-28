@@ -99,8 +99,8 @@ if (($trackedSkillNames -join "`n") -ne ($declaredSkillNames -join "`n")) {
 }
 
 $durableOwners = @($skills | Where-Object { $_.owns_durable_product_edits -eq $true })
-if ($durableOwners.Count -ne 1 -or $durableOwners[0].source_name -ne "codex-implementation-loop") {
-    Add-ValidationError "config/development-skills.json: codex-implementation-loop must be the single durable product/repository edit owner"
+if ($durableOwners.Count -ne 1 -or $durableOwners[0].source_name -ne "codex-implementation") {
+    Add-ValidationError "config/development-skills.json: codex-implementation must be the single durable product/repository edit owner"
 }
 
 $contractContent = Read-RequiredFile -RelativePath "rules/development-workflow.md"
@@ -181,8 +181,8 @@ foreach ($skill in $skills) {
         Add-ValidationError "${relativePath}: debugging description claims a durable-edit action"
     }
     if ($skill.phase -eq "readiness" -and $skill.owns_durable_product_edits -ne $true -and
-        -not $declaredDependencies.Contains("codex-implementation-loop")) {
-        Add-ValidationError "${relativePath}: readiness must hand durable corrections to codex-implementation-loop"
+        -not $declaredDependencies.Contains("codex-implementation")) {
+        Add-ValidationError "${relativePath}: readiness must hand durable corrections to codex-implementation"
     }
     if ($skill.phase -eq "readiness" -and $skill.owns_durable_product_edits -ne $true -and
         $content -match '(?mi)^\s*\d+\.\s+(fix|patch|edit|change|update)\b') {
@@ -197,8 +197,12 @@ foreach ($skill in $skills) {
 }
 
 $longRunningContent = Read-RequiredFile -RelativePath "rules/long-running-workflow.md"
-if ($null -ne $longRunningContent -and -not $longRunningContent.Contains("## Handoff And Resume Context")) {
-    Add-ValidationError "rules/long-running-workflow.md: missing consolidated handoff context section"
+if ($null -ne $longRunningContent) {
+    foreach ($heading in @("## Run-Note Integrity", "## Handoff And Resume Context")) {
+        if (-not $longRunningContent.Contains($heading)) {
+            Add-ValidationError "rules/long-running-workflow.md: missing required heading '$heading'"
+        }
+    }
 }
 
 $readmeContent = Read-RequiredFile -RelativePath "README.md"
@@ -222,6 +226,19 @@ if ($null -ne $runTemplate) {
         if (($templatePhases -join "`n") -ne (($allowedPhases | Sort-Object) -join "`n")) {
             Add-ValidationError "templates/agent-run.md: Phase taxonomy must match the development workflow"
         }
+    }
+
+    if (-not $runTemplate.Contains("## Skills Used")) {
+        Add-ValidationError "templates/agent-run.md: missing Skills Used section"
+    }
+    if ($runTemplate -notmatch '(?m)^\|\s*Skill\s*\|\s*Purpose\s*\|\s*Observable effect\s*\|\s*Evidence\s*\|\s*$') {
+        Add-ValidationError "templates/agent-run.md: missing parseable Skills Used table"
+    }
+}
+
+foreach ($runNoteScript in @("scripts/validate-run-note.ps1", "scripts/test-run-note-validator.ps1")) {
+    if (-not (Test-Path -LiteralPath (Get-RepoPath -RelativePath $runNoteScript) -PathType Leaf)) {
+        Add-ValidationError "${runNoteScript}: missing run-note validation surface"
     }
 }
 

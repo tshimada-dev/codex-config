@@ -9,7 +9,7 @@ Evaluate local Skills consistently and make repository promotion recoverable and
 
 ## Shared development contract
 
-Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md). Use `codex-repo-scout` for repository evidence, hand durable edits to `codex-implementation-loop`, and use `codex-pr-readiness` for staging and commit readiness. Use `$skill-creator` when creating or substantially restructuring the promoted Skill.
+Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md). Use `codex-repo-scout` for repository evidence, hand durable edits to `codex-implementation`, and use `codex-pr-readiness` for staging and commit readiness. Use `$skill-creator` when creating or substantially restructuring the promoted Skill.
 
 ## Authority modes
 
@@ -78,7 +78,7 @@ For promotion:
    - `docs/ja/README.md`.
 7. Update Japanese source metadata with `scripts/check-ja-source-commits.ps1 -Update`.
 
-For merge, edit the owning Skill through `codex-implementation-loop`, add regression evidence, and do not create a redundant Skill directory.
+For merge, edit the owning Skill through `codex-implementation`, add regression evidence, and do not create a redundant Skill directory.
 
 ## 4. Verify and commit before installation
 

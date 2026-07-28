@@ -16,7 +16,7 @@ Read and follow [`../../rules/development-workflow.md`](../../rules/development-
 
 ## Composition
 
-Use when the work is broad enough to need explicit slices, usually after `codex-repo-scout` if repository context is missing. Hand off to `codex-implementation-loop` for actual edits. For bugs, let `codex-debug-discipline` find the cause before slicing implementation work.
+Use when the work is broad enough to need explicit slices, usually after `codex-repo-scout` if repository context is missing. Hand off to `codex-implementation` for actual edits. For bugs, let `codex-debug-discipline` find the cause before slicing implementation work.
 
 ## Planning Steps
 
@@ -80,7 +80,7 @@ Report changed files, tests run, and unresolved issues.
 
 ## Plan Artifact
 
-The plan is a workflow and evidence artifact owned by planning. It may assign write scopes, but every durable product or repository behavior edit remains owned by `codex-implementation-loop`.
+The plan is a workflow and evidence artifact owned by planning. It may assign write scopes, but every durable product or repository behavior edit remains owned by `codex-implementation`.
 
 Do not create a plan file unless the user requested a durable artifact, the repo already has a matching planning convention, or the work is actively multi-session. Otherwise provide the plan in the response.
 

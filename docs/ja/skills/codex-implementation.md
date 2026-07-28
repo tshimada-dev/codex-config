@@ -1,12 +1,12 @@
 ---
-source: skills/codex-implementation-loop/SKILL.md
-source_blob: 9907026b896507801d6a229673a19fc427f36004
+source: skills/codex-implementation/SKILL.md
+source_blob: 30aac9cf083956cd4bcfd6bb1e36c19d06411414
 canonical: false
 ---
 
-# codex-implementation-loop 日本語参考訳
+# codex-implementation 日本語参考訳
 
-この文書は `skills/codex-implementation-loop/SKILL.md` の日本語参考訳です。Codex が実行時に読む canonical な定義は英語版です。
+この文書は `skills/codex-implementation/SKILL.md` の日本語参考訳です。Codex が実行時に読む canonical な定義は英語版です。
 
 ## 目的
 

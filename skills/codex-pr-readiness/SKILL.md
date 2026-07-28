@@ -14,7 +14,7 @@ Use this skill to turn finished work into a reviewable change.
 
 Read and follow [`../../rules/development-workflow.md`](../../rules/development-workflow.md). PR readiness evaluates the implementation and evidence against that contract; it does not weaken or replace required evidence.
 
-This skill owns workflow and evidence artifacts used for packaging, such as readiness reports, commit messages, and PR text. It does not own durable product or repository behavior edits. Return any requested source, test, configuration, script, policy, or documentation correction to `codex-implementation-loop`, then repeat the affected verification and readiness checks.
+This skill owns workflow and evidence artifacts used for packaging, such as readiness reports, commit messages, and PR text. It does not own durable product or repository behavior edits. Return any requested source, test, configuration, script, policy, or documentation correction to `codex-implementation`, then repeat the affected verification and readiness checks.
 
 ## Subagent Review
 
@@ -32,7 +32,7 @@ When subagents are available, prefer a reviewer agent for a focused pre-PR pass 
    - targeted `git diff`
 2. Separate your changes from unrelated user changes.
 3. Confirm the diff tells one coherent story. If not, propose splitting.
-   - If coherence requires a durable file correction, return that finding to `codex-implementation-loop`; do not patch it inside readiness.
+   - If coherence requires a durable file correction, return that finding to `codex-implementation`; do not patch it inside readiness.
 4. Run relevant verification unless impossible or explicitly skipped by the user. If local verification differs from CI, state the discrepancy instead of claiming the CI contract was satisfied.
 5. Trace applicable acceptance IDs or expected outcomes to the named evidence and its result.
 6. Assign one evidence-based status:
@@ -50,7 +50,7 @@ If verification is skipped or unavailable, state the exact reason, what would ha
 
 Before packaging, apply the shared contract's worktree-preservation rules and keep the requested change separate from unrelated work.
 
-If review or CI follow-up reveals a durable correction, record the finding and transition to `codex-implementation-loop`. Resume readiness only after the correction and its required verification are complete.
+If review or CI follow-up reveals a durable correction, record the finding and transition to `codex-implementation`. Resume readiness only after the correction and its required verification are complete.
 
 ## Commit Discipline
 
@@ -93,5 +93,5 @@ When addressing review comments:
 
 1. Read the exact comment and surrounding diff.
 2. Group comments by required change.
-3. If the user selected a subset, return only those durable corrections to `codex-implementation-loop`; keep the remaining comments recorded as out of scope.
+3. If the user selected a subset, return only those durable corrections to `codex-implementation`; keep the remaining comments recorded as out of scope.
 4. Mention any comment that is stale, conflicting, or requires product judgment.

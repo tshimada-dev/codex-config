@@ -1,6 +1,6 @@
 ---
 source: skills/codex-ui-quality-gate/SKILL.md
-source_blob: 4136d75dcbfb1fe4cd6fda54d13abb0fbf7473ed
+source_blob: f3acc12131cf5ebe6242efb2bc029d0b5a77e91d
 canonical: false
 ---
 
@@ -14,7 +14,7 @@ frontend、CSS、layout、responsive behavior、canvas/WebGL、images、animatio
 
 ## 共通開発契約
 
-`rules/development-workflow.md` に従う独立 verification gate として、expected outcome と acceptance criteria に対して統合結果を確認する。恒久的な product edit は `codex-implementation-loop` が所有する。
+`rules/development-workflow.md` に従う独立 verification gate として、expected outcome と acceptance criteria に対して統合結果を確認する。恒久的な product edit は `codex-implementation` が所有する。
 
 ## Verification Steps
 
@@ -23,7 +23,7 @@ frontend、CSS、layout、responsive behavior、canvas/WebGL、images、animatio
 3. desktop と mobile など必要な viewport で確認する。
 4. console errors、network failures、layout overflow、text clipping、interaction behavior を見る。
 5. 変更した UI state、empty/loading/error state、主要 interaction を確認する。
-6. 恒久修正が必要な finding は evidence とともに `codex-implementation-loop` へ戻し、修正後に gate を再実行する。戻した finding が未検証のまま pass にしない。
+6. 恒久修正が必要な finding は evidence とともに `codex-implementation` へ戻し、修正後に gate を再実行する。戻した finding が未検証のまま pass にしない。
 
 subagents が使える場合は、changed route と expected states が明確になってから focused UI verification を worker に任せる。
 

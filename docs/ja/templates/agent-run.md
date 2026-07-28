@@ -1,6 +1,6 @@
 ---
 source: templates/agent-run.md
-source_blob: dcfd9c1c257657c5df9c755591e32646e8b4d983
+source_blob: d59b621da461fe602405d2dc303066f50e8f27c4
 canonical: false
 ---
 
@@ -34,6 +34,14 @@ Phase: `intake | scouting | planning | debugging | implementation | verification
 
 - Non-goals / constraints:
 - Open decisions or authority conflicts:
+
+## Skills Used
+
+作業に実質的な影響を与えた Skill だけを記録する。再利用可能な Skill を適用していない場合は `None` と明記する。
+
+| Skill | Purpose | Observable effect | Evidence |
+| --- | --- | --- | --- |
+| `<skill-name>` | | | |
 
 ## Research
 

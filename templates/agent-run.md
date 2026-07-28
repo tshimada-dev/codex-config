@@ -27,6 +27,14 @@ For broad, ambiguous, or high-risk work, use the matrix:
 - Non-goals and constraints:
 - Open decisions or authority conflicts:
 
+## Skills Used
+
+Record only skills that materially affected the work. Use `None` when no reusable skill was applied.
+
+| Skill | Purpose | Observable effect | Evidence |
+| --- | --- | --- | --- |
+| `<skill-name>` | | | |
+
 ## Research
 
 ### Relevant Files
