@@ -56,7 +56,7 @@ Require each participant to:
 7. Obey `PAUSE`, `RESUME`, `CORRECT`, and `STOP` from the parent.
 8. Count only substantive debate statements, not readiness, intervention, or resolution messages.
 
-Spawn in reverse speaking order so the opener is spawned last. After every camp is ready, trigger only the opener with `followup_task` and `START`. The ring then advances without the parent relaying arguments. The final speaker in the final round sends `RESOLUTION_START` to the opener instead of starting another round.
+Spawn in reverse speaking order so the opener is spawned last. After every camp is ready, trigger only the opener with `followup_task` and `START`. The ring then advances without the parent relaying arguments. The final speaker in the final round sends `RESOLUTION_READY` to the parent with `send_message` and does not trigger another camp.
 
 ## Enforce argument quality
 
@@ -72,13 +72,32 @@ Give every camp these rules:
 
 ## Resolve without a vote
 
-On `RESOLUTION_START`, have the opener circulate exactly one of:
+Do not ask the opener to draft or circulate the resolution. After `RESOLUTION_READY`, have the parent send the identical `RESOLUTION_REQUEST` to every active camp with `followup_task`.
 
-- `FINAL_CONSENSUS_PROPOSAL: <shared conclusion and reasons>`
-- `FINAL_WINNER_PROPOSAL: <camp and decision reasons>`
-- `DEADLOCK_PROPOSAL: <remaining positions and decisive unresolved questions>`
+Require every camp to submit independently and privately to the parent before seeing any other resolution candidate. Use this structure:
 
-Have the opener copy the proposal to the parent, trigger every other camp with `followup_task`, and explicitly send its own `ACCEPT`, `REVISE`, or `REJECT`. Every other camp responds to the parent and opener with one of the same markers plus a concise reason, then stops making substantive arguments. Declare `FINAL_CONSENSUS` or `FINAL_WINNER` only when every active camp explicitly accepts the identical proposal. A winner requires the other camps to concede or acknowledge that it best satisfies the announced decision rule. If any camp rejects the final proposal, confirmations differ, or the resolution window expires, declare `DEADLOCK` and preserve the unresolved objections.
+```text
+RESOLUTION_CANDIDATE
+OUTCOME: CONSENSUS | WINNER | DEADLOCK
+WINNER: <CAMP | NONE>
+DECISION: <operative conclusion or action>
+AGREED_POINTS:
+- <point>
+UNRESOLVED_OBJECTIONS:
+- <objection>
+RATIONALE:
+- <reason>
+```
+
+Do not put the submitting camp's identity in the candidate text; the parent records provenance privately from the message sender. The parent withholds all candidates until every active camp has submitted or the resolution deadline expires. Do not merge, rewrite, or synthesize candidate text.
+
+Treat candidates as equivalent only when they have the same `OUTCOME`, the same `WINNER`, the same operative `DECISION`, and the same material `AGREED_POINTS` and `UNRESOLVED_OBJECTIONS`. Ignore only wording, ordering, and other non-substantive differences. When equivalence is uncertain, classify the candidates as different rather than resolving the ambiguity by judgment.
+
+If every candidate is equivalent, send every camp an `EQUIVALENCE_CHECK` containing the candidate IDs and a field-by-field comparison. Declare the shared outcome only when every active camp returns `ACCEPT_EQUIVALENCE`. If any camp returns `REJECT_EQUIVALENCE`, declare `DEADLOCK` and preserve the disputed field.
+
+If candidates differ, assign neutral candidate IDs without camp attribution. Order them by a deterministic content-derived key, never by speaking or submission order, and send every unchanged candidate to every camp in that same order. Each camp returns `ACCEPT <CANDIDATE_ID>` or `REJECT_ALL` without further substantive argument. Declare `FINAL_CONSENSUS` or `FINAL_WINNER` only when every active camp accepts the same candidate. A winner requires every other camp to accept the candidate naming that winner. Otherwise declare `DEADLOCK`; the parent may report only fields that are identical across all candidates as common ground.
+
+If an active camp does not submit a candidate before the resolution deadline, report `INCOMPLETE` rather than inferring its position.
 
 Send `STOP` to every active agent after the terminal state is valid. Disregard later substantive statements.
 
@@ -110,7 +129,7 @@ When parental judging is authorized, give equal weight to fidelity to the assign
 Lead with `FINAL_CONSENSUS`, `FINAL_WINNER`, `DEADLOCK`, `INCOMPLETE`, or parental timeout judgment. Then report:
 
 - the proposition, selected and omitted camps, rounds, and evidence mode;
-- the exact or faithfully condensed final proposal and confirmations;
+- the resolution candidates, equivalence comparison, and confirmations;
 - the decisive argument and strongest unresolved objection;
 - every parent intervention or failure, or state that none occurred;
 - challenged claims excluded from consideration;

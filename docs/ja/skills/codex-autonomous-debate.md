@@ -1,6 +1,6 @@
 ---
 source: skills/codex-autonomous-debate/SKILL.md
-source_blob: a1a58da1967d6633464fd63e4e75bf13ed82b159
+source_blob: f08013e95232b7961266f9cd889e44db26e1ab49
 canonical: false
 ---
 
@@ -54,7 +54,7 @@ canonical: false
 5. 次の発言者以外には `send_message`、次の発言者には `followup_task` で同じ発言を送り、次のturnを1つだけ起動する。
 6. 親の確認を待たず継続し、`PAUSE`、`RESUME`、`CORRECT`、`STOP` に従う。
 
-発言順の逆順でspawnし、全員がreadyになった後、親はopening campだけへ `START` を送る。その後は親が議論を中継せず、ring状に進行する。最終ラウンドの最後の発言者は次のラウンドを始めず、opening campへ `RESOLUTION_START` を送る。
+発言順の逆順でspawnし、全員がreadyになった後、親はopening campだけへ `START` を送る。その後は親が議論を中継せず、ring状に進行する。最終ラウンドの最後の発言者は次の陣営を起動せず、親へ `RESOLUTION_READY` を送る。
 
 ## 議論規則
 
@@ -67,9 +67,32 @@ canonical: false
 
 ## 多数決を使わず終了する
 
-`RESOLUTION_START` を受けたopening campは、`FINAL_CONSENSUS_PROPOSAL`、`FINAL_WINNER_PROPOSAL`、`DEADLOCK_PROPOSAL` のいずれか1つを回覧する。提案を親へcopyし、他の全陣営を `followup_task` で起動し、自分自身も `ACCEPT`、`REVISE`、`REJECT` のいずれかを明示送信する。
+opening campにresolutionの起草・回覧を任せない。`RESOLUTION_READY` の後、親が同一の `RESOLUTION_REQUEST` を全active campへ `followup_task` で送る。
 
-他の各陣営は親とopening campへ、簡潔な理由付きの同じmarkerを返し、その後は実質議論を停止する。全active campが同一提案を明示承認した場合だけ `FINAL_CONSENSUS` または `FINAL_WINNER` とする。勝者には、他陣営が決定規則上もっとも優れていると認めるか譲歩する必要がある。拒否、確認不一致、時間切れがあれば `DEADLOCK` とし、未解決反論を残す。
+各陣営は他の候補を見る前に、次の `RESOLUTION_CANDIDATE` を独立かつ非公開で親だけへ提出する。
+
+```text
+RESOLUTION_CANDIDATE
+OUTCOME: CONSENSUS | WINNER | DEADLOCK
+WINNER: <CAMP | NONE>
+DECISION: <実際の結論・行動>
+AGREED_POINTS:
+- <合意点>
+UNRESOLVED_OBJECTIONS:
+- <未解決反論>
+RATIONALE:
+- <理由>
+```
+
+候補本文には提出陣営を記載せず、親だけがメッセージ送信元から対応関係を非公開で記録する。親は全active campの提出またはresolution期限まで候補を公開しない。候補の統合、書き換え、新しい文章の合成は禁止する。
+
+`OUTCOME`、`WINNER`、実際の `DECISION`、重要な `AGREED_POINTS`、`UNRESOLVED_OBJECTIONS` が一致する場合だけ同値候補とする。言い回しや順序だけの差は無視できるが、実質的な同値性に疑いがあれば別候補として扱う。
+
+全候補が同値なら、親は候補IDとfield別比較を含む `EQUIVALENCE_CHECK` を全陣営へ送る。全active campが `ACCEPT_EQUIVALENCE` を返した場合だけ共通outcomeを確定する。一つでも `REJECT_EQUIVALENCE` があれば `DEADLOCK` とし、争いのあるfieldを残す。
+
+候補が異なる場合、親は陣営名を隠した中立的なcandidate IDを割り当てる。発言順や提出順ではなく、候補内容から導く決定的なキーで並べ、全候補を変更せず同じ順序で全陣営へ送る。各陣営は追加の実質議論をせず、`ACCEPT <CANDIDATE_ID>` または `REJECT_ALL` を返す。全active campが同じ候補を承認した場合だけ `FINAL_CONSENSUS` または `FINAL_WINNER` とする。それ以外は `DEADLOCK` とし、親が共通点として報告できるのは全候補で同一のfieldだけとする。
+
+resolution期限までに候補を提出しないactive campがあれば、その立場を推測せず `INCOMPLETE` とする。
 
 有効な終了状態を確認したら、親は全active agentへ `STOP` を送り、以後の実質発言を採用しない。
 
@@ -88,6 +111,6 @@ canonical: false
 
 ## 報告
 
-`FINAL_CONSENSUS`、`FINAL_WINNER`、`DEADLOCK`、`INCOMPLETE`、または親のtimeout判定を先に示す。その後、命題、選択・除外陣営、ラウンド、証拠モード、最終提案と確認、決定的議論、最強の未解決反論、親の介入・障害、除外した主張を報告する。
+`FINAL_CONSENSUS`、`FINAL_WINNER`、`DEADLOCK`、`INCOMPLETE`、または親のtimeout判定を先に示す。その後、命題、選択・除外陣営、ラウンド、証拠モード、resolution候補、同値性比較と確認、決定的議論、最強の未解決反論、親の介入・障害、除外した主張を報告する。
 
 結果は選択した陣営による議論上の結果であり、現実問題の客観的な解決ではないと明記する。ユーザーが全文や詳細分析を求めない限り、報告は簡潔にする。

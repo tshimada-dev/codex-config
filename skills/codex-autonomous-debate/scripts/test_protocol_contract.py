@@ -20,10 +20,18 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(f"`{marker}`", self.content)
 
-    def test_requires_unanimous_terminal_confirmation_not_majority_vote(self) -> None:
+    def test_requires_independent_resolution_candidates_without_majority_vote(self) -> None:
         self.assertIn("Do not use majority vote", self.content)
         self.assertIn("every active camp", self.content)
-        self.assertIn("trigger every other camp with `followup_task`", self.content)
+        self.assertIn("`RESOLUTION_REQUEST`", self.content)
+        self.assertIn("RESOLUTION_CANDIDATE\nOUTCOME:", self.content)
+        self.assertIn("independently and privately", self.content)
+        self.assertIn("Do not put the submitting camp's identity", self.content)
+        self.assertIn("deterministic content-derived key", self.content)
+        self.assertIn("Do not ask the opener to draft", self.content)
+        self.assertIn("Do not merge, rewrite, or synthesize", self.content)
+        self.assertIn("same `OUTCOME`", self.content)
+        self.assertNotIn("On `RESOLUTION_START`, have the opener", self.content)
         for outcome in ("FINAL_CONSENSUS", "FINAL_WINNER", "DEADLOCK"):
             with self.subTest(outcome=outcome):
                 self.assertIn(f"`{outcome}`", self.content)
