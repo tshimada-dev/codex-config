@@ -34,6 +34,7 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [skills/codex-pr-readiness.md](skills/codex-pr-readiness.md): PR 準備
 - [skills/codex-claude-code-reviewer.md](skills/codex-claude-code-reviewer.md): Claude Code による外部レビュー
 - [skills/codex-clean-local-state.md](skills/codex-clean-local-state.md): Codex local state の安全な整理
+- [skills/codex-autonomous-debate.md](skills/codex-autonomous-debate.md): 実在する主要陣営による自律討論
 - [skills/codex-promote-local-skill.md](skills/codex-promote-local-skill.md): local Skill の管理価値評価と安全な repository 昇格
 - [skills/codex-field-investigation-loop.md](skills/codex-field-investigation-loop.md): 現地障害調査ループ
 - [skills/codex-effort-estimator.md](skills/codex-effort-estimator.md): 工数見積もり統括

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Autonomous Debate"
+  short_description: "Debate real positions under neutral supervision"
+  default_prompt: "Use $codex-autonomous-debate to map the real camps in this dispute and let them debate directly under neutral supervision."

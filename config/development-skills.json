@@ -2,6 +2,17 @@
   "schema_version": 1,
   "skills": [
     {
+      "source_name": "codex-autonomous-debate",
+      "copilot_name": "copilot-autonomous-debate",
+      "default": false,
+      "support": false,
+      "role": "autonomous-debate-orchestrator",
+      "phase": null,
+      "owns_durable_product_edits": false,
+      "uses_development_workflow": false,
+      "dependencies": []
+    },
+    {
       "source_name": "codex-claude-code-reviewer",
       "copilot_name": "copilot-claude-code-reviewer",
       "default": false,
