@@ -29,6 +29,7 @@ function Invoke-ValidatorCase {
 
     $output = @(& pwsh -NoProfile -File $Validator -Path $path 2>&1)
     $exitCode = $LASTEXITCODE
+    $global:LASTEXITCODE = 0
     if ($ShouldPass -and $exitCode -ne 0) {
         throw "${Name}: expected validator success, got exit $exitCode`n$($output -join "`n")"
     }
@@ -134,6 +135,10 @@ try {
     $conditionalNote = (($validNote -replace '- Readiness: `ready`', '- Readiness: `conditionally-ready`') -replace '- Test: passed\.', '- Test: pending.') -replace '- Residual risk or skipped optional evidence: none\.', '- Residual risk or skipped optional evidence: remote CI remains pending.'
     Invoke-ValidatorCase -Name "conditional-with-risk" -Content $conditionalNote -ShouldPass $true
     Invoke-ValidatorCase -Name "conditional-without-risk" -Content ($conditionalNote -replace '- Residual risk or skipped optional evidence: remote CI remains pending\.', '- Residual risk or skipped optional evidence:') -ShouldPass $false -ExpectedCode "RUN011"
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Validator cases leaked native exit code $LASTEXITCODE"
+    }
 
     Write-Host "Run-note validator regression tests passed."
 }
