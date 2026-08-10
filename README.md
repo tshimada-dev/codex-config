@@ -109,6 +109,12 @@ merge します。
 `config/config.base.toml` と profile files には、`[projects.*]`、secrets、MCP server の
 private token/path、plugin runtime state、automation state、端末固有の絶対パスを入れません。
 
+共有 baseline と各 profile は `approval_policy = "on-request"` と
+`approvals_reviewer = "auto_review"` を組み合わせます。承認対象の操作は原則として
+automatic approvals reviewer が審査し、sandbox 境界と command policy は維持したまま
+手動承認ダイアログを減らします。代理審査はユーザーから依頼されていない破壊的操作や
+remote mutation を新たに許可するものではありません。
+
 ## Profile 一覧
 
 `config/profiles/*.config.toml` は `$CODEX_HOME/<profile>.config.toml` にコピーされます。
@@ -122,14 +128,16 @@ private token/path、plugin runtime state、automation state、端末固有の�
 
 `workspace` では network access を許可しますが、remote mutation、package install、
 publish、migration、破壊的な local command は `rules/command-policy.rules` で
-確認を挟む方針です。
+`prompt` にし、automatic approvals reviewer の審査を挟む方針です。`prompt` を単純な
+`allow` に置き換えないことで、手動承認の回数を減らしながら操作ごとのリスク判定を残します。
 
 初見・未信頼 repo では、build/test も任意コード実行として扱います。まず `safe` で
 調査し、runtime/profile が trust を明示している場合、またはユーザーが明示的に確認した場合にだけ
 `local-check` または `workspace` へ切り替えます。エージェント自身の判断だけでは trust を昇格させません。
 user-level の command policy では、repository-controlled な npm/uv script と主要な
 project runnerを `prompt` にし、`rg --pre` や `git diff --ext-diff` のような外部command
-実行経路もbroad `allow`にしません。未列挙commandはruntime/sandbox既定へ戻します。
+実行経路もbroad `allow`にしません。通常の `rg` も `--pre` の有無を実行時に審査できるよう
+user layer では `prompt` のままにします。未列挙commandはruntime/sandbox既定へ戻します。
 信頼済み repo で省略する場合だけ、trusted project layer の `.codex/rules/` に限定的な
 `allow` を置きます。
 

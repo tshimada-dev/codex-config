@@ -41,6 +41,11 @@ codex --profile workspace
 `config.base.toml` と `workspace` profile は、日常開発の生産性を優先します。
 workspace-write sandbox で network access を許可します。
 
+baseline とすべての profile は `approval_policy = "on-request"` と
+`approvals_reviewer = "auto_review"` を明示します。これにより sandbox や command policy が
+要求した承認は automatic approvals reviewer に送られ、境界を解除せずに手動確認を減らします。
+`prompt` は代理審査の入口なので、承認ダイアログを減らす目的で broad `allow` に変えません。
+
 `safe` は、初見 repo、未信頼 repo、review-only、no-network inspection に使います。
 
 `local-check` は、初期調査後に local writes や tests は必要だが、dependency download や

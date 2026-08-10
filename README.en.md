@@ -78,6 +78,12 @@ Prerequisites: PowerShell 7+ (`pwsh`) and Git.
 By default, the installer uses `$CODEX_HOME` when set and otherwise installs to
 `$HOME/.codex`.
 
+The shared baseline and every profile pair `approval_policy = "on-request"`
+with `approvals_reviewer = "auto_review"`. Eligible approval requests therefore
+go to the automatic approvals reviewer while the sandbox and command policy
+remain in force. Auto-review reduces manual dialogs; it does not authorize
+destructive or remote-changing work that the user did not request.
+
 Before commit readiness, this repository can validate an active run note with:
 
 ```powershell
@@ -162,8 +168,12 @@ promote repository trust.
 The user-level command policy prompt-gates npm/uv scripts and common project
 runners. It also avoids broad allows for external-execution paths such as
 `rg --pre` and `git diff --ext-diff`; unlisted commands retain the runtime and
-sandbox defaults. A trusted repository may add narrowly scoped project-local
-allow rules after its project config layer is trusted.
+sandbox defaults. Plain `rg` also remains prompt-gated at the user layer so the
+automatic reviewer can distinguish routine searches from `--pre` execution at
+runtime. Prompt rules are review boundaries, not manual-dialog requirements,
+and should not be replaced with broad allows solely to reduce approval friction.
+A trusted repository may add narrowly scoped project-local allow rules after
+its project config layer is trusted.
 
 ## Portability
 

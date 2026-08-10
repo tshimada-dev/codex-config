@@ -1,6 +1,7 @@
 # Conservative profile for inspection, review, and planning.
 
 approval_policy = "on-request"
+approvals_reviewer = "auto_review"
 sandbox_mode = "read-only"
 model_reasoning_effort = "medium"
 model_reasoning_summary = "auto"

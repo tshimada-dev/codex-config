@@ -36,6 +36,7 @@ foreach ($command in @(
     , @("uv", "run", "pytest")
     , @("uv", "run", "ruff", "check")
     , @("uv", "run", "mypy")
+    , @("rg", "workflow")
     , @("rg", "--pre", "pwsh", "workflow")
     , @("git", "diff", "--ext-diff")
     , @("git", "log", "-p", "--ext-diff")

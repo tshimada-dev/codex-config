@@ -2,7 +2,9 @@
 #
 # Keep this file conservative. Specific safe commands can be added as they become routine.
 # Add allow rules only for read-only commands. Repository-controlled build and test commands can
-# execute arbitrary code, so the user layer keeps them behind an explicit trust confirmation.
+# execute arbitrary code, so the user layer keeps them behind a review decision. The shared config
+# routes eligible prompt decisions to the automatic approvals reviewer; prompt must not be replaced
+# with allow merely to avoid a manual approval dialog.
 # A trusted repository may add narrower project-local allow rules after its config layer is trusted.
 # Package install, networked tools, publishing, deployment, migration, remote mutation, cost
 # incurring cloud operations, and destructive commands must remain prompt or forbidden.

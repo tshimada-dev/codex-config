@@ -1,6 +1,7 @@
 # Normal local development profile.
 
 approval_policy = "on-request"
+approvals_reviewer = "auto_review"
 sandbox_mode = "workspace-write"
 model_reasoning_effort = "medium"
 model_reasoning_summary = "auto"

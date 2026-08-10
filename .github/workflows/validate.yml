@@ -24,6 +24,7 @@ jobs:
             'scripts/install-copilot-skills.ps1',
             'scripts/install-copilot-guardrails.ps1',
             'scripts/check-ja-source-commits.ps1',
+            'scripts/test-auto-review-config.ps1',
             'scripts/test-command-policy.ps1',
             'scripts/test-copilot-skill-installer.ps1',
             'scripts/test-ja-source-metadata.ps1',
@@ -61,6 +62,10 @@ jobs:
       - name: Validate development workflow invariants
         shell: pwsh
         run: ./scripts/validate-development-workflow.ps1
+
+      - name: Validate auto-review configuration
+        shell: pwsh
+        run: ./scripts/test-auto-review-config.ps1
 
       - name: Validate run-note contract
         shell: pwsh
