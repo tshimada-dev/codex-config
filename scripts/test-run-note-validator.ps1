@@ -113,6 +113,9 @@ Keep a structurally valid run note.
 - None.
 '@
 
+$validNoteLf = $validNote -replace "`r`n", "`n"
+$validNoteCrLf = $validNoteLf -replace "`n", "`r`n"
+
 try {
     if (-not (Test-Path -LiteralPath $Validator -PathType Leaf)) {
         throw "Validator is missing: $Validator"
@@ -120,7 +123,8 @@ try {
 
     New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
 
-    Invoke-ValidatorCase -Name "valid" -Content $validNote -ShouldPass $true
+    Invoke-ValidatorCase -Name "valid-lf" -Content $validNoteLf -ShouldPass $true
+    Invoke-ValidatorCase -Name "valid-crlf" -Content $validNoteCrLf -ShouldPass $true
     Invoke-ValidatorCase -Name "invalid-phase" -Content ($validNote -replace 'Phase: `readiness`', 'Phase: `research`') -ShouldPass $false -ExpectedCode "RUN003"
     Invoke-ValidatorCase -Name "placeholder" -Content ($validNote -replace 'valid-note', '<task-name>') -ShouldPass $false -ExpectedCode "RUN004"
     Invoke-ValidatorCase -Name "escaped-newline" -Content ($validNote -replace '- Test: passed\.', '- Test: passed.\n\n- Build: passed.') -ShouldPass $false -ExpectedCode "RUN005"

@@ -66,7 +66,7 @@ if ($files.Count -eq 0) {
 
 $validated = 0
 foreach ($file in $files) {
-    $content = Get-Content -LiteralPath $file.FullName -Raw
+    $content = (Get-Content -LiteralPath $file.FullName -Raw).Replace("`r`n", "`n").Replace("`r", "`n")
     $relativePath = [System.IO.Path]::GetRelativePath($displayRoot, $file.FullName)
     if ($files.Count -eq 1) {
         $relativePath = $file.Name
