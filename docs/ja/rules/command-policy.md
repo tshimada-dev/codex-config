@@ -1,6 +1,6 @@
 ---
 source: rules/command-policy.rules
-source_blob: 1e61d727a5e17aa3af17d80845aafe3d5535f94d
+source_blob: e448a24f50db3bfe1b21e406cd17c0646d2fdc4d
 canonical: false
 ---
 
@@ -12,7 +12,7 @@ canonical: false
 
 このファイルは保守的に運用する。日常的に安全だと分かったコマンドだけ、具体的に許可する。
 
-allow rule を追加するのは、読み取り専用 command に限る。repository が定義する build/test command は任意コードを実行できるため、user layer では明示的な trust 確認を求める `prompt` にする。信頼済み repository では、その project config layer が trust された後に、より限定的な project-local allow rule を追加できる。package install、networked tools、publish、deploy、migration、remote mutation、cost-incurring cloud operations、破壊的 command は `prompt` または `forbidden` のままにする。
+allow rule を追加するのは、読み取り専用 command に限る。repository が定義する build/test command は任意コードを実行できるため、user layer では review decision を必要とする `prompt` にする。共有 config は、対象となる prompt decision を automatic approvals reviewer に送る。手動 approval dialog を避けるためだけに `prompt` を `allow` へ置き換えてはならない。信頼済み repository では、その project config layer が trust された後に、より限定的な project-local allow rule を追加できる。package install、networked tools、publish、deploy、migration、remote mutation、cost-incurring cloud operations、破壊的 command は `prompt` または `forbidden` のままにする。
 
 ## allow
 
