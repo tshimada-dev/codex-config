@@ -22,11 +22,11 @@ from typing import Any
 
 
 STATE_TABLES = {
-    "threads": {"id", "rollout_path", "updated_at_ms", "archived"},
+    "threads": {"id", "rollout_path", "updated_at_ms", "archived", "cwd"},
     "thread_spawn_edges": {"parent_thread_id", "child_thread_id"},
-    "agent_job_items": {"assigned_thread_id"},
     "thread_dynamic_tools": {"thread_id"},
 }
+OPTIONAL_STATE_TABLES = {"agent_job_items": {"assigned_thread_id"}}
 LOG_TABLES = {"logs": {"id"}}
 MIB = 1024 * 1024
 MIN_VACUUM_RECLAIM_BYTES = 64 * MIB
@@ -67,13 +67,24 @@ def is_within(path: Path, roots: list[Path]) -> bool:
     return any(resolved == root or root in resolved.parents for root in roots)
 
 
+def normalize_project_cwd(value: str) -> str:
+    normalized = value.strip()
+    if normalized.startswith("\\\\?\\"):
+        normalized = normalized[4:]
+    return os.path.normcase(os.path.normpath(normalized))
+
+
 def connect_readonly(path: Path) -> sqlite3.Connection:
     return sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=5)
 
 
+def table_columns(connection: sqlite3.Connection, table: str) -> set[str]:
+    return {str(row[1]) for row in connection.execute(f'PRAGMA table_info("{table}")')}
+
+
 def require_tables(connection: sqlite3.Connection, requirements: dict[str, set[str]], label: str) -> None:
     for table, required_columns in requirements.items():
-        columns = {str(row[1]) for row in connection.execute(f'PRAGMA table_info("{table}")')}
+        columns = table_columns(connection, table)
         if not columns:
             raise RuntimeError(f"{label} is missing required table: {table}")
         missing = required_columns - columns
@@ -99,6 +110,12 @@ def validate_database(path: Path, requirements: dict[str, set[str]], label: str)
 
 def validate_runtime_state(root: Path) -> None:
     validate_database(root / "state_5.sqlite", STATE_TABLES, "state_5.sqlite")
+    state_connection = connect_readonly(root / "state_5.sqlite")
+    try:
+        if table_columns(state_connection, "agent_job_items"):
+            require_tables(state_connection, OPTIONAL_STATE_TABLES, "state_5.sqlite")
+    finally:
+        state_connection.close()
     validate_database(root / "logs_2.sqlite", LOG_TABLES, "logs_2.sqlite")
     index_path = root / "session_index.jsonl"
     if index_path.exists() and not index_path.is_file():
@@ -118,10 +135,21 @@ def validate_output_dir(root: Path, output_dir: Path, *, must_not_exist: bool) -
     return output
 
 
-def build_plan(root: Path, cutoff: datetime) -> dict[str, Any]:
+def build_plan(
+    root: Path,
+    cutoff: datetime,
+    project_cwds: list[str] | None = None,
+) -> dict[str, Any]:
     root = root.resolve()
     if cutoff.tzinfo is None:
         raise ValueError("cutoff must include a timezone")
+    selected_project_cwds = sorted(
+        {
+            normalize_project_cwd(str(value))
+            for value in (project_cwds or [])
+            if str(value).strip()
+        }
+    )
     allowed_roots = [(root / "sessions").resolve(), (root / "archived_sessions").resolve()]
     state_path = root / "state_5.sqlite"
     if not state_path.is_file():
@@ -132,15 +160,25 @@ def build_plan(root: Path, cutoff: datetime) -> dict[str, Any]:
     connection = connect_readonly(state_path)
     connection.row_factory = sqlite3.Row
     try:
-        require_tables(connection, {key: STATE_TABLES[key] for key in ("threads", "thread_spawn_edges", "agent_job_items")}, "state_5.sqlite")
-        rows = list(connection.execute("SELECT id, rollout_path, updated_at_ms, archived FROM threads"))
+        require_tables(
+            connection,
+            {key: STATE_TABLES[key] for key in ("threads", "thread_spawn_edges")},
+            "state_5.sqlite",
+        )
+        rows = list(connection.execute("SELECT id, rollout_path, updated_at_ms, archived, cwd FROM threads"))
         edges = [tuple(row) for row in connection.execute("SELECT parent_thread_id, child_thread_id FROM thread_spawn_edges")]
-        job_refs = {
-            str(row[0])
-            for row in connection.execute(
-                "SELECT assigned_thread_id FROM agent_job_items WHERE assigned_thread_id IS NOT NULL"
-            )
-        }
+        if table_columns(connection, "agent_job_items"):
+            require_tables(connection, OPTIONAL_STATE_TABLES, "state_5.sqlite")
+            agent_job_reference_source = "agent_job_items"
+            job_refs = {
+                str(row[0])
+                for row in connection.execute(
+                    "SELECT assigned_thread_id FROM agent_job_items WHERE assigned_thread_id IS NOT NULL"
+                )
+            }
+        else:
+            agent_job_reference_source = "absent"
+            job_refs = set()
     finally:
         connection.close()
 
@@ -196,6 +234,35 @@ def build_plan(root: Path, cutoff: datetime) -> dict[str, Any]:
                 queue.append(neighbor)
 
     candidate_ids = base_candidates - connected_protected
+    project_by_id: dict[str, str] = {}
+    latest_update_by_project: dict[str, int] = {}
+    for row in rows:
+        raw_cwd = row["cwd"]
+        updated_at_ms = row["updated_at_ms"]
+        if not raw_cwd or updated_at_ms is None:
+            continue
+        project_cwd = normalize_project_cwd(str(raw_cwd))
+        if not project_cwd:
+            continue
+        thread_id = str(row["id"])
+        updated_at = int(updated_at_ms)
+        project_by_id[thread_id] = project_cwd
+        latest_update_by_project[project_cwd] = max(
+            updated_at,
+            latest_update_by_project.get(project_cwd, updated_at),
+        )
+    latest_project_thread_ids = {
+        thread_id
+        for thread_id, project_cwd in project_by_id.items()
+        if int(row_by_id[thread_id]["updated_at_ms"]) == latest_update_by_project[project_cwd]
+    }
+    if selected_project_cwds:
+        selected_projects = set(selected_project_cwds)
+        candidate_ids = {
+            thread_id
+            for thread_id in candidate_ids
+            if project_by_id.get(thread_id) in selected_projects
+        }
     candidates: list[dict[str, Any]] = []
     seen_paths: set[str] = set()
     for thread_id in sorted(candidate_ids):
@@ -214,8 +281,14 @@ def build_plan(root: Path, cutoff: datetime) -> dict[str, Any]:
                 "file_mtime_utc": datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
                 "db_updated_at_ms": int(row["updated_at_ms"]),
                 "archived": bool(row["archived"]),
+                "project_cwd": project_by_id.get(thread_id),
+                "is_latest_for_project": thread_id in latest_project_thread_ids,
             }
         )
+
+    latest_project_session_candidates = [
+        item for item in candidates if item["is_latest_for_project"]
+    ]
 
     all_files: dict[str, Path] = {}
     for allowed_root in allowed_roots:
@@ -236,8 +309,13 @@ def build_plan(root: Path, cutoff: datetime) -> dict[str, Any]:
             "thread_rows": len(rows),
             "base_candidates": len(base_candidates),
             "protected_by_connected_work": len(base_candidates & connected_protected),
+            "agent_job_references": len(job_refs),
             "final_candidates": len(candidates),
             "candidate_bytes": sum(item["size_bytes"] for item in candidates),
+            "latest_project_session_candidates": len(latest_project_session_candidates),
+            "latest_project_session_candidate_bytes": sum(
+                item["size_bytes"] for item in latest_project_session_candidates
+            ),
             "protected_thread_rows": len(rows) - len(candidates),
             "unmapped_files_preserved": len(unmapped_files),
             "unmapped_old_files_preserved": sum(path.stat().st_mtime < cutoff_s for path in unmapped_files),
@@ -249,22 +327,35 @@ def build_plan(root: Path, cutoff: datetime) -> dict[str, Any]:
         "generated_at_utc": utc_now(),
         "root": str(root),
         "cutoff": cutoff.isoformat(),
+        "selection": {"project_cwds": selected_project_cwds},
         "policy": {
             "requires_file_mtime_before_cutoff": True,
             "requires_db_updated_at_before_cutoff": True,
             "protects_connected_spawn_tree": True,
-            "protects_agent_job_references": True,
+            "protects_agent_job_references": agent_job_reference_source == "agent_job_items",
+            "agent_job_reference_source": agent_job_reference_source,
             "preserves_unmapped_files": True,
+            "identifies_latest_session_candidate_per_project": True,
         },
         "stats": dict(stats),
         "candidates": candidates,
+        "latest_project_session_candidates": latest_project_session_candidates,
     }
 
 
 def candidate_identity(item: dict[str, Any]) -> tuple[Any, ...]:
     return tuple(
         item.get(key)
-        for key in ("id", "relative_path", "size_bytes", "file_mtime_utc", "db_updated_at_ms", "archived")
+        for key in (
+            "id",
+            "relative_path",
+            "size_bytes",
+            "file_mtime_utc",
+            "db_updated_at_ms",
+            "archived",
+            "project_cwd",
+            "is_latest_for_project",
+        )
     )
 
 
@@ -276,6 +367,9 @@ def validate_baseline(baseline: dict[str, Any], plan: dict[str, Any], root: Path
     baseline_cutoff = datetime.fromisoformat(str(baseline.get("cutoff", "")))
     if baseline_cutoff.tzinfo is None or baseline_cutoff.timestamp() != cutoff.timestamp():
         raise RuntimeError("baseline cutoff does not match the execution cutoff")
+    baseline_selection = baseline.get("selection", {"project_cwds": []})
+    if baseline_selection != plan["selection"]:
+        raise RuntimeError("baseline project selection does not match the execution plan")
     baseline_items = {str(item["id"]): item for item in baseline.get("candidates", [])}
     if len(baseline_items) != len(baseline.get("candidates", [])):
         raise RuntimeError("baseline contains duplicate candidate IDs")
@@ -446,8 +540,12 @@ def execute_cleanup(root: Path, cutoff: datetime, output_dir: Path, baseline_pat
     if not baseline_path.is_file():
         raise FileNotFoundError(baseline_path)
     validate_runtime_state(root)
-    plan = build_plan(root, cutoff)
     baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    baseline_selection = baseline.get("selection", {"project_cwds": []})
+    project_cwds = baseline_selection.get("project_cwds", []) if isinstance(baseline_selection, dict) else None
+    if not isinstance(project_cwds, list) or not all(isinstance(item, str) for item in project_cwds):
+        raise RuntimeError("baseline project selection is invalid")
+    plan = build_plan(root, cutoff, project_cwds)
     baseline_ids = validate_baseline(baseline, plan, root, cutoff)
     database_reclaim = database_reclaim_snapshot(root)
     if should_skip_cleanup(plan, database_reclaim):
@@ -536,9 +634,13 @@ def execute_cleanup(root: Path, cutoff: datetime, output_dir: Path, baseline_pat
             connection.execute("BEGIN IMMEDIATE")
             connection.execute("CREATE TEMP TABLE cleanup_candidate_ids (id TEXT PRIMARY KEY)")
             connection.executemany("INSERT INTO cleanup_candidate_ids(id) VALUES (?)", [(item,) for item in candidate_ids])
-            active_job_refs = connection.execute(
-                "SELECT COUNT(*) FROM agent_job_items WHERE assigned_thread_id IN (SELECT id FROM cleanup_candidate_ids)"
-            ).fetchone()[0]
+            active_job_refs = 0
+            if table_columns(connection, "agent_job_items"):
+                require_tables(connection, OPTIONAL_STATE_TABLES, "state_5.sqlite")
+                active_job_refs = connection.execute(
+                    "SELECT COUNT(*) FROM agent_job_items "
+                    "WHERE assigned_thread_id IN (SELECT id FROM cleanup_candidate_ids)"
+                ).fetchone()[0]
             if active_job_refs:
                 raise RuntimeError("a cleanup candidate became referenced by an agent job")
             connection.execute(
@@ -656,6 +758,7 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=Path.home() / ".codex")
     parser.add_argument("--cutoff", type=parse_cutoff)
     parser.add_argument("--plan-output", type=Path)
+    parser.add_argument("--project-cwd", action="append")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--execute", action="store_true")
     mode.add_argument("--purge-quarantine", action="store_true")
@@ -681,7 +784,7 @@ def main() -> int:
     if args.cutoff is None:
         parser.error("--cutoff is required for planning and execution")
     if not args.execute:
-        plan = build_plan(args.root, args.cutoff)
+        plan = build_plan(args.root, args.cutoff, args.project_cwd)
         if args.plan_output:
             write_json(args.plan_output, plan)
         print(

@@ -14,8 +14,10 @@ Use aggregate metadata only. Never read transcript contents, `auth.json`, secret
 - Fix one timezone-aware cutoff before shutdown. Do not let the retention window drift while waiting for the app to exit.
 - Remove a thread only when both its transcript mtime and `threads.updated_at_ms` predate the cutoff.
 - Protect the complete parent/child spawn component of any recent, missing, outside-root, unknown-timestamp, or job-referenced thread.
+- Treat `agent_job_items` as an optional schema-generation table: when present, require `assigned_thread_id` and protect every referenced thread; when the table is wholly absent, record that reference source as unavailable and continue using the spawn graph. Never accept a present but incompatible table.
 - Preserve transcript files without matching DB evidence.
 - Require every execution candidate's ID, path, size, file mtime, DB timestamp, and archive state to match the approved baseline. Abort if new or materially changed candidates appear.
+- Identify the latest session for each normalized project working directory. If any execution candidate is the latest session for its project, disclose the project, thread ID, last update time, and size, then require explicit deletion approval that specifically includes those sessions before execution. General retention-cleanup approval given before this disclosure is insufficient.
 - Stop Codex desktop processes before mutation. Never edit live SQLite state.
 - Require every output directory to be a unique child of `CODEX_HOME/backups`.
 - Validate all required state/log tables, columns, integrity, and foreign keys before creating the execution output or moving a transcript.
@@ -50,15 +52,18 @@ Reuse the exact `cutoff` from `inventory.json`:
 python scripts/cleanup_stale_codex_sessions.py --root "$CodexHome" --cutoff "$Cutoff" --plan-output "$BaselinePlan"
 ```
 
+For a user-approved project-only cleanup, add one `--project-cwd <absolute-project-path>` argument per approved project. Confirm that `selection.project_cwds` contains only the normalized approved paths. Execution reloads this selection from the baseline and refuses a mismatch; never hand-edit candidates to create a subset.
+
 Check that:
 
 - `cross_boundary_edges` is zero;
+- `latest_project_session_candidates` lists every candidate that is the latest session for its normalized project working directory;
 - candidates have both old file and DB timestamps;
 - recent or connected work is counted as protected;
 - unmapped files are preserved;
 - candidate count and bytes match what will be presented to the user.
 
-Present the cutoff, permanent-deletion count, estimated transcript recovery, log compaction estimate, temporary backup/quarantine space, and the two-stage purge behavior. If the user has not already authorized deletion, stop and ask for explicit approval.
+Present the cutoff, permanent-deletion count, estimated transcript recovery, log compaction estimate, temporary backup/quarantine space, and the two-stage purge behavior. If `latest_project_session_candidates` is non-empty, also present each candidate's project, thread ID, last update time, and size, explicitly state that it is the last-used session for that project, and stop for deletion approval that specifically includes those sessions. Otherwise, if the user has not already authorized deletion, stop and ask for explicit approval.
 
 If execution returns `status: no-op`, no output directory or backup was created. Report that retention cleanup is already in a steady state; do not force VACUUM or lower the safety thresholds merely to produce a change.
 
@@ -116,7 +121,7 @@ The purger removes only the exact planned quarantine files when their paths and 
 
 ## Failure handling
 
-- If planning or preflight fails on missing tables, columns, integrity, or foreign keys, stop. Do not patch the DB ad hoc.
+- If planning or preflight fails on required tables, columns, integrity, or foreign keys, stop. The only supported missing table is the explicitly optional `agent_job_items` table described above. Do not patch the DB ad hoc.
 - If free-space preflight fails, report required and available bytes and stop before mutation. Do not bypass the check; free space must be created outside this skill's protected scope first.
 - If the waiter reports failure, inspect its status, runner log, `FAILED.json`, backup, and quarantine. Do not start a second run with the same output directory.
 - If failure occurs before metadata commit, the cleaner restores moved transcripts and the index automatically.

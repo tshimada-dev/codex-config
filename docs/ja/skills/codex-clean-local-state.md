@@ -1,6 +1,6 @@
 ---
 source: skills/codex-clean-local-state/SKILL.md
-source_blob: 576e90b503b4722cb89a254b60b38907fc99592b
+source_blob: 799933484592fda2d4436663b2a27ac55b487007
 canonical: false
 ---
 
@@ -19,8 +19,10 @@ canonical: false
 - shutdown前にtimezone付きcutoffを1つ固定し、app終了待ちの間にretention windowを動かさない。
 - transcript mtimeと`threads.updated_at_ms`の両方がcutoffより古いthreadだけを候補にする。
 - recent、missing、root外、timestamp不明、job参照中のthreadが含まれるparent/child spawn component全体を保護する。
+- `agent_job_items`をschema generationによっては存在しないoptional tableとして扱う。存在する場合は`assigned_thread_id`を必須とし、参照されるthreadをすべて保護する。table全体が存在しない場合だけreference sourceをunavailableとして記録し、spawn graphによる保護を継続する。存在するが非互換なtableは受け入れない。
 - DB evidenceと対応しないtranscript fileは保持する。
 - 実行候補のID、path、size、file mtime、DB timestamp、archive stateを承認済みbaselineと一致させる。新規候補や実質的に変化した候補があれば停止する。
+- normalized project working directoryごとに最新sessionを特定する。execution candidateにそのprojectの最新sessionが含まれる場合は、project、thread ID、最終更新時刻、sizeを明示し、そのsessionを含む明示的な削除承認を得るまで実行しない。この開示より前に得た一般的なretention cleanup承認だけでは不十分とする。
 - mutation前にCodex Desktop processを停止し、live SQLiteを編集しない。
 - output directoryは`CODEX_HOME/backups`直下の一意なchildに限定する。
 - output作成やtranscript移動より前に、state/log DBの必須table・column・integrity・foreign keyを検証する。
@@ -55,15 +57,18 @@ python scripts/inspect_codex_state.py --root "$CodexHome" --days 14 --output "$A
 python scripts/cleanup_stale_codex_sessions.py --root "$CodexHome" --cutoff "$Cutoff" --plan-output "$BaselinePlan"
 ```
 
+userが承認したprojectだけをcleanupする場合は、承認済みprojectごとに`--project-cwd <absolute-project-path>`を1つ追加する。`selection.project_cwds`に正規化済みの承認済みpathだけが含まれることを確認する。executionはこのselectionをbaselineから再読込して不一致を拒否する。subsetを作る目的でcandidateを手編集しない。
+
 次を確認する。
 
 - `cross_boundary_edges`が0
+- `latest_project_session_candidates`に、normalized project working directoryごとの最新sessionであるcandidateがすべて列挙される
 - candidateのfile timestampとDB timestampが両方old
 - recentまたはconnected workがprotectedとして数えられている
 - unmapped fileが保持される
 - candidate数とbytesがuserに提示する内容と一致する
 
-cutoff、永久削除数、transcript回収見積もり、log compaction見積もり、一時backup/quarantine容量、二段階purgeを説明する。削除承認をまだ得ていなければ停止し、明示承認を求める。
+cutoff、永久削除数、transcript回収見積もり、log compaction見積もり、一時backup/quarantine容量、二段階purgeを説明する。`latest_project_session_candidates`が空でなければ、各candidateのproject、thread ID、最終更新時刻、sizeを示し、そのprojectで最後に使用されたsessionであることを明言する。そのsessionを明示的に含む削除承認を得るまで停止する。それ以外で削除承認をまだ得ていなければ、停止して明示承認を求める。
 
 実行結果が`status: no-op`の場合、output directoryとbackupは作成されていない。retention cleanupが定常状態にあると報告し、変更を発生させる目的でVACUUMや安全閾値の引き下げを強制しない。
 
@@ -119,7 +124,7 @@ purgerはpathとsizeが一致するexact planned quarantine fileだけを削除�
 
 ## Failure handling
 
-- planning/preflightがtable、column、integrity、foreign keyの不足で失敗したら停止する。DBをその場しのぎでpatchしない。
+- planning/preflightが必須table、column、integrity、foreign keyの不足で失敗したら停止する。欠落を許容するtableは、上記で明示したoptionalな`agent_job_items`だけとする。DBをその場しのぎでpatchしない。
 - 空き容量preflightが失敗した場合はrequired bytesとavailable bytesを報告し、mutation前に停止する。この検査を迂回せず、skillの保護範囲外で先に空き容量を確保する。
 - waiter失敗時はstatus、runner log、`FAILED.json`、backup、quarantineを確認する。同じoutput directoryで2回目を開始しない。
 - metadata commit前の失敗では、moved transcriptとindexを自動復元する。

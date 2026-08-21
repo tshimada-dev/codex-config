@@ -39,7 +39,8 @@ class CleanupStaleCodexSessionsTest(unittest.TestCase):
                 id TEXT PRIMARY KEY,
                 rollout_path TEXT NOT NULL,
                 updated_at_ms INTEGER,
-                archived INTEGER NOT NULL DEFAULT 0
+                archived INTEGER NOT NULL DEFAULT 0,
+                cwd TEXT
             );
             CREATE TABLE thread_dynamic_tools (
                 thread_id TEXT NOT NULL,
@@ -122,6 +123,90 @@ class CleanupStaleCodexSessionsTest(unittest.TestCase):
         plan = cleanup.build_plan(self.root, self.cutoff)
         self.assertEqual([], [item["id"] for item in plan["candidates"]])
         self.assertEqual(0, plan["stats"]["cross_boundary_edges"])
+
+    def test_plan_marks_latest_session_candidate_for_each_project(self):
+        earlier_path = self.sessions / "rollout-old-earlier-same-project.jsonl"
+        earlier_path.write_text("{}\n", encoding="utf-8")
+        os.utime(earlier_path, (self.old_s - 3600, self.old_s - 3600))
+        connection = sqlite3.connect(self.root / "state_5.sqlite")
+        connection.execute(
+            "UPDATE threads SET cwd = ? WHERE id = 'old-isolated'",
+            (r"C:\Projects\example",),
+        )
+        connection.execute(
+            "INSERT INTO threads(id, rollout_path, updated_at_ms, cwd) VALUES (?, ?, ?, ?)",
+            (
+                "old-earlier-same-project",
+                str(earlier_path),
+                self.old_ms - 3600 * 1000,
+                r"\\?\C:\Projects\example",
+            ),
+        )
+        connection.commit()
+        connection.close()
+
+        plan = cleanup.build_plan(self.root, self.cutoff)
+        candidates = {item["id"]: item for item in plan["candidates"]}
+
+        self.assertTrue(candidates["old-isolated"]["is_latest_for_project"])
+        self.assertFalse(candidates["old-earlier-same-project"]["is_latest_for_project"])
+        self.assertEqual(r"c:\projects\example", candidates["old-isolated"]["project_cwd"])
+        self.assertEqual(1, plan["stats"]["latest_project_session_candidates"])
+        self.assertEqual(
+            ["old-isolated"],
+            [item["id"] for item in plan["latest_project_session_candidates"]],
+        )
+
+    def test_plan_accepts_schema_without_agent_job_items(self):
+        connection = sqlite3.connect(self.root / "state_5.sqlite")
+        connection.execute("DROP TABLE agent_job_items")
+        connection.commit()
+        connection.close()
+
+        plan = cleanup.build_plan(self.root, self.cutoff)
+
+        self.assertEqual("absent", plan["policy"]["agent_job_reference_source"])
+        self.assertEqual(0, plan["stats"]["agent_job_references"])
+        self.assertEqual(["old-isolated"], [item["id"] for item in plan["candidates"]])
+
+    def test_execute_accepts_schema_without_agent_job_items(self):
+        connection = sqlite3.connect(self.root / "state_5.sqlite")
+        connection.execute("DROP TABLE agent_job_items")
+        connection.commit()
+        connection.close()
+
+        output, result = self._execute("without-agent-job-items")
+
+        self.assertEqual("success", result["status"])
+        self.assertEqual(1, result["removed_thread_rows"])
+        self.assertTrue((output / "backup" / "state_5.sqlite").exists())
+
+    def test_project_filter_limits_plan_and_execution(self):
+        other_path = self.sessions / "rollout-old-other-project.jsonl"
+        other_path.write_text("{}\n", encoding="utf-8")
+        os.utime(other_path, (self.old_s, self.old_s))
+        connection = sqlite3.connect(self.root / "state_5.sqlite")
+        connection.execute(
+            "UPDATE threads SET cwd = ? WHERE id = 'old-isolated'",
+            (r"C:\Projects\quote",),
+        )
+        connection.execute(
+            "INSERT INTO threads(id, rollout_path, updated_at_ms, cwd) VALUES (?, ?, ?, ?)",
+            ("old-other-project", str(other_path), self.old_ms, r"C:\Projects\other"),
+        )
+        connection.commit()
+        connection.close()
+
+        baseline = self.root / "audit" / "quote-only-plan.json"
+        plan = cleanup.build_plan(self.root, self.cutoff, [r"\\?\C:\Projects\quote"])
+        cleanup.write_json(baseline, plan)
+        output = self.root / "backups" / "quote-only"
+        result = cleanup.execute_cleanup(self.root, self.cutoff, output, baseline)
+
+        self.assertEqual([r"c:\projects\quote"], plan["selection"]["project_cwds"])
+        self.assertEqual(["old-isolated"], [item["id"] for item in plan["candidates"]])
+        self.assertEqual(1, result["removed_thread_rows"])
+        self.assertTrue(other_path.exists())
 
     def test_execute_retains_quarantine_backs_up_both_databases_and_purges_after_verification(self):
         output, result = self._execute()
