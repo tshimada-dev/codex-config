@@ -42,6 +42,28 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
                 self.assertIn(marker, self.content)
         self.assertIn("Send `STOP` to every active agent", self.content)
 
+    def test_uses_parent_observable_phase_deadlines(self) -> None:
+        for marker in (
+            "DEBATE_START",
+            "DEBATE_DEADLINE",
+            "RESOLUTION_START",
+            "RESOLUTION_DEADLINE",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.content)
+
+        self.assertIn("max(4 minutes, camp count * round count * 1 minute)", self.content)
+        self.assertIn("max(3 minutes, camp count * 1 minute)", self.content)
+        self.assertIn("successfully sent `START` to the opener", self.content)
+        self.assertIn(
+            "successfully sent the identical `RESOLUTION_REQUEST` to every active camp",
+            self.content,
+        )
+        self.assertIn("3 camps * 3 rounds = 9 debate minutes + 3 resolution minutes", self.content)
+        self.assertIn("3 camps * 5 rounds = 15 debate minutes + 3 resolution minutes", self.content)
+        self.assertNotIn("Use 4 minutes, 3 rounds", self.content)
+        self.assertNotIn("Use 12 minutes, 5 rounds", self.content)
+
 
 if __name__ == "__main__":
     unittest.main()

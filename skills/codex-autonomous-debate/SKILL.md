@@ -11,8 +11,12 @@ Run a direct adversarial discussion among evidence-grounded positions. Treat the
 
 - State one proposition that can be affirmed, rejected, or answered by a concrete policy choice.
 - Select two to four materially distinct camps. Use the real-world camps that shape an existing dispute instead of inventing two generic personas.
-- Use 4 minutes, 3 rounds per camp, and roughly 300 characters per statement for a light debate.
-- Use 12 minutes, 5 rounds per camp, and roughly 500 characters per statement for a deep debate.
+- Use 3 rounds per camp and roughly 300 characters per statement for a light debate.
+- Use 5 rounds per camp and roughly 500 characters per statement for a deep debate.
+- Calculate the debate budget as `max(4 minutes, camp count * round count * 1 minute)`.
+- Calculate the resolution budget as `max(3 minutes, camp count * 1 minute)`.
+- For example, 3 camps * 3 rounds = 9 debate minutes + 3 resolution minutes; 3 camps * 5 rounds = 15 debate minutes + 3 resolution minutes.
+- Keep two independent deadlines: `DEBATE_DEADLINE` is measured from `DEBATE_START`, while `RESOLUTION_DEADLINE` is measured from the later `RESOLUTION_START`. Never deduct debate overrun or unused debate time from the resolution budget.
 - Require a participant-owned result by default: `FINAL_CONSENSUS`, `FINAL_WINNER`, or `DEADLOCK`.
 - Do not use majority vote. Several agents using the same model are not independent evidence, and an outvoted position may still contain the decisive objection.
 - Let the parent judge only when the user explicitly requests it or when a deadline expires and the user requires a winner.
@@ -42,7 +46,7 @@ Give every participant:
 
 - the proposition, evidence mode, identical fact packet, and complete camp map;
 - its assigned camp, decision criterion, burden, and concessions it may make without abandoning the position;
-- every canonical participant name, a fixed speaking order, its successor, the round limit, and the deadline;
+- every canonical participant name, a fixed speaking order, its successor, the round limit, both phase budgets, and the parent-owned deadline rules;
 - the argument rules and terminal protocol below.
 
 Require each participant to:
@@ -56,7 +60,9 @@ Require each participant to:
 7. Obey `PAUSE`, `RESUME`, `CORRECT`, and `STOP` from the parent.
 8. Count only substantive debate statements, not readiness, intervention, or resolution messages.
 
-Spawn in reverse speaking order so the opener is spawned last. After every camp is ready, trigger only the opener with `followup_task` and `START`. The ring then advances without the parent relaying arguments. The final speaker in the final round sends `RESOLUTION_READY` to the parent with `send_message` and does not trigger another camp.
+Spawn in reverse speaking order so the opener is spawned last. Wait until the parent has received every expected `READY_<CAMP>`. Trigger only the opener with `followup_task` and `START`. Define `DEBATE_START` as the parent-observed time when the parent has successfully sent `START` to the opener; internal participant reasoning is not observable and must not be used as the start time. If delivery fails, follow the delivery-failure rule and do not start the clock until a retry succeeds.
+
+Set `DEBATE_DEADLINE = DEBATE_START + debate budget`. Immediately send the resulting timestamp to every active camp as `DEBATE_DEADLINE: <timestamp>` without triggering a new turn. The ring then advances without the parent relaying arguments. The final speaker in the final round sends `RESOLUTION_READY` to the parent with `send_message` and does not trigger another camp.
 
 ## Enforce argument quality
 
@@ -72,7 +78,9 @@ Give every camp these rules:
 
 ## Resolve without a vote
 
-Do not ask the opener to draft or circulate the resolution. After `RESOLUTION_READY`, have the parent send the identical `RESOLUTION_REQUEST` to every active camp with `followup_task`.
+Do not ask the opener to draft or circulate the resolution. After `RESOLUTION_READY`, have the parent send the identical `RESOLUTION_REQUEST` to every active camp with `followup_task`. If `DEBATE_DEADLINE` arrives first, close the debate, disregard later substantive statements, and send the same resolution request using only the valid transcript instead of skipping resolution.
+
+Define `RESOLUTION_START` as the parent-observed time when the parent has successfully sent the identical `RESOLUTION_REQUEST` to every active camp. If any delivery fails, follow the delivery-failure rule and do not start the resolution clock unless the complete request set is delivered. Set `RESOLUTION_DEADLINE = RESOLUTION_START + resolution budget`, then send the resulting timestamp to every active camp without triggering another turn. The resolution budget covers candidate submission, equivalence comparison or candidate circulation, and final acceptance; do not spend it on the debate phase.
 
 Require every camp to submit independently and privately to the parent before seeing any other resolution candidate. Use this structure:
 
@@ -89,7 +97,7 @@ RATIONALE:
 - <reason>
 ```
 
-Do not put the submitting camp's identity in the candidate text; the parent records provenance privately from the message sender. The parent withholds all candidates until every active camp has submitted or the resolution deadline expires. Do not merge, rewrite, or synthesize candidate text.
+Do not put the submitting camp's identity in the candidate text; the parent records provenance privately from the message sender. The parent withholds all candidates until every active camp has submitted or `RESOLUTION_DEADLINE` expires. Do not merge, rewrite, or synthesize candidate text.
 
 Treat candidates as equivalent only when they have the same `OUTCOME`, the same `WINNER`, the same operative `DECISION`, and the same material `AGREED_POINTS` and `UNRESOLVED_OBJECTIONS`. Ignore only wording, ordering, and other non-substantive differences. When equivalence is uncertain, classify the candidates as different rather than resolving the ambiguity by judgment.
 
@@ -97,13 +105,13 @@ If every candidate is equivalent, send every camp an `EQUIVALENCE_CHECK` contain
 
 If candidates differ, assign neutral candidate IDs without camp attribution. Order them by a deterministic content-derived key, never by speaking or submission order, and send every unchanged candidate to every camp in that same order. Each camp returns `ACCEPT <CANDIDATE_ID>` or `REJECT_ALL` without further substantive argument. Declare `FINAL_CONSENSUS` or `FINAL_WINNER` only when every active camp accepts the same candidate. A winner requires every other camp to accept the candidate naming that winner. Otherwise declare `DEADLOCK`; the parent may report only fields that are identical across all candidates as common ground.
 
-If an active camp does not submit a candidate before the resolution deadline, report `INCOMPLETE` rather than inferring its position.
+If an active camp does not submit a candidate or required confirmation before `RESOLUTION_DEADLINE`, report `INCOMPLETE` rather than inferring its position. If every required response arrived but the camps did not unanimously accept an equivalent or identical candidate, report `DEADLOCK`.
 
 Send `STOP` to every active agent after the terminal state is valid. Disregard later substantive statements.
 
 ## Observe without moderating
 
-Use `wait_agent` in intervals no longer than 60 seconds and track the deadline independently. Inspect the copies sent to the parent, but do not praise, summarize, steer, relay, or answer valid arguments during the debate. Brief user updates may report the current fault line without influencing participants.
+Use `wait_agent` in intervals no longer than 60 seconds and track `DEBATE_DEADLINE` and `RESOLUTION_DEADLINE` independently from their recorded parent-observed start times. Inspect the copies sent to the parent, but do not praise, summarize, steer, relay, or answer valid arguments during the debate. Brief user updates may report the current fault line without influencing participants.
 
 Intervene only when a specific factual assertion violates the evidence mode, the exchange leaves the proposition, a camp misrepresents another after correction is possible, a camp abandons its assigned position before the minimum, or the protocol becomes hostile, repetitive, unsafe, or invalid.
 
@@ -120,7 +128,8 @@ When intervention is required:
 - On user cancellation, send `STOP` immediately to every active agent and report that no result was reached.
 - On agent failure before its first substantive statement, allow one fresh replacement with the identical packet, camp assignment, and valid transcript. Do not replace a camp after it has materially shaped the debate; stop and report an incomplete debate instead.
 - On message-delivery failure, retry the exact delivery once. If it still fails, send `STOP` to every reachable agent and report the missing delivery rather than simulating the absent camp.
-- On deadline expiry, send `STOP` to every active agent and ignore later statements. Collect concise final positions when possible. Return `DEADLOCK` unless the user required a winner; in that case judge only the valid transcript.
+- On `DEBATE_DEADLINE`, close only the substantive debate, ignore later arguments, and begin the full resolution phase from a fresh `RESOLUTION_START`. Do not send `STOP` merely because debate time expired.
+- On `RESOLUTION_DEADLINE`, send `STOP` to every active agent and ignore later messages. Return `INCOMPLETE` when a required candidate or confirmation is missing, otherwise return `DEADLOCK` unless the user required a winner; in that case judge only the valid transcript.
 
 When parental judging is authorized, give equal weight to fidelity to the assigned burden, engagement with the strongest opposing case, internal consistency, evidence discipline, feasibility, consequences, and failure-mode handling. Do not substitute the parent's preferred policy for the rubric.
 
@@ -129,6 +138,7 @@ When parental judging is authorized, give equal weight to fidelity to the assign
 Lead with `FINAL_CONSENSUS`, `FINAL_WINNER`, `DEADLOCK`, `INCOMPLETE`, or parental timeout judgment. Then report:
 
 - the proposition, selected and omitted camps, rounds, and evidence mode;
+- `DEBATE_START`, `DEBATE_DEADLINE`, `RESOLUTION_START`, `RESOLUTION_DEADLINE`, and whether either phase timed out;
 - the resolution candidates, equivalence comparison, and confirmations;
 - the decisive argument and strongest unresolved objection;
 - every parent intervention or failure, or state that none occurred;
