@@ -6,6 +6,17 @@
 - For work that may take more than 30 minutes, spans multiple subsystems, fixes CI, or may be interrupted, also follow `$HOME\.codex\rules\long-running-workflow.md` and maintain one active run note from `$HOME\.codex\templates\agent-run.md`.
 - Use the research, implementation, and CI checklists linked below for phase-specific prompts; the development workflow remains the authority when wording overlaps.
 
+## Subagent Delegation
+
+- When subagent delegation is otherwise authorized, do not assume automatic difficulty-based model routing.
+- Use `fork_turns="none"` for bounded workers unless recent conversation context is essential.
+- For read-only discovery, extraction, and mechanical checks, prefer `model="gpt-5.6-luna"` with `reasoning_effort="low"`.
+- For analysis, review, estimation, and bounded implementation, prefer `model="gpt-5.6-terra"` with `reasoning_effort="medium"`.
+- Inherit the parent model for high-risk, highly ambiguous, adversarial, or final-integration work.
+- When context is required, pass the smallest useful positive `fork_turns`; avoid full-history forks unless necessary.
+- Do not delegate tiny linear work. Require compact evidence and keep final integration with the parent.
+- If a model or reasoning override is unavailable, omit it and continue.
+
 ## Safety Boundaries
 
 - Repository trust and repository-controlled command execution are governed by `$HOME\.codex\rules\development-workflow.md`.

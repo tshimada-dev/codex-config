@@ -12,7 +12,7 @@
 - Preserve unrelated user changes.
 - Keep changes scoped to the requested behavior.
 - Prefer repository-local helpers and conventions.
-- Prefer subagents for context-heavy research, broad planning, independent implementation slices, review, and verification when they are available.
+- Use subagents only for independently valuable bounded work, and follow the global Subagent Delegation rules for model choice, reasoning effort, context isolation, and parent ownership.
 - Record long-running work at this repository's documented run-note location. If this repository has no convention, use `$HOME\.codex\runs\<repo-name>\YYYYMMDD-HHMM-<short-task>.md` instead of adding internal run notes to the repo.
 - Add handoff notes to the active run note when one exists; use `docs/codex/handoffs/` only for standalone handoffs.
 

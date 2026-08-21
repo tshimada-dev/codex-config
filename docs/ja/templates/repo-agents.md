@@ -1,6 +1,6 @@
 ---
 source: templates/repo-agents.md
-source_commit: 19c15b99d16f1e7fb1d3d795442637b05693ca81
+source_blob: 41baf6f02167eb3d1c11238840e7570ea8375d7b
 canonical: false
 ---
 
@@ -20,7 +20,7 @@ canonical: false
 - 無関係なユーザー変更を保持する。
 - 変更は依頼された挙動に絞る。
 - repository-local の helper や convention を優先する。
-- subagents が使える場合は、context-heavy research、広い planning、独立した implementation slice、review、verification に優先して使う。
+- subagents は独立した価値を持つ bounded work に限って使い、model choice、reasoning effort、context isolation、parent ownership はグローバルな Subagent Delegation rules に従う。
 - 中断や再開の可能性がある長時間作業は、このリポジトリで定められた run note 場所に記録する。慣習がない場合は、repo 内に internal run note を追加せず `$HOME\.codex\runs\<repo-name>\YYYYMMDD-HHMM-<short-task>.md` を使う。
 - handoff は active run note がある場合はそこに追記し、単体の handoff が必要な場合だけ `docs/codex/handoffs/` を使う。
 

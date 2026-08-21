@@ -1,6 +1,6 @@
 ---
 source: AGENTS.md
-source_blob: 94140f6f0f8c98a5837cba16ad6d804c76a94e83
+source_blob: d76a04dc5b77034e5867b81e8ceb32138bb0d4ac
 canonical: false
 ---
 
@@ -13,6 +13,17 @@ canonical: false
 - 実装、debug、CI fix、verification、PR readiness では `$HOME\.codex\rules\development-workflow.md` に従う。
 - 30分以上、複数サブシステム、CI fix、中断可能性がある作業では、さらに `$HOME\.codex\rules\long-running-workflow.md` に従い active run note を1つ維持する。
 - checklist は phase 固有の補助であり、期待結果、証拠、ownership、readiness、repository trust は development workflow contract を正とする。
+
+## サブエージェントへの委譲
+
+- サブエージェントへの委譲が別途許可されている場合でも、タスク難易度に応じたモデルの自動ルーティングが行われるとは想定しない。
+- 直近の会話コンテキストが不可欠でない bounded worker には `fork_turns="none"` を使う。
+- read-only の探索、抽出、機械的チェックでは、`model="gpt-5.6-luna"` と `reasoning_effort="low"` を優先する。
+- 分析、レビュー、見積もり、bounded implementation では、`model="gpt-5.6-terra"` と `reasoning_effort="medium"` を優先する。
+- 高リスク、曖昧性が高い、adversarial、または最終統合作業では親モデルを継承する。
+- コンテキストが必要な場合は、必要最小限の正の `fork_turns` を渡し、必要な場合を除いて全履歴のforkを避ける。
+- 小さな一本道の作業は委譲しない。返却する証拠は簡潔にし、最終統合は親エージェントが担当する。
+- モデルまたはreasoningのoverrideが利用できない場合は、指定を省略して続行する。
 
 ## 安全境界
 
