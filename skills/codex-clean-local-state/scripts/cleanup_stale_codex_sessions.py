@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import ntpath
 import os
 import shutil
 import sqlite3
@@ -71,6 +72,8 @@ def normalize_project_cwd(value: str) -> str:
     normalized = value.strip()
     if normalized.startswith("\\\\?\\"):
         normalized = normalized[4:]
+    if ntpath.splitdrive(normalized)[0] or "\\" in normalized:
+        return ntpath.normcase(ntpath.normpath(normalized))
     return os.path.normcase(os.path.normpath(normalized))
 
 
