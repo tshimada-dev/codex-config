@@ -1,6 +1,6 @@
 ---
 source: skills/codex-autonomous-debate/SKILL.md
-source_blob: df2dee5a3519842a63d6ad34576ed3764d857698
+source_commit: 4547b0f9218b08489064f459dbf1706a8c38a805
 canonical: false
 ---
 
@@ -12,7 +12,7 @@ canonical: false
 
 固定ラウンドで同じ主張を繰り返すのではなく、論点の状態を更新する対立的討論を行う。親エージェントは討論者でも自動的な一票でもなく、共通証拠、Claim Ledger、期限、手続きだけを管理する。
 
-参加者を起動する前に [`debate-state-protocol.md`](../../../skills/codex-autonomous-debate/references/debate-state-protocol.md) を読む。終了後にHTMLを生成する場合は [`group-chat-ui.md`](../../../skills/codex-autonomous-debate/references/group-chat-ui.md) も読む。
+参加者を起動する前に [`debate-state-protocol.md`](../../../skills/codex-autonomous-debate/references/debate-state-protocol.md) を読む。終了後にHTMLを生成する場合は [`group-chat-ui.md`](codex-autonomous-debate/references/group-chat-ui.md) も読む。
 
 ## 討論契約
 
@@ -113,4 +113,8 @@ RATIONALE:
 
 終了statusを先に示し、命題、陣営と監査役、証拠モード、phase上限、時刻とtimeout、最終Claim Ledger変更、resolution候補、共通核確認、決定的議論、最大の留保・対立、介入、除外主張、議論結果の限界を報告する。
 
-親は原文を変えない時系列イベントログ、命題契約、完了済みphaseとcrucial cycle数、最終Claim Ledgerとfalsifier、Evidence CardsとLinks、予測trajectoryを保持する。終了済みの `FORECAST` artifactは、`INCOMPLETE` を除き、全投票陣営の `PRIOR` と `FINAL`、`RESPONSE` 完了時の `AFTER_CROSS_EXAM`、完了した全crucial cycleの `AFTER_CRUCIAL_DISPUTE` を欠落なく含める。討論期限で未完了だったphaseのcheckpointは要求しない。終了後は未解決ClaimのfalsifierまたはEvidence Linkのgapから `WHAT_WOULD_RESOLVE_THIS` を作り、必要な観測、対象Claim、期待される更新、収集方法を示す。定義・価値対立しか残らない場合は、genericな調査項目を作らずそう明記する。所定JSONをrepository外に作り、`scripts/render_debate_chat.py`でDecision Rule、予測推移、Evidence Links、「決着に必要な証拠」を含むself-contained HTMLへ変換する。
+親は原文を変えない時系列イベントログを維持し、有効な公開発言、Steelman確認、匿名resolution候補、共通核check、確認応答を受信時点でそのまま追記する。`messages[].text` には受信した正確な内容を保存し、討論終了時にClaim Ledgerや最終報告から要約・再構成してはならない。あわせて命題契約、完了済みphaseとcrucial cycle数、最終Claim Ledgerとfalsifier、Evidence CardsとLinks、予測trajectoryを保持する。
+
+JSONを欠落のないsource of truthとする。読みやすいchat表示はrendererが実行時に導出する自然言語viewに限る。rendererはartifactの言語に合わせて構造化fieldの見出しを訳し、ledger更新を折りたたみ、吹き出しheaderからphase・round statusを省略できる。ただし同じmessage内の開閉可能な領域にプロトコル原文を必ず保持し、表示用の言い換えで `messages[].text` を置換したり、要約fieldを追加したりしない。
+
+終了済みの `FORECAST` artifactは、`INCOMPLETE` を除き、全投票陣営の `PRIOR` と `FINAL`、`RESPONSE` 完了時の `AFTER_CROSS_EXAM`、完了した全crucial cycleの `AFTER_CRUCIAL_DISPUTE` を欠落なく含める。討論期限で未完了だったphaseのcheckpointは要求しない。終了後は未解決ClaimのfalsifierまたはEvidence Linkのgapから `WHAT_WOULD_RESOLVE_THIS` を作り、必要な観測、対象Claim、期待される更新、収集方法を示す。定義・価値対立しか残らない場合は、genericな調査項目を作らずそう明記する。所定JSONをrepository外に作り、`scripts/render_debate_chat.py`でDecision Rule、予測推移、Evidence Links、「決着に必要な証拠」を含むself-contained HTMLへ変換する。
