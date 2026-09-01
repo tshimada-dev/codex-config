@@ -105,7 +105,7 @@ Write UTF-8 JSON with this shape. v3 fields (`proposition_type`, `decision_rule`
       "camp": "stable-lowercase-id",
       "phase": "OPENING | CROSS_EXAM | RESPONSE | UPDATE | CRUCIAL_DISPUTE",
       "round": 1,
-      "text": "Verbatim valid statement",
+      "text": "Verbatim valid statement captured when the parent received it",
       "timestamp": "Optional display timestamp"
     },
     {
@@ -136,7 +136,13 @@ Forecast records are allowed only for `FORECAST` artifacts. `cycle` is required 
 
 An Evidence Link references one existing Evidence Card and one existing Claim. Its dimensions rate that relationship rather than the source globally. Do not combine the dimensions into an undocumented score. `needed_evidence` must reference existing Claim IDs and should be traceable to a falsifier or `does_not_establish` gap.
 
-Preserve parent-observed chronological message order. Include valid substantive statements, material phase and ledger transitions, anonymous resolution candidates or confirmations needed to explain the result, interventions, timeouts, and failures. Exclude readiness handshakes and routine delivery bookkeeping unless they affected validity. Never add dialogue merely to make the interface look conversational.
+Preserve parent-observed chronological message order. Append each valid public statement, steelman confirmation, anonymous resolution candidate, common-core check, and confirmation to `messages` as a verbatim copy at receipt time. `messages[].text` is the lossless transcript, not a synopsis: never summarize or reconstruct it later from the Claim Ledger, phase state, resolution, or terminal report. Include material phase and ledger transitions, interventions, timeouts, and failures. Exclude readiness handshakes and routine delivery bookkeeping unless they affected validity. Never add dialogue merely to make the interface look conversational.
+
+Keep `phase` and `round` in JSON when they carry protocol meaning. In a state-driven artifact, do not show them as status text in the participant bubble header; the chronological transcript already supplies the reading order. A timestamp may still appear when one was recorded. Legacy artifacts may retain their phase and round display.
+
+For structured protocol messages, the default HTML body is a renderer-derived natural-language view. Translate field labels into the artifact language—for example, Japanese `POSITIVE_CASE`, `BURDEN_OF_PROOF`, `DIRECT_ANSWER`, `STEELMAN`, and `DECISION` become `主張`, `この立場が示すべきこと`, `回答`, `相手の主張を最も強く捉えると`, and `結論`. Render resolution candidates and common-core checks the same way. Collapse `LEDGER_ACTIONS` behind a secondary disclosure, and keep the exact verbatim protocol text behind a clearly labeled raw-text disclosure in the same message. Derive this view at render time; do not add a second paraphrased transcript field to JSON and do not alter `messages[].text`.
+
+Escape every participant-controlled label and value in both the readable and raw views. The disclosures must work without JavaScript, and the generated HTML must remain self-contained with no external network requests.
 
 ## Render
 

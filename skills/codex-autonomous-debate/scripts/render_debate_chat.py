@@ -170,11 +170,133 @@ CLAIM_STATUS_LABELS = {
     },
 }
 
+PROTOCOL_FIELD_LABELS = {
+    "en": {
+        "POSITIVE_CASE": "Claim",
+        "BURDEN_OF_PROOF": "What this position must establish",
+        "KEY_EVIDENCE": "Evidence cited",
+        "UNCERTAINTY": "What would weaken this claim",
+        "QUESTION": "Question for the other side",
+        "DIRECT_ANSWER": "Answer",
+        "REBUTTAL": "Rebuttal",
+        "STEELMAN": "The strongest version of the other side's case",
+        "STEELMAN_ACCEPTED": "Steelman confirmed",
+        "CONCESSION": "Point conceded",
+        "METHODOLOGY_AUDIT": "Methodological assessment",
+        "RATING_CORRECTION": "Rating correction",
+        "POSITION": "Current position",
+        "DECISION": "Decision",
+        "PROPOSED_WINNER": "Proposed winner",
+        "PROPOSED_COMMON_CORE": "Proposed common core",
+        "AGREED_POINTS": "Agreed points",
+        "RESERVATIONS": "Reservations",
+        "CONFLICTS": "Unresolved conflicts",
+        "RATIONALE": "Rationale",
+        "WHAT_WOULD_RESOLVE_THIS": "Evidence that would resolve this",
+        "OBSERVED": "Observed",
+        "INFERENCE": "Inference",
+        "SUPPORTS": "What the evidence supports",
+        "DOES_NOT_ESTABLISH": "What the evidence does not establish",
+        "ACCEPT_COMMON_CORE": "Common core accepted",
+        "ACCEPT_WITH_RESERVATION": "Accepted with reservation",
+        "REJECT_COMMON_CORE": "Common core rejected",
+        "ACCEPT_WINNER": "Proposed winner accepted",
+        "REJECT_WINNER": "Proposed winner rejected",
+    },
+    "ja": {
+        "POSITIVE_CASE": "主張",
+        "BURDEN_OF_PROOF": "この立場が示すべきこと",
+        "KEY_EVIDENCE": "参照した証拠",
+        "UNCERTAINTY": "この主張が弱まる条件",
+        "QUESTION": "相手への質問",
+        "DIRECT_ANSWER": "回答",
+        "REBUTTAL": "反論",
+        "STEELMAN": "相手の主張を最も強く捉えると",
+        "STEELMAN_ACCEPTED": "相手の主張の捉え方を確認",
+        "CONCESSION": "認めた点",
+        "METHODOLOGY_AUDIT": "方法論上の検討",
+        "RATING_CORRECTION": "評価の修正",
+        "POSITION": "現在の立場",
+        "DECISION": "結論",
+        "PROPOSED_WINNER": "勝者案",
+        "PROPOSED_COMMON_CORE": "合意できる共通部分の案",
+        "AGREED_POINTS": "合意できた点",
+        "RESERVATIONS": "留保",
+        "CONFLICTS": "未解決の対立",
+        "RATIONALE": "判断理由",
+        "WHAT_WOULD_RESOLVE_THIS": "決着に必要な証拠",
+        "OBSERVED": "観察されたこと",
+        "INFERENCE": "そこから導く推論",
+        "SUPPORTS": "証拠が支持する範囲",
+        "DOES_NOT_ESTABLISH": "この証拠だけでは言えないこと",
+        "ACCEPT_COMMON_CORE": "共通部分の案を承認",
+        "ACCEPT_WITH_RESERVATION": "留保付きで承認",
+        "REJECT_COMMON_CORE": "共通部分の案を不承認",
+        "ACCEPT_WINNER": "勝者案を承認",
+        "REJECT_WINNER": "勝者案を不承認",
+    },
+}
+
+PROTOCOL_UI_LABELS = {
+    "en": {
+        "ledger": "View Claim Ledger updates",
+        "raw": "Show verbatim protocol text",
+    },
+    "ja": {
+        "ledger": "論点台帳の更新を見る",
+        "raw": "プロトコル原文を表示",
+    },
+}
+
+PROTOCOL_HIDDEN_FIELDS = {
+    "ASSIGNED_POSITION",
+    "CAUSAL_STRENGTH",
+    "CHECKPOINT",
+    "CLAIM",
+    "CONFIDENCE_INTERVAL",
+    "CRUCIAL_NOMINATION",
+    "CYCLE",
+    "DIRECTNESS",
+    "EVIDENCE_LINK",
+    "FORECAST_UPDATE",
+    "GENERALIZABILITY",
+    "HORIZON",
+    "INDEPENDENCE",
+    "LINK",
+    "NO_CONDITION",
+    "OUTCOME",
+    "PROBABILITY",
+    "PROPOSITION_TYPE",
+    "QUESTION_ID",
+    "REQUEST_RESOLUTION",
+    "RESOLUTION_SOURCE",
+    "STEELMAN_TARGET",
+    "TARGET",
+    "TARGET_EVENT",
+    "TEMPORAL_RELEVANCE",
+    "THRESHOLD",
+    "WINNER",
+    "YES_CONDITION",
+}
+
+PROTOCOL_FIELD_PATTERN = re.compile(r"^([A-Z][A-Z0-9_]*):(?:\s*(.*))$")
+PROTOCOL_STANDALONE_PATTERN = re.compile(
+    r"^(ACCEPT_COMMON_CORE|ACCEPT_WINNER|REJECT_COMMON_CORE|REJECT_WINNER)"
+    r"(?:\s*:?\s*(.*))?$"
+)
+
 
 def require_text(value: Any, field: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field} must be a non-empty string")
     return value.strip()
+
+
+def require_verbatim_text(value: Any, field: str) -> str:
+    """Validate text without normalizing the parent-observed transcript."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} must be a non-empty string")
+    return value
 
 
 def require_text_list(value: Any, field: str) -> list[str]:
@@ -733,7 +855,9 @@ def validate_document(document: Any) -> dict[str, Any]:
                 "resolution_stage": resolution_stage,
                 "round": round_number,
                 "phase": phase,
-                "text": require_text(message.get("text"), f"messages[{index}].text"),
+                "text": require_verbatim_text(
+                    message.get("text"), f"messages[{index}].text"
+                ),
                 "timestamp": (
                     require_text(message.get("timestamp"), f"messages[{index}].timestamp")
                     if message.get("timestamp") is not None
@@ -766,11 +890,78 @@ def render_list(items: list[str], empty_label: str) -> str:
     return "<ul>" + "".join(f"<li>{escaped_text(item)}</li>" for item in items) + "</ul>"
 
 
+def parse_protocol_fields(text: str) -> list[tuple[str, str]]:
+    """Parse the line-oriented debate protocol without changing the source text."""
+    fields: list[tuple[str, str]] = []
+    current_name: str | None = None
+    current_lines: list[str] = []
+
+    def flush() -> None:
+        nonlocal current_name, current_lines
+        if current_name is not None:
+            fields.append((current_name, "\n".join(current_lines).strip()))
+        current_name = None
+        current_lines = []
+
+    for line in text.splitlines():
+        standalone = PROTOCOL_STANDALONE_PATTERN.fullmatch(line.strip())
+        if standalone:
+            flush()
+            fields.append((standalone.group(1), standalone.group(2) or "YES"))
+            continue
+        match = PROTOCOL_FIELD_PATTERN.fullmatch(line.strip())
+        if match:
+            flush()
+            current_name = match.group(1)
+            current_lines = [match.group(2)] if match.group(2) else []
+        elif current_name is not None:
+            current_lines.append(line)
+    flush()
+    return fields
+
+
+def render_protocol_text(text: str, lang: str) -> str | None:
+    """Derive a readable view while retaining the exact protocol transcript."""
+    fields = parse_protocol_fields(text)
+    readable_labels = PROTOCOL_FIELD_LABELS[lang]
+    visible_fields = [
+        (name, value)
+        for name, value in fields
+        if name in readable_labels
+        and name not in PROTOCOL_HIDDEN_FIELDS
+        and value
+        and not (name == "KEY_EVIDENCE" and value == "NONE")
+    ]
+    ledger_values = [value for name, value in fields if name == "LEDGER_ACTIONS" and value]
+    if not visible_fields and not ledger_values:
+        return None
+
+    sections = "".join(
+        f'<section class="readable-section"><h4>{escape(readable_labels[name])}</h4>'
+        f'<p>{escaped_text(value)}</p></section>'
+        for name, value in visible_fields
+    )
+    ui_labels = PROTOCOL_UI_LABELS[lang]
+    ledger = ""
+    if ledger_values:
+        ledger = (
+            f'<details class="ledger-details"><summary>{escape(ui_labels["ledger"])}</summary>'
+            f'<div class="protocol-ledger">{escaped_text(chr(10).join(ledger_values))}</div>'
+            f'</details>'
+        )
+    raw = (
+        f'<details class="protocol-details"><summary>{escape(ui_labels["raw"])}</summary>'
+        f'<div class="protocol-original">{escaped_text(text)}</div></details>'
+    )
+    return f'<div class="readable-message">{sections}{ledger}{raw}</div>'
+
+
 def render_document(document: Any) -> str:
     debate = validate_document(document)
     labels = LABELS[debate["lang"]]
     camps = debate["camps"]
     camp_by_id = {camp["id"]: (index, camp) for index, camp in enumerate(camps)}
+    state_driven = debate["proposition_type"] is not None
 
     camp_styles = []
     participant_cards = []
@@ -810,30 +1001,40 @@ def render_document(document: Any) -> str:
             timestamp = (
                 f'<time>{escape(message["timestamp"])}</time>' if message["timestamp"] else ""
             )
+            message_body = None
+            if state_driven and kind == "resolution":
+                message_body = render_protocol_text(message["text"], debate["lang"])
+            if message_body is None:
+                message_body = f'<p>{escaped_text(message["text"])}</p>'
             message_cards.append(
                 f'<article class="message {kind}" data-camp="system">'
                 f'<div class="system-icon" aria-hidden="true">{"!" if kind == "intervention" else "i"}</div>'
                 f'<div><header><strong>{escape(speaker)}</strong><span class="kind-badge">{badge}</span>'
-                f'{timestamp}</header><p>{escaped_text(message["text"])}</p></div></article>'
+                f'{timestamp}</header>{message_body}</div></article>'
             )
             continue
 
         camp_index, camp = camp_by_id[camp_id]
         meta_parts = []
-        if message["phase"] is not None:
+        if not state_driven and message["phase"] is not None:
             meta_parts.append(f'{labels["phase"]} {escape(message["phase"])}')
-        if message["round"] is not None:
+        if not state_driven and message["round"] is not None:
             meta_parts.append(f'{labels["round"]} {message["round"]}')
         if message["timestamp"]:
             meta_parts.append(escape(message["timestamp"]))
         meta = " · ".join(meta_parts)
         meta_html = f'<span class="message-meta">{meta}</span>' if meta else ""
+        message_body = None
+        if state_driven and kind in {"argument", "resolution"}:
+            message_body = render_protocol_text(message["text"], debate["lang"])
+        if message_body is None:
+            message_body = f'<p>{escaped_text(message["text"])}</p>'
         message_cards.append(
             f'<article class="message {kind} camp-{camp_index}" '
             f'data-camp="{escape(camp_id, quote=True)}">'
             f'<div class="avatar" aria-hidden="true">{escape(camp["name"][0].upper())}</div>'
             f'<div class="bubble"><header><strong>{escape(camp["name"])}</strong>{meta_html}</header>'
-            f'<p>{escaped_text(message["text"])}</p></div></article>'
+            f'{message_body}</div></article>'
         )
 
     summary = debate["summary"]
@@ -1047,6 +1248,13 @@ h1{{margin:0;font-size:clamp(24px,4vw,38px);line-height:1.15}}
 .bubble header,.system header{{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:5px}}
 .message-meta,.system time{{color:var(--muted);font-size:12px}}
 .message p{{margin:0;overflow-wrap:anywhere}}
+.readable-message{{display:grid;gap:11px;min-width:0}}
+.readable-section h4{{margin:0 0 2px;color:var(--camp-ink,#3f4758);font-size:12px;letter-spacing:.02em}}
+.readable-section p{{white-space:pre-wrap}}
+.ledger-details,.protocol-details{{border-top:1px solid color-mix(in srgb,var(--camp-ink,#697386) 14%,transparent);padding-top:7px}}
+.ledger-details summary,.protocol-details summary{{width:max-content;max-width:100%;color:var(--muted);cursor:pointer;font-size:12px;font-weight:700}}
+.ledger-details summary:focus-visible,.protocol-details summary:focus-visible{{outline:2px solid #8294d6;outline-offset:2px}}
+.protocol-ledger,.protocol-original{{margin-top:7px;border-radius:9px;padding:9px 10px;background:#ffffff99;color:#4d5566;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}}
 .resolution .bubble{{box-shadow:inset 3px 0 var(--camp-ink)}}
 .system,.intervention{{align-self:center;max-width:92%;align-items:center;border-radius:14px;padding:11px 14px;background:#f1f3f7;color:#485064}}
 .intervention{{background:#fff3df;color:#68430f;border:1px solid #f0d39d}}

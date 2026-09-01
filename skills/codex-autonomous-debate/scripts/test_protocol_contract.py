@@ -195,6 +195,16 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
         self.assertIn("Markdown transcript", self.content)
         self.assertIn("Do not delay or invalidate the terminal result", self.content)
 
+    def test_preserves_verbatim_messages_and_derives_readable_html(self) -> None:
+        for marker in (
+            "verbatim copy at receipt time",
+            "never summarize or reconstruct",
+            "renderer-derived natural-language view",
+            "verbatim protocol text",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.content)
+
 
 if __name__ == "__main__":
     unittest.main()

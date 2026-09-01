@@ -199,7 +199,7 @@ class DebateChatRendererTests(unittest.TestCase):
         self.assertIn("合意", html)
         self.assertIn("78%", html)
         self.assertIn("66%", html)
-        self.assertIn("OPENING", html)
+        self.assertNotIn('<span class="message-meta">フェーズ OPENING', html)
         self.assertNotIn("<script>alert(1)</script>", html)
         self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", html)
         self.assertNotIn("<script>alert(2)</script>", html)
@@ -224,6 +224,99 @@ class DebateChatRendererTests(unittest.TestCase):
         self.assertIn("AI governance debate", html)
         self.assertNotIn('<section class="evidence-panel"', html)
         self.assertNotIn('<section class="summary-section belief-section"', html)
+
+    def test_renders_state_driven_protocol_as_readable_japanese_and_keeps_verbatim(self) -> None:
+        debate = sample_debate()
+        debate["messages"][1]["text"] = """PRECAUTION OPENING
+POSITIVE_CASE: 公開前に安全性の説明を求める。
+BURDEN_OF_PROOF: 説明が実際の危険を減らすことを示す。
+KEY_EVIDENCE: F2
+UNCERTAINTY: 同じ成果をより軽い手段で得られるなら弱まる。
+LEDGER_ACTIONS:
+- ADD: 説明責任は危険を減らす。 | TYPE: inference | EVIDENCE: F2 | FALSIFIER: 比較試験で差がない。"""
+
+        html = self.renderer.render_document(debate)
+
+        self.assertIn("主張", html)
+        self.assertIn("この立場が示すべきこと", html)
+        self.assertIn("この主張が弱まる条件", html)
+        self.assertIn("論点台帳の更新を見る", html)
+        self.assertIn("プロトコル原文を表示", html)
+        self.assertIn("PRECAUTION OPENING<br>POSITIVE_CASE:", html)
+        self.assertIn("- ADD: 説明責任は危険を減らす。", html)
+        self.assertNotIn('<span class="message-meta">フェーズ OPENING', html)
+
+    def test_renders_anonymous_resolution_candidate_readably_and_keeps_verbatim(self) -> None:
+        debate = sample_debate()
+        debate["messages"].append(
+            {
+                "kind": "resolution",
+                "resolution_stage": "candidate",
+                "speaker": "Candidate A",
+                "text": """RESOLUTION_CANDIDATE
+OUTCOME: WINNER
+WINNER: PRECAUTION
+DECISION: 公開前の説明を求める。
+AGREED_POINTS:
+- 監視は必要である。
+RESERVATIONS:
+- 小規模導入は許容できる。
+CONFLICTS:
+- 負担の大きさは未解決である。
+RATIONALE:
+- 凍結した基準を満たす。""",
+            }
+        )
+
+        html = self.renderer.render_document(debate)
+
+        self.assertIn("結論", html)
+        self.assertIn("合意できた点", html)
+        self.assertIn("留保", html)
+        self.assertIn("未解決の対立", html)
+        self.assertIn("判断理由", html)
+        self.assertIn("RESOLUTION_CANDIDATE<br>OUTCOME: WINNER", html)
+        self.assertIn("プロトコル原文を表示", html)
+
+    def test_renders_common_core_and_confirmation_in_natural_language(self) -> None:
+        debate = sample_debate()
+        debate["messages"].extend(
+            [
+                {
+                    "kind": "resolution",
+                    "resolution_stage": "confirmation",
+                    "speaker": "Common-core check",
+                    "text": """COMMON_CORE_CHECK
+PROPOSED_WINNER:
+- EQUALITY
+PROPOSED_COMMON_CORE:
+- 最終票は等価に保つ。
+RESERVATIONS:
+- 限定的な地域同意は残る。""",
+                },
+                {
+                    "kind": "resolution",
+                    "resolution_stage": "confirmation",
+                    "speaker": "Confirmation A",
+                    "text": "ACCEPT_WINNER EQUALITY",
+                },
+            ]
+        )
+
+        html = self.renderer.render_document(debate)
+
+        self.assertIn("勝者案", html)
+        self.assertIn("合意できる共通部分の案", html)
+        self.assertIn("勝者案を承認", html)
+        self.assertIn("ACCEPT_WINNER EQUALITY", html)
+
+    def test_validation_preserves_message_text_byte_for_byte(self) -> None:
+        debate = sample_debate()
+        debate["messages"][1]["text"] = "  POSITION: YES\n\nRATIONALE: exact spacing  "
+
+        normalized = self.renderer.validate_document(debate)
+
+        self.assertEqual(debate["messages"][1]["text"], normalized["messages"][1]["text"])
 
     def test_rejects_invalid_structured_debate_state(self) -> None:
         invalid_cases = []
