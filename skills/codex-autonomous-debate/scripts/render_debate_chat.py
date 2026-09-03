@@ -28,6 +28,12 @@ PARTICIPANT_ROLES = {"advocate", "auditor"}
 STRENGTH_VALUES = {"high", "low", "medium", "not-assessed"}
 EVIDENCE_MODES = {"closed-book", "shared-evidence"}
 PHASE_VALUES = {"OPENING", "CROSS_EXAM", "RESPONSE", "UPDATE", "CRUCIAL_DISPUTE"}
+CONTROLLER_PHASE_VALUES = PHASE_VALUES | {
+    "STEELMAN_CONFIRMATION",
+    "METHODOLOGY_AUDIT",
+    "RESOLUTION_CANDIDATE",
+    "COMMON_CORE_CONFIRMATION",
+}
 BASE_PHASE_ORDER = ("OPENING", "CROSS_EXAM", "RESPONSE", "UPDATE")
 PROPOSITION_TYPES = {"CAUSAL", "FACTUAL", "FORECAST", "POLICY"}
 FORECAST_CHECKPOINTS = {"PRIOR", "AFTER_CROSS_EXAM", "AFTER_CRUCIAL_DISPUTE", "FINAL"}
@@ -47,6 +53,20 @@ PALETTE = (
     ("#9a3e72", "#faeaf3"),
     ("#526a35", "#eef6e5"),
 )
+PROVENANCE_KEYS = {"submitted_by", "participant", "actor", "camp"}
+
+
+def contains_provenance(value: Any) -> bool:
+    if isinstance(value, dict):
+        return any(
+            key in PROVENANCE_KEYS or contains_provenance(child)
+            for key, child in value.items()
+        )
+    if isinstance(value, list):
+        return any(contains_provenance(child) for child in value)
+    return False
+
+
 LABELS = {
     "en": {
         "all": "All",
@@ -867,6 +887,148 @@ def validate_document(document: Any) -> dict[str, Any]:
         )
     normalized["messages"] = normalized_messages
 
+    controller = document.get("controller")
+    if controller is None:
+        normalized["controller"] = None
+    else:
+        if not isinstance(controller, dict):
+            raise ValueError("controller must be an object")
+        schema_version = controller.get("schema_version")
+        if schema_version != 1:
+            raise ValueError("controller.schema_version must be 1")
+        phase = require_choice(
+            controller.get("phase"), "controller.phase", CONTROLLER_PHASE_VALUES
+        )
+        cycle = controller.get("cycle")
+        accepted_sequence = controller.get("accepted_sequence")
+        for value, field in (
+            (cycle, "controller.cycle"),
+            (accepted_sequence, "controller.accepted_sequence"),
+        ):
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                raise ValueError(f"{field} must be a non-negative integer")
+        terminal_status = controller.get("terminal_status")
+        if terminal_status is None:
+            raise ValueError("controller.terminal_status is required for a final artifact")
+        terminal_status = require_choice(
+            terminal_status, "controller.terminal_status", STATUS_VALUES
+        )
+        if terminal_status != normalized["status"]:
+            raise ValueError("controller.terminal_status must match status")
+        events = controller.get("events")
+        if not isinstance(events, list):
+            raise ValueError("controller.events must be an array")
+        normalized_events: list[dict[str, Any]] = []
+        committed_sequences: list[int] = []
+        for index, event in enumerate(events):
+            if not isinstance(event, dict):
+                raise ValueError(f"controller.events[{index}] must be an object")
+            accepted = event.get("accepted")
+            if not isinstance(accepted, bool):
+                raise ValueError(f"controller.events[{index}].accepted must be boolean")
+            sequence = event.get("sequence")
+            if accepted:
+                if not isinstance(sequence, int) or isinstance(sequence, bool) or sequence < 1:
+                    raise ValueError(
+                        f"controller.events[{index}].sequence must be positive when accepted"
+                    )
+                committed_sequences.append(sequence)
+            elif sequence is not None:
+                raise ValueError(
+                    f"controller.events[{index}].sequence must be null when rejected"
+                )
+            event_phase = require_choice(
+                event.get("phase"),
+                f"controller.events[{index}].phase",
+                CONTROLLER_PHASE_VALUES,
+            )
+            event_cycle = event.get("cycle")
+            if (
+                not isinstance(event_cycle, int)
+                or isinstance(event_cycle, bool)
+                or event_cycle < 0
+            ):
+                raise ValueError(
+                    f"controller.events[{index}].cycle must be a non-negative integer"
+                )
+            action_type = require_text(
+                event.get("action_type"), f"controller.events[{index}].action_type"
+            )
+            participant = require_text(
+                event.get("participant"), f"controller.events[{index}].participant"
+            )
+            if action_type == "RESOLUTION_CANDIDATE" and participant != "anonymous":
+                raise ValueError("controller candidate provenance must be anonymous")
+            observed_at = require_text(
+                event.get("observed_at"), f"controller.events[{index}].observed_at"
+            )
+            committed_at = event.get("committed_at")
+            if accepted:
+                committed_at = require_text(
+                    committed_at, f"controller.events[{index}].committed_at"
+                )
+            elif committed_at is not None:
+                raise ValueError(
+                    f"controller.events[{index}].committed_at must be null when rejected"
+                )
+            rejection_reason = event.get("rejection_reason")
+            if accepted and rejection_reason is not None:
+                raise ValueError(
+                    f"controller.events[{index}].rejection_reason must be null when accepted"
+                )
+            if not accepted:
+                rejection_reason = require_text(
+                    rejection_reason,
+                    f"controller.events[{index}].rejection_reason",
+                )
+            payload = event.get("payload", {})
+            if not isinstance(payload, dict):
+                raise ValueError(f"controller.events[{index}].payload must be an object")
+            if action_type == "RESOLUTION_CANDIDATE" and contains_provenance(payload):
+                raise ValueError("controller candidate provenance must be anonymous")
+            normalized_events.append(
+                {
+                    "event_id": require_text(
+                        event.get("event_id"), f"controller.events[{index}].event_id"
+                    ),
+                    "sequence": sequence,
+                    "phase": event_phase,
+                    "cycle": event_cycle,
+                    "participant": participant,
+                    "observed_at": observed_at,
+                    "committed_at": committed_at,
+                    "action_type": action_type,
+                    "accepted": accepted,
+                    "rejection_reason": rejection_reason,
+                    "payload": payload,
+                }
+            )
+        if committed_sequences != list(range(1, accepted_sequence + 1)):
+            raise ValueError("controller accepted event sequences must be contiguous from 1")
+        emergency_safety = controller.get("emergency_safety", {})
+        if not isinstance(emergency_safety, dict):
+            raise ValueError("controller.emergency_safety must be an object")
+        normalized["controller"] = {
+            "schema_version": schema_version,
+            "debate_id": require_text(controller.get("debate_id"), "controller.debate_id"),
+            "phase": phase,
+            "cycle": cycle,
+            "accepted_sequence": accepted_sequence,
+            "next_actor": (
+                require_text(controller.get("next_actor"), "controller.next_actor")
+                if controller.get("next_actor") is not None
+                else None
+            ),
+            "next_action": (
+                require_text(controller.get("next_action"), "controller.next_action")
+                if controller.get("next_action") is not None
+                else None
+            ),
+            "terminal_status": terminal_status,
+            "emergency_safety": emergency_safety,
+            "events": normalized_events,
+        }
+
     summary = document.get("summary", {})
     if not isinstance(summary, dict):
         raise ValueError("summary must be an object")
@@ -1207,6 +1369,31 @@ def render_document(document: Any) -> str:
             f'<span>{len(needed_cards)}</span></header><div class="needed-grid">{"".join(needed_cards)}</div></section>'
         )
 
+    controller_section = ""
+    if debate["controller"]:
+        controller = debate["controller"]
+        accepted_count = sum(1 for event in controller["events"] if event["accepted"])
+        rejected_count = len(controller["events"]) - accepted_count
+        rows = []
+        for event in controller["events"]:
+            result = "accepted" if event["accepted"] else event["rejection_reason"]
+            sequence = str(event["sequence"]) if event["sequence"] is not None else "—"
+            rows.append(
+                f'<tr><td>{escape(sequence)}</td><td><code>{escape(event["event_id"])}</code></td>'
+                f'<td>{escape(event["phase"])}</td><td>{event["cycle"]}</td>'
+                f'<td>{escape(event["participant"])}</td><td>{escape(event["action_type"])}</td>'
+                f'<td>{escape(result)}</td><td>{escape(event["observed_at"])}</td></tr>'
+            )
+        controller_section = (
+            '<details class="analysis-panel controller-audit"><summary>Protocol audit / プロトコル監査</summary>'
+            f'<div class="controller-meta"><code>{escape(controller["debate_id"])}</code>'
+            f'<span>{escape(controller["phase"])} · cycle {controller["cycle"]}</span>'
+            f'<span>{accepted_count} accepted · {rejected_count} rejected</span></div>'
+            '<div class="audit-scroll"><table><thead><tr><th>Seq</th><th>Event</th><th>Phase</th>'
+            '<th>Cycle</th><th>Participant</th><th>Action</th><th>Result</th><th>Observed</th>'
+            f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div></details>'
+        )
+
     status_class = re.sub(r"[^a-z0-9_-]", "-", debate["status"].lower())
     return f"""<!doctype html>
 <html lang="{debate['lang']}">
@@ -1321,6 +1508,10 @@ h1{{margin:0;font-size:clamp(24px,4vw,38px);line-height:1.15}}
 .link-card dl,.needed-card dl{{display:grid;grid-template-columns:145px minmax(0,1fr);gap:6px 10px;margin:0}}
 .link-card dt,.needed-card dt{{color:var(--muted);font-size:11px;font-weight:750}}.link-card dd,.needed-card dd{{margin:0;overflow-wrap:anywhere}}
 .needed-panel{{border-color:#cbd7c4;background:#fbfdf9}}.needed-card{{background:#fff}}
+.controller-audit{{padding:16px 20px}}.controller-audit>summary{{cursor:pointer;font-weight:800}}
+.controller-meta{{display:flex;flex-wrap:wrap;gap:8px 16px;margin:12px 0;color:var(--muted)}}
+.audit-scroll{{overflow-x:auto}}.controller-audit table{{width:100%;border-collapse:collapse;font-size:12px}}
+.controller-audit th,.controller-audit td{{padding:7px 8px;border-top:1px solid var(--line);text-align:left;white-space:nowrap}}
 {''.join(camp_styles)}
 @media (max-width: 720px){{
   .debate-shell{{padding:12px}}
@@ -1373,6 +1564,7 @@ h1{{margin:0;font-size:clamp(24px,4vw,38px);line-height:1.15}}
     </aside>
   </div>
   {needed_evidence_section}
+  {controller_section}
   {forecast_section}
   {evidence_link_section}
   {evidence_section}

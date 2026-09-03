@@ -1,6 +1,18 @@
 # State-driven debate protocol
 
-Read this reference before spawning debate participants. It replaces fixed rounds with phase-specific work and a shared Claim Ledger. The parent remains a procedural supervisor: it records exact claims and participant responses, but does not decide which substantive claim is true.
+Read this reference before spawning debate participants. It replaces fixed rounds with phase-specific work and a shared Claim Ledger. The deterministic controller owns procedure; advocates and the optional auditor own arguments. Neither the controller nor the parent decides which substantive claim is true.
+
+## Controller contract
+
+Create the debate with the deterministic controller before sending a participant a substantive prompt. The controller is the only authority for the current phase, eligible speaker, successor, Claim Ledger IDs and procedural statuses, steelman-confirmation state, resolution state, and terminal classification.
+
+The parent is a transport adapter and observer. It gives participants the controller's current state packet and exact response template, converts each received response into a **structured action envelope**, submits that envelope to the controller, and sends only the controller-declared next instruction. It must not advance a phase, select a successor, assign a Claim ID, or infer a terminal state from prose.
+
+Every envelope includes at least `debate_id`, a stable caller-generated `event_id`, `actor`, `action_type`, `phase`, `payload`, and the structured fields required inside that payload. The controller records parent-observed committed timestamps and accepts a `(debate_id, event_id)` at most once. A duplicate, out-of-order, or ineligible action is rejected with a reason and cannot change substantive or procedural state. If delivery is ambiguous, retry the same envelope with the same `event_id`; ask the controller whether it was committed before sending another substantive turn.
+
+Serialize the complete controller state after every accepted action. Resuming a debate means loading that state and continuing from its declared next action; do not reconstruct phase, ledger, confirmation, or resolution state from transcript text. Keep the participant's original text verbatim in the separate chronological transcript, but treat it as argument content rather than the source of procedural truth.
+
+Normal completion is conclusion-driven. Continue while a valid state-changing action can materially advance an unresolved dispute. The controller moves to resolution only at a valid shared checkpoint, after an agreed operative conclusion, after a genuine no-progress/deadlock condition, or after a required-participation failure. A configurable, intentionally generous absolute time or event ceiling is an emergency safeguard against hangs or runaway delivery only; it is not a normal target and cannot manufacture consensus.
 
 ## Proposition contract and decision rule
 
@@ -73,7 +85,7 @@ These dimensions describe the Evidence-to-Claim relationship, not the source in 
 
 ## Claim Ledger
 
-The parent keeps a chronological Claim Ledger with stable IDs such as `C1`. Store the exact atomic claim, its type, linked Evidence Card IDs, falsifier or revision condition, and procedural status.
+The controller keeps the chronological Claim Ledger and assigns stable IDs such as `C1` when it commits an `ADD` action. Store the exact atomic claim, its type, linked Evidence Card IDs, falsifier or revision condition, and procedural status.
 
 Claim types:
 
@@ -92,7 +104,7 @@ Statuses:
 - `definitional_dispute`: the disagreement turns on meaning or scope;
 - `superseded`: every voting advocate accepts a narrower or corrected replacement.
 
-The parent may split a compound statement into atomic claims and assign IDs, but must preserve its wording and source statement. It may not merge paraphrases, mark a claim `agreed`, `unsupported`, or `superseded`, or change scope without participant signals. Proposed ledger changes are visible in the next state packet; an advocate may issue `LEDGER_CORRECTION` as its first action. Do not reopen an `agreed` claim unless a participant adds new evidence, identifies a scope mismatch, or challenges the recorded wording.
+The controller may split a submitted compound statement into atomic claims and assign IDs, but must preserve its wording and source statement. It may not merge paraphrases, mark a claim `agreed`, `unsupported`, or `superseded`, or change scope without committed participant signals. Do not reopen an `agreed` claim unless a participant adds new evidence, identifies a scope mismatch, or challenges the recorded wording.
 
 Every substantive statement ends with one or more ledger actions:
 
@@ -103,25 +115,28 @@ LEDGER_ACTIONS:
 - CHALLENGE: <claim ID> | <specific reason>
 - REFINE: <claim ID> | <narrower replacement>
 - CONCEDE: <claim ID>
+- UNSUPPORTED: <empirical claim ID>
+- DEFINITIONAL_DISPUTE: <claim ID> | <meaning or scope defect>
+- SUPERSEDE: <claim ID> | REPLACEMENT: <existing claim ID>
 - QUESTION: <question ID> | <claim ID> | <one answerable question>
 - ANSWER: <question ID> | <direct answer>
 ```
 
 For an empirical `fact`, `inference`, or `prediction`, `FALSIFIER` names an observation that would materially weaken or withdraw it. For a `definition` or `value`, use `REVISION_CONDITION` instead. `NONE` is invalid for a material Claim unless the statement is explicitly not empirically falsifiable and gives its decision criterion.
 
-A turn has a **new ledger action** when it adds a claim, changes a participant's recorded relation to a claim, answers an open question, links previously unused evidence, or narrows a disputed claim. Rephrasing an existing position is not new. If a required turn has no new ledger action, the parent uses `CORRECT` once and asks for a shorter state-changing statement; repeated failure is recorded as no change rather than padded with another speech.
+A turn has a **new ledger action** when it adds a claim, changes a participant's recorded relation to a claim, answers an open question, links previously unused evidence, or narrows a disputed claim. Rephrasing an existing position is not new. If a required turn has no new ledger action, the controller commits it as no change; the parent may use the skill's one-shorter-`CORRECT` intervention before accepting a repeated no-change speech, but `CORRECT` is not a participant-owned state transition.
 
 ## Debate phases
 
-Use these phases in order. Prefix a statement with `<CAMP> <PHASE>`. Before spawning, publish this `PHASE_SPEAKERS` map using canonical participant IDs:
+Use these phases in order. Prefix a statement with `<CAMP> <PHASE>`. Configure this `PHASE_SPEAKERS` map with canonical participant IDs when creating the controller:
 
 - `OPENING: advocates, then auditor` when one is present;
 - `CROSS_EXAM: advocates only`;
 - `RESPONSE: advocates, then auditor` when one is present;
 - `UPDATE: advocates only`;
-- `CRUCIAL_DISPUTE: advocates only`; after a material Evidence Link is added or changed, the parent starts one separate `METHODOLOGY_AUDIT` turn.
+- `CRUCIAL_DISPUTE: advocates only`; after a material Evidence Link is added or changed, the controller declares one separate `METHODOLOGY_AUDIT` turn eligible.
 
-Every phase has its own ordered speaker list and phase-specific successor mapping. A participant speaks only when scheduled in the current list. The ring-delivery rules from the main skill apply within that list; its final scheduled speaker sends `<PHASE>_READY` instead of triggering a successor. The parent starts each phase with the current ledger snapshot, exact response template, speaker list, and successor map. When an auditor is used, budget two base auditor turns for `OPENING` and `RESPONSE`, plus one additional auditor turn per crucial-dispute cycle as the worst case for a changed Evidence Link.
+Every phase has its own ordered speaker list and phase-specific successor mapping. The controller declares exactly one next substantive speaker and action after each committed substantive turn; a participant cannot speak merely because it received a message. The controller moves a phase only after every required action is committed. The parent sends the controller-provided state packet, exact response template, speaker list, and successor instruction, but never implements a peer ring itself. When an auditor is used, the controller schedules it after `OPENING` and `RESPONSE`, plus one `METHODOLOGY_AUDIT` when a crucial-dispute Evidence Link materially changes.
 
 ### `OPENING`
 
@@ -182,13 +197,13 @@ LEDGER_ACTIONS:
 ...
 ```
 
-After every advocate completes `UPDATE`, the parent opens the bounded `STEELMAN_CONFIRMATION` subphase. The parent forwards each steelman unchanged to its target with `followup_task`; each target returns only to the parent with `STEELMAN_ACCEPTED` or `STEELMAN_REJECTED: <specific defect>`. This procedural subphase is not a peer ring and may not add substantive Claims. On rejection, the parent sends the exact defect to the steelman author, permits one correction, and forwards the corrected text unchanged to the target for a final check. A rejected steelman may not be used as the basis of the later rebuttal.
+After every advocate completes `UPDATE`, the controller opens the bounded `STEELMAN_CONFIRMATION` subphase. It declares the target confirmation action eligible only after committing the corresponding `UPDATE` and steelman. The parent forwards that steelman unchanged; the target submits `STEELMAN_ACCEPTED` or `STEELMAN_REJECTED: <specific defect>` as a structured action. This procedural subphase is not a peer ring and may not add substantive Claims. On rejection, the controller permits one correction by the steelman author, then permits the target's final check. A rejected steelman may not be used as the basis of a later rebuttal.
 
-Collect every confirmation before resolution or the first `CRUCIAL_DISPUTE` cycle. Hold `REQUEST_RESOLUTION` signals pending until all steelmans are accepted or have exhausted the one correction. A still-rejected steelman blocks direct resolution from that `UPDATE` checkpoint and is recorded as an unresolved procedural defect; continue to `CRUCIAL_DISPUTE` within the existing ceiling unless the deadline requires `INCOMPLETE`.
+The controller collects every confirmation before resolution or the first `CRUCIAL_DISPUTE` cycle. It holds `REQUEST_RESOLUTION` signals pending until all steelmans are accepted or have exhausted the one correction. A still-rejected steelman blocks direct resolution from that `UPDATE` checkpoint and is recorded as an unresolved procedural defect; continue to `CRUCIAL_DISPUTE` while a valid material action remains, unless a required participant is unavailable or an emergency safeguard fires.
 
 Legacy numerical belief updates are participant self-assessments, not independent evidence. New `FORECAST` debates use the private checkpoint protocol below. Do not force movement toward 0.5; no change is valid when accompanied by a reason.
 
-`REQUEST_RESOLUTION: YES` is a procedural signal, not a concession. The parent transitions directly to resolution when every voting advocate sends `REQUEST_RESOLUTION: YES` in the same phase checkpoint after `RESPONSE`; it does not wait for `CRUCIAL_DISPUTE_READY`. Mixed or stale requests do not carry into a later checkpoint.
+`REQUEST_RESOLUTION: YES` is a procedural signal, not a concession. The controller transitions directly to resolution when every voting advocate commits `REQUEST_RESOLUTION: YES` in the same valid checkpoint after `RESPONSE`; it does not wait for `CRUCIAL_DISPUTE_READY`. Mixed or stale requests do not carry into a later checkpoint.
 
 ### `CRUCIAL_DISPUTE`
 
@@ -200,18 +215,21 @@ Each advocate gets one concise turn limited to that claim:
 CLAIM: <one selected unresolved Claim ID>
 POSITION: <one concise state-changing argument>
 FORECAST_UPDATE: SUBMITTED_PRIVATELY | NOT_APPLICABLE
+FORECAST_PROBABILITY: <current 0..1 value | NOT_APPLICABLE>
+FORECAST_PROBABILITY_SHIFT: <signed change from preceding checkpoint | NOT_APPLICABLE>
 REQUEST_RESOLUTION: YES | NO
 LEDGER_ACTIONS:
 - <ADD | ACCEPT | CHALLENGE | REFINE | CONCEDE | NO_NEW_ACTION>
 ```
 
-It must add a new ledger action or explicitly state `NO_NEW_ACTION`. After the cycle, publish the revised ledger and collect the private forecast checkpoint. Use a hard ceiling of three cycles for a light debate and six for a deep debate. Move to resolution when:
+It must add a new ledger action or explicitly state `NO_NEW_ACTION`. For a submitted forecast update, map the two numeric fields to controller payload keys `forecast_probability` and `forecast_probability_shift`; probability uses 0..1 units. A shift without its resulting probability is invalid. After the cycle, the controller publishes the revised ledger and collects the private forecast checkpoint. There is no normal three- or six-cycle completion rule. Move to resolution or deadlock classification when:
 
 - all voting advocates send `REQUEST_RESOLUTION: YES` in the same phase checkpoint; or
 - two consecutive low-information cycles occur; or
-- the configured hard ceiling or `DEBATE_DEADLINE` is reached.
+- the Claim Ledger and required confirmations establish an agreed operative conclusion; or
+- the remaining disagreement is a genuine incompatible value, definition, or policy conflict and no participant identifies a concrete next falsifier, Evidence Link, refinement, or answer that could change it.
 
-Do not continue merely to fill a round count.
+Continue when a cycle produces material progress, regardless of a nominal cycle count. Do not continue merely to fill a round count. On an emergency ceiling, freeze the last valid committed state; classify it as `TRUE_DEADLOCK` only when the committed state proves an incompatible conflict, otherwise `INCOMPLETE`.
 
 ## Private forecast checkpoints and information gain
 
@@ -237,20 +255,20 @@ A crucial cycle is low-information only when all are true:
 - it changes no ledger status, answer, refinement, concession, or link rating; and
 - for `FORECAST`, every advocate's absolute probability shift from its preceding checkpoint is less than 3 percentage points.
 
-Stop after two consecutive low-information cycles. Continue within the hard ceiling when a cycle produces at least one new unresolved Claim, new falsifier, new or corrected Evidence Link, or an absolute forecast shift of at least 5 percentage points. A shift between 3 and 5 percentage points is neither an early-stop signal nor by itself an extension signal. Missing required forecasts prevent information-gain early stopping; use the deadline or hard ceiling instead.
+After two consecutive low-information cycles, the controller asks each voting advocate for a concrete next falsifier, Evidence Link, refinement, or answer. If none can identify one, proceed to resolution/deadlock classification; otherwise continue. Continue whenever a cycle produces at least one new unresolved Claim, new falsifier, new or corrected Evidence Link, or a changed resulting probability paired with an absolute forecast shift of at least 5 percentage points. The controller deduplicates by participant and resulting probability, so equal signed shifts can still be material when they reach distinct probabilities, while repeating the same forecast is not. A shift between 3 and 5 percentage points is neither an early-stop signal nor by itself an extension signal. Missing required forecasts prevent information-gain early stopping and require the controller to keep the dispute open or classify required-participation failure; they do not create normal deadline-driven completion.
 
 ## Non-voting synthesis and resolution
 
-Every voting advocate privately submits the structured `RESOLUTION_CANDIDATE` from the main skill. The auditor does not submit or vote.
+Every voting advocate privately submits the structured `RESOLUTION_CANDIDATE` action declared eligible by the controller. The auditor does not submit or vote.
 
-The parent then performs **non-voting synthesis**. This is a traceable comparison, not a new argument:
+The controller records and validates **non-voting synthesis** input. This is a traceable comparison, not a new argument:
 
 1. Split each candidate field into atomic propositions without changing meaning.
 2. Build a source map from every atom to candidate IDs and Claim Ledger IDs.
 3. Mark atoms present in every candidate as the proposed common core.
 4. Keep compatible but non-universal atoms as reservations.
 5. Keep incompatible operative decisions as conflicts. Never average or choose between them.
-6. Send `COMMON_CORE_CHECK` containing the proposed core, reservations, conflicts, and source map to every voting advocate.
+6. Submit `COMMON_CORE_CHECK` containing the proposed core, reservations, conflicts, and source map; after validation, the controller declares each voting advocate's confirmation action eligible.
 
 Each advocate returns one of:
 
@@ -272,7 +290,7 @@ Classify the result:
 - `CONSENSUS_WITH_RESERVATIONS`: every advocate accepts the same operative decision and common core, while compatible unresolved reservations remain.
 - `FINAL_WINNER`: every advocate returns the same `ACCEPT_WINNER <CAMP>` for the mapped winner atom.
 - `TRUE_DEADLOCK`: candidates contain incompatible operative decisions, or at least one advocate rejects the corrected common core for a material semantic reason.
-- `INCOMPLETE`: a required advocate response is missing at the deadline.
+- `INCOMPLETE`: a required advocate response is unavailable, cancelled, or missing when an emergency safeguard ends the debate.
 
 Do not use majority vote. A 2-to-1 split among same-model agents is not evidence. A majority count may be reported only if the user explicitly requested it, and it does not replace the terminal classification above.
 

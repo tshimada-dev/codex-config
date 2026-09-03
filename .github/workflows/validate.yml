@@ -83,7 +83,7 @@ jobs:
 
       - name: Validate autonomous debate protocol
         shell: pwsh
-        run: python -m unittest -v test_protocol_contract.py test_render_debate_chat.py
+        run: python -m unittest -v test_debate_controller.py test_protocol_contract.py test_render_debate_chat.py
         working-directory: skills/codex-autonomous-debate/scripts
 
       - name: Validate field investigation workbook renderer

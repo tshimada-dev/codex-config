@@ -4,6 +4,8 @@ import unittest
 
 SKILL_PATH = Path(__file__).resolve().parents[1] / "SKILL.md"
 STATE_PROTOCOL_PATH = SKILL_PATH.parent / "references" / "debate-state-protocol.md"
+CONTROLLER_PROTOCOL_PATH = SKILL_PATH.parent / "references" / "controller-protocol.md"
+CONTROLLER_PATH = SKILL_PATH.parent / "scripts" / "debate_controller.py"
 
 
 class AutonomousDebateProtocolTests(unittest.TestCase):
@@ -13,25 +15,32 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
         cls.protocol_content = cls.content
         if STATE_PROTOCOL_PATH.exists():
             cls.protocol_content += "\n" + STATE_PROTOCOL_PATH.read_text(encoding="utf-8")
+        if CONTROLLER_PROTOCOL_PATH.exists():
+            cls.protocol_content += "\n" + CONTROLLER_PROTOCOL_PATH.read_text(encoding="utf-8")
+        cls.controller_content = (
+            CONTROLLER_PATH.read_text(encoding="utf-8") if CONTROLLER_PATH.exists() else ""
+        )
 
     def test_selects_evidenced_camps_instead_of_fixed_personas(self) -> None:
         self.assertIn("two to four", self.content)
         self.assertIn("real-world camps", self.content)
         self.assertNotIn("exactly two subagents", self.content)
 
-    def test_keeps_peer_to_peer_debate_and_parent_supervision(self) -> None:
+    def test_keeps_controller_gated_transport_and_parent_supervision(self) -> None:
         for marker in ("spawn_agent", "followup_task", "send_message", "wait_agent"):
             with self.subTest(marker=marker):
                 self.assertIn(f"`{marker}`", self.content)
+        self.assertIn("Send the statement only to the parent", self.content)
+        self.assertIn("Do not trigger a peer directly", self.content)
 
     def test_requires_independent_resolution_candidates_without_majority_vote(self) -> None:
         self.assertIn("Do not use majority vote", self.content)
-        self.assertIn("every active camp", self.content)
-        self.assertIn("`RESOLUTION_REQUEST`", self.content)
+        self.assertIn("every voting camp", self.content)
+        self.assertIn("`RESOLUTION_CANDIDATE`", self.content)
         self.assertIn("RESOLUTION_CANDIDATE\nOUTCOME:", self.content)
         self.assertIn("independently and privately", self.content)
         self.assertIn("Do not put the submitting camp's identity", self.content)
-        self.assertIn("deterministic content-derived key", self.content)
+        self.assertIn("deterministic content-derived IDs", self.content)
         self.assertIn("Do not ask the opener to draft", self.content)
         self.assertIn("`COMMON_CORE_CHECK`", self.protocol_content)
         self.assertIn("`CONSENSUS_WITH_RESERVATIONS`", self.protocol_content)
@@ -61,8 +70,8 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
         self.assertIn("`REQUEST_RESOLUTION`", self.protocol_content)
         self.assertIn("same phase checkpoint", self.protocol_content)
         self.assertIn("exact fenced response template", self.content)
-        self.assertIn("post-`RESPONSE` `UPDATE` checkpoint", self.content)
-        self.assertIn("same `CRUCIAL_DISPUTE` checkpoint", self.content)
+        self.assertIn("same valid checkpoint after `RESPONSE`", self.protocol_content)
+        self.assertIn("same phase checkpoint", self.protocol_content)
         self.assertNotIn("Use 3 rounds per camp", self.content)
         self.assertNotIn("Use 5 rounds per camp", self.content)
 
@@ -72,7 +81,7 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
         self.assertIn("STEELMAN_ACCEPTED", self.protocol_content)
         self.assertIn("non-voting methodological auditor", self.protocol_content)
 
-    def test_defines_phase_specific_speaker_rings_and_auditor_turns(self) -> None:
+    def test_defines_controller_owned_speaker_orders_and_auditor_turns(self) -> None:
         self.assertIn("PHASE_SPEAKERS", self.protocol_content)
         for marker in (
             "OPENING: advocates, then auditor",
@@ -80,9 +89,9 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
             "RESPONSE: advocates, then auditor",
             "UPDATE: advocates only",
             "CRUCIAL_DISPUTE: advocates only",
-            "phase-specific successor",
-            "two base auditor turns",
-            "one additional auditor turn per crucial-dispute cycle",
+            "controller declares exactly one next substantive speaker",
+            "schedules it after `OPENING` and `RESPONSE`",
+            "one `METHODOLOGY_AUDIT`",
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.protocol_content)
@@ -90,10 +99,10 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
     def test_defines_bounded_steelman_confirmation_subphase(self) -> None:
         for marker in (
             "STEELMAN_CONFIRMATION",
-            "forwards each steelman unchanged",
+            "forwards that steelman unchanged",
             "with `followup_task`",
-            "returns only to the parent",
-            "Collect every confirmation before resolution",
+            "submits `STEELMAN_ACCEPTED` or `STEELMAN_REJECTED",
+            "collects every confirmation before resolution",
             "one correction",
         ):
             with self.subTest(marker=marker):
@@ -149,13 +158,36 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
             with self.subTest(dimension=dimension):
                 self.assertIn(dimension, self.protocol_content)
 
-    def test_uses_information_gain_with_a_hard_ceiling(self) -> None:
+    def test_uses_conclusion_driven_completion_with_emergency_safety_only(self) -> None:
         self.assertIn("3 percentage points", self.protocol_content)
         self.assertIn("5 percentage points", self.protocol_content)
         self.assertIn("two consecutive low-information cycles", self.protocol_content)
-        self.assertIn("three cycles for a light debate", self.protocol_content)
-        self.assertIn("six for a deep debate", self.protocol_content)
-        self.assertIn("hard ceiling", self.protocol_content)
+        self.assertIn("continue beyond six", self.protocol_content)
+        self.assertIn("emergency safety", self.protocol_content.lower())
+        self.assertIn("not an ordinary completion target", self.protocol_content)
+        self.assertNotIn("hard ceiling of three", self.content)
+        self.assertNotIn("hard ceiling of six", self.content)
+
+    def test_requires_the_deterministic_controller_for_procedure(self) -> None:
+        self.assertTrue(CONTROLLER_PATH.is_file())
+        for marker in (
+            "`scripts/debate_controller.py`",
+            "structured action envelope",
+            "controller-returned `next_actor` and `next_action`",
+            "Do not advance a phase, speaker, Claim ID, or terminal state manually",
+            "serialized controller state",
+            "`event_id`",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.protocol_content)
+        for marker in (
+            "duplicate_delivery",
+            "conflicting_event_id",
+            "artifact_metadata",
+            "SAFETY_CEILING",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.controller_content)
 
     def test_reports_what_would_resolve_the_dispute(self) -> None:
         self.assertIn("WHAT_WOULD_RESOLVE_THIS", self.protocol_content)
@@ -166,27 +198,19 @@ class AutonomousDebateProtocolTests(unittest.TestCase):
         for marker in ("user cancellation", "agent failure", "message-delivery failure"):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.content)
-        self.assertIn("Send `STOP` to every active agent", self.content)
+        self.assertIn("send `STOP`", self.content)
 
-    def test_uses_parent_observable_phase_deadlines(self) -> None:
+    def test_uses_configurable_emergency_limits_instead_of_normal_deadlines(self) -> None:
         for marker in (
-            "DEBATE_START",
-            "DEBATE_DEADLINE",
-            "RESOLUTION_START",
-            "RESOLUTION_DEADLINE",
+            "event_limit",
+            "time_limit_seconds",
+            "SAFETY_CEILING",
+            "INCOMPLETE",
+            "TRUE_DEADLOCK",
         ):
             with self.subTest(marker=marker):
-                self.assertIn(marker, self.content)
-
-        self.assertIn("planned substantive turn ceiling", self.content)
-        self.assertIn("max(4 minutes, camp count * 1 minute)", self.content)
-        self.assertIn("successfully sent `START` to the opener", self.content)
-        self.assertIn(
-            "successfully sent the identical `RESOLUTION_REQUEST` to every active voting camp",
-            self.content,
-        )
-        self.assertNotIn("Use 4 minutes, 3 rounds", self.content)
-        self.assertNotIn("Use 12 minutes, 5 rounds", self.content)
+                self.assertIn(marker, self.protocol_content)
+        self.assertIn("cannot fabricate consensus or a winner", self.protocol_content)
 
     def test_requires_a_group_chat_artifact_with_a_text_fallback(self) -> None:
         self.assertIn("`scripts/render_debate_chat.py`", self.content)

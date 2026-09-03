@@ -1,10 +1,12 @@
 ---
 source: skills/codex-autonomous-debate/references/group-chat-ui.md
-source_commit: 4547b0f9218b08489064f459dbf1706a8c38a805
+source_blob: 36ff243aa21477611544cbe6b89bf10c8c5a5bd8
 canonical: false
 ---
 
 # Group chat artifact 日本語参考訳
+
+controllerの監査情報は、終了後の任意の `controller` fieldに保持できる。`terminal_status` はartifactのstatusと一致させ、安定したevent ID、構造化actionの履歴、シリアライズしたresume情報を含める。candidateのprivate provenanceはネスト内にも含めず、participantの原文や討論の意味を要約・書換えしてはならない。
 
 この文書は `skills/codex-autonomous-debate/references/group-chat-ui.md` の日本語参考訳です。Codex が実行時に読む canonical な定義は英語版です。
 
@@ -31,6 +33,14 @@ UTF-8 JSONを次の形で書く。v3 field（`proposition_type`、`decision_rule
   "debate_progress": {
     "completed_phases": ["OPENING", "CROSS_EXAM", "RESPONSE", "UPDATE"],
     "completed_crucial_cycles": 1
+  },
+  "controller": {
+    "schema_version": 1, "debate_id": "stable-debate-id", "phase": "OPENING", "cycle": 0,
+    "accepted_sequence": 1, "next_actor": "affirmative", "next_action": "TURN",
+    "terminal_status": null, "emergency_safety": {"event_limit": 10000, "time_limit_seconds": null},
+    "events": [{"event_id": "stable-event-id", "sequence": 1, "phase": "OPENING", "cycle": 0,
+      "participant": "affirmative", "observed_at": "2026-09-03T00:00:00Z", "committed_at": "2026-09-03T00:00:00Z",
+      "action_type": "TURN", "accepted": true, "rejection_reason": null, "payload": {}}]
   },
   "status": "FINAL_CONSENSUS | CONSENSUS_WITH_RESERVATIONS | FINAL_WINNER | TRUE_DEADLOCK | INCOMPLETE",
   "evidence_mode": "closed-book | shared-evidence",
@@ -142,7 +152,7 @@ Evidence Cardは構造化された証拠説明であって、情報源が正し�
 
 Forecast recordは `FORECAST` artifactだけで許可する。`cycle` は `AFTER_CRUCIAL_DISPUTE` だけで必須となり、繰り返したadaptive cycleを区別する。各 `(camp, checkpoint, cycle)` は一意で、`lower <= probability <= upper` を満たす。`debate_progress` には完了済み作業だけを記録する。`completed_phases` は `OPENING`、`CROSS_EXAM`、`RESPONSE`、`UPDATE` の順序付きprefix、`completed_crucial_cycles` は完全に終えたadaptive cycle数である。
 
-`INCOMPLETE` 以外の終了済み `FORECAST` artifactは、全advocateの `PRIOR` と `FINAL`、`RESPONSE` 完了時の `AFTER_CROSS_EXAM`、完了した全crucial cycleの記録を含む。これにより、早い `DEBATE_DEADLINE` 後の有効resolutionでは未実施phaseのcheckpointを省略できる。`debate_progress` がない場合は旧v3の厳格な要件を維持する。`INCOMPLETE` は失敗証跡を表示できるよう部分recordを保持してよい。予測値はrole-conditionedな参加者予測であり、独立sample、投票、校正済み確率ではない。trajectoryとして表示し、平均しない。校正には、通常は複数予測について後日 `decision_rule.resolution_source` で結果を確定する必要がある。
+`INCOMPLETE` 以外の終了済み `FORECAST` artifactは、全advocateの `PRIOR` と `FINAL`、完了したphaseの記録を含む。`debate_progress` がない場合は旧v3の厳格な要件を維持する。`INCOMPLETE` は失敗証跡を表示できるよう部分recordを保持してよい。予測値はrole-conditionedな参加者予測であり、独立sample、投票、校正済み確率ではない。trajectoryとして表示し、平均しない。校正には、通常は複数予測について後日 `decision_rule.resolution_source` で結果を確定する必要がある。
 
 Evidence Linkは既存のEvidence Card 1件とClaim 1件を参照し、各dimensionは情報源全体ではなくその関係を評価する。dimensionを未定義の総合scoreへまとめない。`needed_evidence` は既存Claim IDを参照し、falsifierまたは `does_not_establish` のgapへ追跡できるようにする。
 

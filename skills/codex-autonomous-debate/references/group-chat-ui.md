@@ -4,7 +4,7 @@ Use this format only after a debate reaches a terminal state. The renderer is de
 
 ## Input document
 
-Write UTF-8 JSON with this shape. v3 fields (`proposition_type`, `decision_rule`, `forecast_records`, Claim `falsifier`, `evidence_links`, and `needed_evidence`) and the earlier structured fields remain optional for backward compatibility. When `proposition_type` is present, `decision_rule` is required; `FORECAST` also requires a probability `threshold`. New resolution messages use `resolution_stage` to distinguish anonymous procedure from attributed public statements.
+Write UTF-8 JSON with this shape. v3 fields (`proposition_type`, `decision_rule`, `forecast_records`, Claim `falsifier`, `evidence_links`, and `needed_evidence`), optional v4 `controller` audit metadata, and the earlier structured fields remain optional for backward compatibility. When `proposition_type` is present, `decision_rule` is required; `FORECAST` also requires a probability `threshold`. New resolution messages use `resolution_stage` to distinguish anonymous procedure from attributed public statements.
 
 ```json
 {
@@ -99,6 +99,32 @@ Write UTF-8 JSON with this shape. v3 fields (`proposition_type`, `decision_rule`
       "collection": "Feasible source or measurement design"
     }
   ],
+  "controller": {
+    "schema_version": 1,
+    "debate_id": "stable-debate-id",
+    "phase": "COMMON_CORE_CONFIRMATION",
+    "cycle": 2,
+    "accepted_sequence": 12,
+    "next_actor": null,
+    "next_action": null,
+    "terminal_status": "TRUE_DEADLOCK",
+    "emergency_safety": {"event_limit": 10000, "time_limit_seconds": null},
+    "events": [
+      {
+        "event_id": "stable-event-id",
+        "sequence": 1,
+        "phase": "OPENING",
+        "cycle": 0,
+        "participant": "affirmative",
+        "observed_at": "2026-09-03T00:00:00Z",
+        "committed_at": "2026-09-03T00:00:00Z",
+        "action_type": "TURN",
+        "accepted": true,
+        "rejection_reason": null,
+        "payload": {}
+      }
+    ]
+  },
   "messages": [
     {
       "kind": "argument | resolution",
@@ -128,11 +154,13 @@ Write UTF-8 JSON with this shape. v3 fields (`proposition_type`, `decision_rule`
 
 The renderer accepts legacy `DEADLOCK` artifacts in addition to the current terminal statuses so previously generated transcripts remain readable. New debates should emit `TRUE_DEADLOCK` when the operative decisions are genuinely incompatible.
 
+`controller` is optional so all earlier artifacts remain valid. For new controller-driven debates, populate it only after termination with `debate_controller.py show --artifact` or `artifact_metadata()` output. Its non-null `terminal_status` must equal the artifact status. Accepted event sequences must be contiguous from 1 through `accepted_sequence`; rejected delivery attempts have no sequence or commit time and retain a rejection reason. Candidate-submission events must use participant `anonymous`. Never place private candidate provenance at any nesting depth in a user-facing artifact. The HTML renders this data in a collapsed protocol-audit panel rather than mixing transport metadata into the discussion.
+
 `argument` messages require a known camp. Every `resolution` message in a state-driven artifact with `proposition_type` must set `resolution_stage`. A `candidate` or `confirmation` must omit `camp` and provide a neutral `speaker` such as `Candidate A` or `Common-core check`; the renderer rejects camp identity on these anonymous stages. A `public-statement` must name its `camp`. Legacy artifacts without `proposition_type` may omit `resolution_stage` so old files remain readable. `system` and `intervention` messages do not require a camp. `phase` is preferred for state-driven debates; legacy `round` remains supported.
 
 Evidence Cards are structured descriptions, not proof that a source is correct. Preserve the distinction between the directly measured `main_finding`, its `limitations`, causal strength, and generalizability. Only `http` and `https` source links are accepted. A Claim Ledger entry may reference only Evidence Card IDs present in the same document. Legacy belief values are participant self-assessments between `0` and `1`, not independent evidence or calibrated forecasts.
 
-Forecast records are allowed only for `FORECAST` artifacts. `cycle` is required only for `AFTER_CRUCIAL_DISPUTE`, where it distinguishes repeated adaptive cycles. Each `(camp, checkpoint, cycle)` tuple must be unique, and `lower <= probability <= upper`. Record fully completed work in `debate_progress`: `completed_phases` must be an ordered prefix of `OPENING`, `CROSS_EXAM`, `RESPONSE`, `UPDATE`, and `completed_crucial_cycles` counts fully completed adaptive cycles. Every terminal `FORECAST` artifact except `INCOMPLETE` must include `PRIOR` and `FINAL` for every advocate, `AFTER_CROSS_EXAM` when `RESPONSE` completed, and one record from every advocate for every completed crucial cycle. This lets a valid resolution after an early `DEBATE_DEADLINE` omit checkpoints for phases that never completed. If `debate_progress` is absent, the renderer preserves the stricter legacy v3 behavior and requires `AFTER_CROSS_EXAM` plus every observed crucial-cycle checkpoint. `INCOMPLETE` artifacts may retain partial records so failure evidence remains renderable. These values are role-conditioned participant forecasts, not independent samples, votes, or calibrated probabilities. Display them as trajectories; do not average them. Calibration requires later outcome settlement against `decision_rule.resolution_source`, normally across multiple forecasts.
+Forecast records are allowed only for `FORECAST` artifacts. `cycle` is required only for `AFTER_CRUCIAL_DISPUTE`, where it distinguishes repeated adaptive cycles. Each `(camp, checkpoint, cycle)` tuple must be unique, and `lower <= probability <= upper`. Record fully completed work in `debate_progress`: `completed_phases` must be an ordered prefix of `OPENING`, `CROSS_EXAM`, `RESPONSE`, `UPDATE`, and `completed_crucial_cycles` counts fully completed adaptive cycles. Every terminal `FORECAST` artifact except `INCOMPLETE` must include `PRIOR` and `FINAL` for every advocate, `AFTER_CROSS_EXAM` when `RESPONSE` completed, and one record from every advocate for every completed crucial cycle. `INCOMPLETE` may omit checkpoints for phases that never completed after a failure or emergency safeguard. If `debate_progress` is absent, the renderer preserves the stricter legacy v3 behavior and requires `AFTER_CROSS_EXAM` plus every observed crucial-cycle checkpoint. `INCOMPLETE` artifacts may retain partial records so failure evidence remains renderable. These values are role-conditioned participant forecasts, not independent samples, votes, or calibrated probabilities. Display them as trajectories; do not average them. Calibration requires later outcome settlement against `decision_rule.resolution_source`, normally across multiple forecasts.
 
 An Evidence Link references one existing Evidence Card and one existing Claim. Its dimensions rate that relationship rather than the source globally. Do not combine the dimensions into an undocumented score. `needed_evidence` must reference existing Claim IDs and should be traceable to a falsifier or `does_not_establish` gap.
 

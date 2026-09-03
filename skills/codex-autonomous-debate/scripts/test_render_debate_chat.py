@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
 import json
 from pathlib import Path
@@ -204,6 +205,144 @@ class DebateChatRendererTests(unittest.TestCase):
         self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", html)
         self.assertNotIn("<script>alert(2)</script>", html)
         self.assertIn("&lt;script&gt;alert(2)&lt;/script&gt;", html)
+
+    def test_renders_controller_audit_metadata_without_candidate_provenance(self) -> None:
+        debate = sample_debate()
+        debate["status"] = "TRUE_DEADLOCK"
+        debate["controller"] = {
+            "schema_version": 1,
+            "debate_id": "debate-50",
+            "phase": "COMMON_CORE_CONFIRMATION",
+            "cycle": 7,
+            "accepted_sequence": 2,
+            "next_actor": None,
+            "next_action": None,
+            "terminal_status": "TRUE_DEADLOCK",
+            "emergency_safety": {"event_limit": 10000, "time_limit_seconds": None},
+            "events": [
+                {
+                    "event_id": "evt-1",
+                    "sequence": 1,
+                    "phase": "CRUCIAL_DISPUTE",
+                    "cycle": 7,
+                    "participant": "precaution",
+                    "observed_at": "2026-09-03T00:00:00Z",
+                    "committed_at": "2026-09-03T00:00:00Z",
+                    "action_type": "TURN",
+                    "accepted": True,
+                    "rejection_reason": None,
+                    "payload": {},
+                },
+                {
+                    "event_id": "candidate-1",
+                    "sequence": 2,
+                    "phase": "RESOLUTION_CANDIDATE",
+                    "cycle": 7,
+                    "participant": "anonymous",
+                    "observed_at": "2026-09-03T00:01:00Z",
+                    "committed_at": "2026-09-03T00:01:00Z",
+                    "action_type": "RESOLUTION_CANDIDATE",
+                    "accepted": True,
+                    "rejection_reason": None,
+                    "payload": {"outcome": "DEADLOCK", "decision": "unresolved"},
+                },
+                {
+                    "event_id": "candidate-1",
+                    "sequence": None,
+                    "phase": "RESOLUTION_CANDIDATE",
+                    "cycle": 7,
+                    "participant": "anonymous",
+                    "observed_at": "2026-09-03T00:01:01Z",
+                    "committed_at": None,
+                    "action_type": "RESOLUTION_CANDIDATE",
+                    "accepted": False,
+                    "rejection_reason": "duplicate_delivery",
+                    "payload": {"outcome": "DEADLOCK", "decision": "unresolved"},
+                },
+            ],
+        }
+
+        html = self.renderer.render_document(debate)
+
+        self.assertIn("Protocol audit", html)
+        self.assertIn("debate-50", html)
+        self.assertIn("candidate-1", html)
+        self.assertIn("duplicate_delivery", html)
+        self.assertNotIn("submitted_by", html)
+
+    def test_rejects_invalid_or_identifying_controller_audit_metadata(self) -> None:
+        identifying = sample_debate()
+        identifying["status"] = "INCOMPLETE"
+        identifying["controller"] = {
+            "schema_version": 1,
+            "debate_id": "debate-50",
+            "phase": "RESOLUTION_CANDIDATE",
+            "cycle": 1,
+            "accepted_sequence": 1,
+            "terminal_status": "INCOMPLETE",
+            "events": [
+                {
+                    "event_id": "candidate-1",
+                    "sequence": 1,
+                    "phase": "RESOLUTION_CANDIDATE",
+                    "cycle": 1,
+                    "participant": "precaution",
+                    "observed_at": "2026-09-03T00:00:00Z",
+                    "committed_at": "2026-09-03T00:00:00Z",
+                    "action_type": "RESOLUTION_CANDIDATE",
+                    "accepted": True,
+                    "rejection_reason": None,
+                    "payload": {},
+                }
+            ],
+        }
+        with self.assertRaisesRegex(ValueError, "candidate provenance"):
+            self.renderer.render_document(identifying)
+
+        payload_identifying = sample_debate()
+        payload_identifying["status"] = "INCOMPLETE"
+        payload_identifying["controller"] = copy.deepcopy(identifying["controller"])
+        payload_identifying["controller"]["events"][0]["participant"] = "anonymous"
+        payload_identifying["controller"]["events"][0]["payload"] = {
+            "outcome": "DEADLOCK",
+            "agreed_points": [{"submitted_by": "precaution"}],
+        }
+        with self.assertRaisesRegex(ValueError, "candidate provenance"):
+            self.renderer.render_document(payload_identifying)
+
+        sequence_gap = sample_debate()
+        sequence_gap["status"] = "INCOMPLETE"
+        sequence_gap["controller"] = {
+            "schema_version": 1,
+            "debate_id": "debate-50",
+            "phase": "OPENING",
+            "cycle": 0,
+            "accepted_sequence": 2,
+            "terminal_status": "INCOMPLETE",
+            "events": [
+                {
+                    "event_id": "evt-2",
+                    "sequence": 2,
+                    "phase": "OPENING",
+                    "cycle": 0,
+                    "participant": "precaution",
+                    "observed_at": "2026-09-03T00:00:00Z",
+                    "committed_at": "2026-09-03T00:00:00Z",
+                    "action_type": "TURN",
+                    "accepted": True,
+                    "rejection_reason": None,
+                    "payload": {},
+                }
+            ],
+        }
+        with self.assertRaisesRegex(ValueError, "contiguous"):
+            self.renderer.render_document(sequence_gap)
+
+        missing_terminal = sample_debate()
+        missing_terminal["controller"] = copy.deepcopy(identifying["controller"])
+        missing_terminal["controller"]["terminal_status"] = None
+        with self.assertRaisesRegex(ValueError, "terminal_status is required"):
+            self.renderer.render_document(missing_terminal)
 
     def test_keeps_legacy_documents_compatible(self) -> None:
         debate = sample_debate()
