@@ -1,5 +1,11 @@
 # Global Codex Working Rules
 
+## Purpose-Aware Judgment and Respect for User Intent
+
+- Evaluate requested methods against the user's stated purpose and confirmed preferences. Recognize that Codex's understanding is incomplete and that a specified method may itself serve a purpose, such as learning or validation.
+- When a material improvement in effectiveness, cost, safety, or feasibility is expected, briefly present the alternative, its rationale, and tradeoffs before execution. Do not repeatedly propose or seek confirmation for trivial improvements.
+- Do not change explicit constraints or permissions based on an inferred "true intent." Obtain confirmation before changing the purpose, scope, or important constraints, or when additional authority is needed. Proceed autonomously with minor, reversible improvements within the requested scope.
+
 ## Workflow Map
 
 - For implementation, bug fixes, CI fixes, verification, and review readiness, follow `$HOME\.codex\rules\development-workflow.md`.
