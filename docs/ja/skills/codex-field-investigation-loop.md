@@ -1,6 +1,6 @@
 ---
 source: skills/codex-field-investigation-loop/SKILL.md
-source_blob: 6c8dd8cf4d8bddc72d8e0820765e0266e7f27ee6
+source_blob: 1647fbdccedb31d4e3d90a2d9a69293ceb025a2d
 canonical: false
 ---
 
@@ -10,7 +10,7 @@ canonical: false
 
 ## 目的
 
-現地障害、incident、production、network、infrastructure、device、system troubleshooting を、証拠、仮説、安全な probe、引き継ぎ可能な状態管理に基づいて進める。
+運用・device 障害を繰り返し観測し、調査継続や引き継ぎのため証拠と仮説の durable state が必要な場合に使う。
 
 ## 基本方針
 
@@ -41,7 +41,7 @@ canonical: false
    - 仮説を切り分ける、最も安全で狭い probe を選ぶ。
    - 一度に1つの仮説を test する。
    - cloud、infrastructure、database、deployment、migration probe では、command の前に `codex-cloud-ops-intake` で exact target と approval boundary を確立する。
-   - まず read-only probe を優先する。production mutation、restart、destructive command、deployment、migration、secret handling の前には明示承認で停止する。
+   - まず read-only probe を優先する。production mutation、restart、destructive command、deployment、migration、secret handling は明示承認が必要。operational intake で確立した既存の承認範囲内なら引き継ぎ、不足・拡大する権限について mutation 前に確認する。
 
 6. **Update**
    - 意味のある結果の直後に investigation state bundle を更新する。

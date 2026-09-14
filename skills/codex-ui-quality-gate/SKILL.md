@@ -30,7 +30,7 @@ When subagents are available, prefer delegating focused UI verification to a wor
    - Playwright
    - Puppeteer with installed Chrome
    - static DOM/CSS checks as a last resort
-3. Check at least one desktop and one mobile-sized viewport for changed surfaces. Prefer `1280x800` and `360x720` unless the product has better target sizes.
+3. Select viewports from the product's supported devices and the change's impact. For responsive surfaces supporting desktop and mobile, cover both (for example `1280x800` and `360x720`); desktop-only products need only supported desktop targets. For a local visual edit, inspect the affected surface without expanding to unrelated devices or routes.
 4. Inspect:
    - layout stability
    - text overflow
@@ -51,9 +51,11 @@ Use concrete probes when possible:
 - Page-level overflow: `document.documentElement.scrollWidth > window.innerWidth`.
 - Element overflow: important elements with `scrollWidth > clientWidth`.
 - Bounds overflow: changed elements whose bounding box extends beyond the viewport.
-- At least one relevant interaction or state transition.
+- Relevant interactions or state transitions when the change affects behavior or state-dependent presentation; static content needs visual inspection only.
 
 Be careful with mobile emulation flags; they can change the CSS viewport in ways that hide or invent responsive issues.
+
+Reuse recorded browser evidence when the final UI, relevant environment, supported targets, and expected states are unchanged, following the shared contract. After a fix, rerun affected states/viewports and any checks whose evidence was invalidated; do not repeat unaffected coverage merely to enter the final reporting phase.
 
 Keep browser verification artifacts tidy:
 

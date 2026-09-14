@@ -35,7 +35,7 @@ For trivial defects with an obvious cause and low blast radius, use a lightweigh
 2. Identify the nearest regression evidence and whether a stable test seam exists.
 3. Switch to `codex-implementation`; establish the failing focused test first when the stable seam exists, then make the smallest fix.
 4. Re-run the original symptom check and regression evidence.
-5. Report why full hypothesis branching was unnecessary.
+5. Report the cause, fix, and regression evidence concisely; no explanation of omitted process is needed.
 
 For nontrivial defects, use the full loop:
 
@@ -47,7 +47,7 @@ For nontrivial defects, use the full loop:
    - replay fixture
    - minimal harness
 2. Confirm the loop matches the user's reported symptom.
-3. Generate 2 to 5 falsifiable hypotheses.
+3. If the cause remains uncertain, identify plausible competing hypotheses and a probe that distinguishes them. Do not invent additional hypotheses to meet a count when evidence already establishes the cause.
 4. Test one hypothesis at a time.
 5. Establish the root cause and define regression evidence at the closest correct seam.
 6. When a stable test seam exists, specify the focused regression test and the failure reason it should expose.

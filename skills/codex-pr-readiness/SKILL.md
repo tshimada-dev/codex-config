@@ -33,7 +33,7 @@ When subagents are available, prefer a reviewer agent for a focused pre-PR pass 
 2. Separate your changes from unrelated user changes.
 3. Confirm the diff tells one coherent story. If not, propose splitting.
    - If coherence requires a durable file correction, return that finding to `codex-implementation`; do not patch it inside readiness.
-4. Run relevant verification unless impossible or explicitly skipped by the user. If local verification differs from CI, state the discrepancy instead of claiming the CI contract was satisfied.
+4. Assess existing verification against the final change using the shared contract's evidence-reuse conditions. Run only missing or invalidated checks; entering readiness alone does not require another run. If local verification differs from CI, state the discrepancy instead of claiming the CI contract was satisfied.
 5. Trace applicable acceptance IDs or expected outcomes to the named evidence and its result.
 6. Assign one evidence-based status:
    - `ready`: all required evidence is complete and passing, with no unresolved blocking finding.

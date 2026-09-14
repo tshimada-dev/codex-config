@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/workbook-format.md
-source_blob: 1dd842f89767a62289ab8e089196e39f289049e1
+source_blob: 68f4b0299a756fee5a43b9d3d19866ff4c324649
 canonical: false
 ---
 
@@ -338,7 +338,7 @@ delivery 前に確認します。
 - required sheets が exact names と order で存在する。
 - optional sheets は存在する場合 fixed names を保つ。
 - required columns が存在し、順序も正しい。
-- `10_親統合` にすべての standard delegate について run/skip reason を含む pass coverage table がある。
+- `10_親統合` に、選択した tier が要求する各 pass の pass coverage table があり、`full` では coverage gate の全 pass について run/skip reason を含む。
 - totals と PERT expected values が formulas を使っている。
 - PERT total range が simple endpoint sums ではなく variance aggregation を使っている。
 - independent PERT が skipped でも、WBS three-point data から WBS-derived variance aggregation が作られる。

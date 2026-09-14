@@ -1,4 +1,4 @@
 interface:
   display_name: "Codex Cloud Ops Intake"
   short_description: "Confirm cloud targets and mutation approval packets."
-  default_prompt: "Use this skill to establish exact cloud or database target identity, classify the operation, and prepare the fixed approval packet before mutation."
+  default_prompt: "Use $codex-cloud-ops-intake to establish the operational target and approval scope, reuse existing authorization within its bounds, and prepare a reviewable plan for any missing authorization."

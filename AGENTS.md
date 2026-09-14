@@ -20,7 +20,7 @@
 ## Safety Boundaries
 
 - Repository trust and repository-controlled command execution are governed by `$HOME\.codex\rules\development-workflow.md`.
-- Before cloud, infrastructure, database, deployment, or migration commands, use `codex-cloud-ops-intake` to establish the exact target and approval boundary.
+- Before commands that operate on actual cloud/infrastructure environments or live databases, or execute deployments/migrations, use `codex-cloud-ops-intake` to establish target identity and approval scope. Local file edits, disposable fixture tests, and ordinary Git/PR operations do not trigger this gate by themselves.
 - Do not run destructive local commands, remote-changing commands, publishing commands, deployments, production migrations, or secret-handling operations without explicit user approval.
 - Do not inspect, print, copy, upload, or summarize secrets, tokens, private keys, cookies, or `.env` contents unless the user explicitly asks and the task requires it.
 

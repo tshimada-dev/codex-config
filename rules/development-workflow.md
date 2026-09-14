@@ -25,7 +25,7 @@ Prefer a focused test-first loop when a stable test seam is deterministic, relev
 
 If that loop is impractical, record why before the permanent change and establish the narrowest credible feedback instead. Examples include a characterization test, CLI or HTTP reproduction, fixture, static or policy check, render inspection, browser probe, or an explicit manual procedure. A flaky, unrelated, or unexplained failure is not a valid test-first failure.
 
-Implementation feedback may run throughout implementation. It does not replace final verification.
+Implementation feedback may run throughout implementation. Final verification still assesses the integrated result; it may reuse qualifying evidence under the conditions below rather than repeating an unchanged check.
 
 ## Workflow Phases
 
@@ -55,6 +55,8 @@ Intake and scouting discover constraints and likely verification commands; they 
 ## Final Verification and Readiness
 
 Final verification is the post-implementation assessment of the integrated change. Discover the repository's real commands, run the narrowest meaningful checks first, broaden in proportion to the changed contract, and distinguish local substitutes from CI-equivalent evidence.
+
+Reuse a recorded passing check when it covers the final relevant code/diff, configuration, dependencies, environment, and expected outcomes, and no later change or unresolved failure invalidates it. Record the command or probe, result, and tested state. A phase transition alone does not require rerunning it. Run missing or invalidated checks; rerun time-sensitive, flaky, or externally dependent evidence when freshness or reliability is material. Repository- or user-required fresh checks still apply.
 
 Classify readiness as:
 

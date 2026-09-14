@@ -1,100 +1,51 @@
 ---
 source: skills/codex-effort-estimator/SKILL.md
-source_blob: 1c68339ae2d31216b3f3cf104c5a9b169a1609a4
+source_blob: ecd9409e63c02172f2a8826066b361ed6386c4a3
 canonical: false
 ---
 
 # codex-effort-estimator 日本語参考訳
 
-この文書は `skills/codex-effort-estimator/SKILL.md` の日本語参考訳です。Codex が実行時に読む canonical な定義は英語版です。
+この文書は `skills/codex-effort-estimator/SKILL.md` の日本語参考訳です。実行時に読む canonical な定義は英語版です。
 
-## 目的
+ソフトウェア delivery の person-day range、WBS、timeline feasibility、quote-grade estimate input が必要なときに、説明可能な見積もりを作ります。source facts と judgment を分け、不確実性には range を使い、assumption、exclusion、risk、confidence を示します。人間の delivery estimate を AI-agent の wall-clock time に変換しません。price、rate、currency は求められた場合だけ扱います。
 
-ソフトウェア開発、機能追加、公共・業務システム、RFP、GitHub issue backlog、既存 repository の再構築費用などについて、説明可能な工数見積もりを行うための薄い統括スキルです。
+## 最初に tier を選ぶ
 
-## 使い方
+[estimate-tiers.md](codex-effort-estimator/references/estimate-tiers.md) を読み、pass を選ぶ前に `quick`、`standard`、`full` を決めます。最終結果には tier、理由、tier が要求する pass の status を記録し、`full` では coverage gate の全 pass も記録します。
 
-依頼内容を見積もりタイプに分類し、このスキル内の reference を使って見積もります。外部の見積もり Skill は前提にせず、sizing、WBS、component unit anchor、parametric model、function point、use case points、top-down three-point、constraint capacity、risk model、PERT、analogy calibration、discovery、AI coding assistance adjustment、公共・帳票 review、repository rebuild/completion の各手法を同一 Skill 内の独立した reference として扱います。
+- `quick` は、定義された最小 spine とユーザーが指定した pass だけを使う上限付きの見積もりです。method ごとの delegation は必須ではありません。
+- `standard` は、定義された spine と指定された1つの独立 sizing anchor を実行します。該当し得る全 pass には拡張しません。
+- `full` は、該当する coverage gate をすべて適用します。evidence-based な skip 理由がある場合だけ skip できます。
 
-## 基本 Workflow
+tier reference の escalation rule に該当するときは tier を上げます。implementation sizing に足るほど入力が安定していないときは、先に discovery を見積もります。
 
-1. scope、out of scope、不明点、対象読者、単位を確認する。
-2. document、repository、issue backlog などの根拠を収集する。
-3. 該当する Decision Path をすべて選び、Pass Coverage Gate で全 pass を `run` / `skipped` / `not applicable` に分類し、skip 理由を記録する。
-4. 手法 pass を実行する前に subagent が利用可能かを最優先で確認し、利用可能なら規模に関係なく手法ごとに subagent を分ける。
-5. WBS、component unit anchor、parametric model、function point、use case points、top-down three-point、constraint capacity、risk model、PERT、repo-cost、discovery など該当 pass を実行する。
-6. 前提、除外、リスク、信頼度、確認事項、pass coverage を含めて要約する。
+## 作業を route する
 
-## Subagent 統括
+[methods.md](codex-effort-estimator/references/methods.md) で method selection、three-point range synthesis、dependence cluster、数値上の safeguard を確認します。必要な method reference だけを読みます。
 
-subagent 利用の目的は並行作業ではなく、見積もり観点の独立性と anchoring の抑制です。親 agent は手法 pass を始める前に `spawn_agent` などの delegation tool が利用可能かを確認し、利用可能なら対象規模に関係なく手法別 subagent に委譲します。subagent を使う場合、親 agent は scope、source files、output unit、output schema、使用する local reference だけを渡します。tool が直接 file/context を選べる場合は、指定した reference と source document だけを渡します。subagent がこの Skill 本文を読む必要がある場合も、手法としては指定 reference だけに従わせ、親の推測、過去の見積もり、期待するレンジ、他の estimator の結論は渡しません。
+- countable scope: `sizing-pass.md` と、tier が選んだ component-unit または別の anchor。
+- feature/document scope: `wbs-pass.md`。既に task が分解されている場合: `pert-pass.md`。
+- measurable driver、functional boundary、workflow: `parametric-model-pass.md`、`function-point-pass.md`、`use-case-points-pass.md` から tier が要求するもの。
+- whole-project anchor: `top-down-three-point-pass.md`。
+- staffing/calendar: `constraint-capacity-pass.md`、material uncertainty: `risk-model-pass.md`、historical actual: `analogy-calibration-pass.md`、unstable scope: `discovery-pass.md`、existing code: `repo-cost-pass.md`、AI-assisted coding: `ai-coding-assistance-adjustment.md`、public/report/acceptance: `public-review-pass.md` と `public-sector-business-systems.md`。
+- repeated variant または shared skeleton: `repetition-and-reuse.md`。
 
-標準の delegate は以下です。
+three-point data があれば必ず range synthesis を行います。`WBS-derived variance aggregation` は WBS の不確実性を再表現したものであり、独立した method vote ではありません。synthesis までは method の独立性を保ち、同じ risk を二重に数えず、count、productivity、lifecycle、risk assumption を共有する method を別票にしません。
 
-- Sizing pass: `references/sizing-pass.md`
-- WBS bottom-up pass: `references/wbs-pass.md`
-- Component unit anchor pass: `references/component-unit-anchor-pass.md`
-- Parametric model pass: `references/parametric-model-pass.md`
-- Function point pass: `references/function-point-pass.md`
-- Use case points pass: `references/use-case-points-pass.md`
-- Top-down three-point pass: `references/top-down-three-point-pass.md`
-- Constraint capacity pass: `references/constraint-capacity-pass.md`
-- Risk model pass: `references/risk-model-pass.md`
-- PERT pass: `references/pert-pass.md`
-- Analogy calibration pass: `references/analogy-calibration-pass.md`
-- Discovery pass: `references/discovery-pass.md`
-- AI coding assistance adjustment pass: `references/ai-coding-assistance-adjustment.md`
-- Public-sector/business-system review pass: `references/public-review-pass.md` と `references/public-sector-business-systems.md`
-- Repository rebuild/completion pass: `references/repo-cost-pass.md`
+## Delegation
 
-親 agent は各手法の差分を比較し、前提や scope の違いを明示したうえで、最終レンジと planning center をまとめます。同じ主要 count、隠れ scope 仮定、生産性係数、lifecycle 範囲、risk uplift を共有する手法は method-dependence cluster としてまとめ、cluster 内の一致を複数の独立票として扱いません。
+delegation は独立した viewpoint に役立つ場合にだけ、estimate の規模に比例して使います。quick estimate は parent だけで完了して構いません。独立 pass を委譲する場合は [delegation-input-design.md](codex-effort-estimator/references/delegation-input-design.md) に従い、raw source または mechanical fact だけを渡し、parent conclusion や他 method total は渡しません。dependent adjustment/review pass には宣言された input artifact を渡せます。
 
-WBS、component unit、UCP、parametric などが同じ use case 数や同じ productivity 仮定で高位に揃った場合、それは「1つの高位 cluster」として扱います。FP、constraint capacity、top-down、analogy、実績 productivity など異なる evidence からの anchor と比較し、最終中心を高位 cluster に寄せるなら、低位 anchor がどの lifecycle・scope・risk を落としているのかを明示します。説明できない場合は planning center または final range を独立 anchor 側へ寄せます。
+## Synthesis と delivery
 
-非 trivial な見積もりでは、最低限 `sizing または sizing 不要理由`、`WBS`、`countable scope がある場合の component unit anchor と parametric model`、`functional-size signal がある場合の function point / use case points`、`top-down three-point`、`必要に応じた constraint capacity / risk model / PERT / repo-cost / discovery / analogy`、`coverage/risk review`、`parent synthesis`、`固定フォーマット Excel workbook` を通します。公共、repo、discovery、analogy、AI補正などの条件付き pass は、実行しない場合も skip 理由を明示します。
+選択した pass の後に [synthesis.md](codex-effort-estimator/references/synthesis.md) を読みます。planning center を選ぶ前に scope と assumption の差を調整します。public/report review は、加算部分が明確に non-overlapping と示せる場合を除き coverage audit として扱います。
 
-Sizing は画面、帳票、CSV、データ、連携、deliverables などの規模根拠として扱い、単独の総工数見積もりにはしません。Component unit anchor は、その count を使って WBS とは別に low/base/high の総工数を出す独立 pass として扱います。Parametric model、function point、use case points、top-down three-point、constraint capacity、risk model も、該当する入力がある場合は WBS total、WBS-derived PERT、親の期待 range を渡さず実行します。Analogy calibration は過去実績との比較による補正・検証として扱い、WBS/PERT を根拠なく平均値で置き換えません。Discovery は要件が不安定な場合の事前調査・要件定義工数として扱い、実装工数とは分けて表示します。
+stakeholder 向け出力には `output-template.md` を使います。非 trivial な workbook は `spreadsheet-output.md` と `workbook-format.md` を読み、生成後に `scripts/format_estimate_workbook.py` で format します。quick gut-check または text-only request に workbook は不要です。
 
-公共・帳票・受入などの specialist pass は、原則として単純加算する補正値ではなく、WBS/PERT の coverage audit として扱います。親 agent は findings を `already covered`、`missing/thin`、`risk-only` に分け、既に WBS/PERT に含まれる作業は二重計上しません。未織り込み部分だけを調整し、不確実性が高いだけの項目は high range や high-risk scenario に反映します。
+## 必須 safeguard
 
-scope に繰り返しの variant（複数地区・支店・似た帳票や画面）や共有 skeleton がある場合は、`references/repetition-and-reuse.md` を適用します。数えた artifact を bespoke build として積み上げず、framework を一度作り安い variant を足す形で見積もり、skeleton を再利用する feature は割引き、risk は1回だけ計上し、bottom-up total を top-down の per-unit anchor と突合します。これは数えた件数からの bottom-up が成果物の多い案件で系統的に上振れするのを防ぐためです。
-
-## Excel 出力
-
-Excel workbook は、非 trivial な見積もりの標準成果物として扱います。ユーザーが text-only を求めた場合、または quick gut-check の場合だけ省略します。作成時は `references/spreadsheet-output.md` と `references/workbook-format.md` を読み、固定の sheet 名、sheet 順、列構成、色、数値形式に従って作成します。公共・帳票 review のような補正候補は、WBS/PERT などの総工数見積と同じ比較表に置かず、coverage/risk review または adjustment candidate として分けて表示します。
-
-local `.xlsx` を生成した場合は、delivery 前に `scripts/format_estimate_workbook.py` を後処理として使い、sheet ごとの列幅、style、基本 QA を deterministic に適用します。この script は見積もりや range synthesis の代替ではなく、formatting と validation の補助です。
-
-ユーザーが AI coding assistance を前提として明示した場合は、raw human baseline と AI-assisted adjusted range を分けて示します。補正は実装・定型テスト・雛形生成など coding-heavy な工程に限定し、requirements、stakeholder review、acceptance、帳票目視 QA、data validation、deployment coordination、不明な domain decision は安易に削減しません。
-
-PERT の集計では、各 task の期待値を合計し、レンジは端点の単純合計ではなく分散加算で求めます。標準では `total expected ± 1.645 * sqrt(sum(variance))` を 90% confidence range として扱います。独立 PERT pass を skip しても、WBS に low / most likely / high がある場合は `WBS-derived variance aggregation` として同じ集計を行います。ただしこれは WBS 不確実性の再表現であり、独立した第三の見積もり手法としては数えません。WBS の `Likely` は PERT の `Most likely` と同じ中心値を意味します。
-
-## Reference 日本語訳
-
-各 reference の日本語参考訳は [references/](codex-effort-estimator/references/) に置いています。英語版が canonical であり、日本語版は `source` と `source_commit` で対応元を追跡します。
-
-## 注意
-
-- 不完全な要件に対して、過度に精密な数字を出さない。
-- 外部スキルの結論をこの workflow に混ぜない。比較が必要な場合は、ユーザーが明示したときだけ別扱いにする。
-- 単価や金額は、ユーザーが求めた場合だけ扱う。
-- 公共・RFP 案件では、deliverables、review gates、training、manual、acceptance testing、handoff を含める。
-- 繰り返しの variant（地区・支店・似た帳票や画面）を完全に独立したフルビルドとして見積もらない。共有 framework を一度作り、安い variant を足す形にし、variant factor を明記する。
-- 同じ risk を複数回計上しない。three-point の high に既に risk が含まれるなら、同じ不確実性に対して別個の reserve line を足し、かつ相関 endpoint-sum の high を見出しにする、という重複をしない。
-- 未較正の bottom-up total を anchored であるかのように出さない。top-down の per-unit と突合し、measured productivity baseline が無い場合はそう述べる。
-
-## 偽収束を防ぐ親統合
-
-method結果をcount/productivity/lifecycle/riskの共有前提でcluster化し、各eligible clusterの
-実効票を数値`1`に固定します。cluster内のmethod数で票を増やしません。cluster代表値は
-method中心のmedian、neutral planning centerはcluster代表値のmedianとし、
-`scripts/synthesize_method_clusters.py`で再計算可能にします。
-
-高clusterがtarget deliverableに合うという説明だけではoverrideできません。独立clusterを
-押しのける場合は、具体的なscope、unit、lifecycle、riskの不一致を記録し、neutral centerも
-表示します。異なるeligible clusterの代表値がmidpoint比20%以内の場合だけconvergence
-confidenceを上げられます。cluster内の一致はconfidence根拠になりません。
-
-FP/UCPのbase countにはsource statusとsource locatorを持たせます。根拠のない要素発明は
-affected methodのcenter voteを停止し、明示countより25%を超える導出countは確認まで
-sensitivity-onlyにします。
+- 不完全な要件を精密な implementation scope として示さない。
+- generated/vendor code、sample、template を根拠なく full custom-build effort にしない。
+- shared framework は一度だけ見積もり、その後は discount した variant を加える。risk は一度だけ数える。
+- AI coding assistance は明示された場合だけ documented な line-level adjustment で適用する。stakeholder work、acceptance、visual QA、data validation、deployment、未解決 domain work を coding assistance だけで減らさない。

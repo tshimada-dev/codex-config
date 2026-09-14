@@ -21,7 +21,7 @@ For development work, read and follow [`../../rules/development-workflow.md`](..
 4. Ask at most one concise question only when proceeding would require a consequential guess.
 5. Once the target and authority are clear, continue with the naturally applicable task workflow.
 
-For cloud, infrastructure, database, deployment, migration, production/staging, or other remote operational work, use `codex-cloud-ops-intake` before executing commands.
+For commands operating on actual cloud/infrastructure environments or live databases, or executing deployments/migrations, use `codex-cloud-ops-intake` to establish target identity and approval scope. Local file edits and disposable fixture tests do not trigger that gate by themselves.
 
 ## Stop Condition
 

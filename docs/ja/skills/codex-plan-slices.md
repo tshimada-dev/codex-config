@@ -1,6 +1,6 @@
 ---
 source: skills/codex-plan-slices/SKILL.md
-source_blob: 51bbfc3178f12954a567f716a1a8bd8d5b87218a
+source_blob: f2a7bec97259817726e739ab5bb7ed73f12a9863
 canonical: false
 ---
 
@@ -10,7 +10,7 @@ canonical: false
 
 ## 目的
 
-広い engineering work を、安全な vertical slices、TODO、必要なら subagent assignments に分解する。
+依存順序、担当境界、risk を制御する slice が必要な engineering work、または user が計画・task breakdown を求めた場合に使う。複数 file に触れるだけの小さな一貫した変更は、それだけでは発火せず直接扱う。
 
 ## 共通開発契約
 
@@ -44,7 +44,7 @@ explicit slice が必要な広さの作業で使い、repository context が不�
 
 ## Subagent Use
 
-subagents が使える場合は、広い作業、複数ファイル、不慣れな repo、risk のある作業、並列化できる作業で優先して使う。小さな単一ファイル変更、一本道の緊急修正、tooling が使えない場合、user が使わないよう求めた場合は使わない。
+委譲が許可され、親が有用な作業を進める間に bounded assignment を独立して実行できる場合に subagent を使う。file 数だけでは委譲しない。小さな変更、一本道の緊急修正、tooling が使えない場合、user が使わないよう求めた場合は使わない。
 
 - each worker に bounded task を渡す。
 - worker には実装または調査だけを任せる。

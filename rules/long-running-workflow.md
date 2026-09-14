@@ -12,7 +12,7 @@ Follow `development-workflow.md` for expected outcomes, evidence, ownership, ver
 - Keep the parent session focused on decisions, integration, conflict resolution, final verification, and user reporting.
 - Prefer small, reviewable changes and repository-local conventions.
 - Preserve user changes. Never discard uncommitted work unless the user explicitly asks for it.
-- Stop and ask before destructive local operations, remote mutations, publishing, deployments, production data changes, migrations, or touching secrets.
+- Destructive local operations, remote mutations, publishing, deployments, production data changes, migrations, and secret handling require explicit authorization. Carry existing authorization forward within its target and effect bounds; ask before actions outside those bounds. An exact-command approval remains limited to that command.
 
 ## Run Note
 

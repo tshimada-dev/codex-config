@@ -1,6 +1,6 @@
 ---
 source: skills/codex-task-intake/SKILL.md
-source_blob: 2eb093518ce9452f90fba13af9c13d6de55530ac
+source_blob: 06498b80cea7d899d3762988074221d8135ca207
 canonical: false
 ---
 
@@ -24,7 +24,7 @@ canonical: false
 4. consequential guess が必要な場合だけ簡潔な質問を最大1つ行う。
 5. target と authority が明確になったら、自然に適用される task workflow へ進む。
 
-cloud、infrastructure、database、deployment、migration、production/staging、その他 remote operational work では、command 実行前に `codex-cloud-ops-intake` を使う。
+実環境の cloud/infrastructure、live database の操作、deployment/migration 実行では `codex-cloud-ops-intake` で target identity と approval scope を確立する。ローカル file 編集や使い捨て fixture test だけでは、この gate は発火しない。
 
 ## Stop Condition
 

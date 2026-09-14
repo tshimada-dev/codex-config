@@ -1,6 +1,6 @@
 ---
 source: rules/long-running-workflow.md
-source_blob: badae203f32a17dd45be13f54ab54e05aa732268
+source_blob: 6c697bd4890936fd39e9380cd34660cc2b768300
 canonical: false
 ---
 
@@ -19,7 +19,7 @@ canonical: false
 - 親セッションは意思決定、統合、conflict resolution、最終検証、user report に集中させる。
 - 小さく review しやすい変更と、リポジトリローカルの慣習を優先する。
 - ユーザーの変更を保持する。明示依頼なしに uncommitted work を破棄しない。
-- 破壊的なローカル操作、リモート変更、公開、デプロイ、本番データ変更、migration、secret への接触は、事前に確認する。
+- 破壊的なローカル操作、リモート変更、公開、デプロイ、本番データ変更、migration、secret handling は明示承認が必要。既存承認の target/effect 範囲内なら引き継ぎ、範囲外の action 前に確認する。exact command の承認はその command のみに限定される。
 
 ## Run Note
 

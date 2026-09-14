@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/methods.md
-source_blob: 8d5adf57e80ef6a7a22e4bc2749bcc2ba594fd4b
+source_blob: 11f04692f5f015bddafdb7a844ff0d68e84c23e2
 canonical: false
 ---
 
@@ -51,7 +51,7 @@ total_standard_deviation = sqrt(sum(variance))
 confidence_interval = total_expected +/- z * total_standard_deviation
 ```
 
-`z = 1.282` は約 80% confidence、`z = 1.645` は約 90%、`z = 1.960` は約 95% です。fully correlated best/worst-case scenario を明示する場合を除き、`sum(optimistic)` と `sum(pessimistic)` を通常の aggregate range として提示しないでください。
+default stakeholder confidence range には `z = 1.645` の 90% を使います。要求された場合は `z = 1.282` で約 80%、`z = 1.960` で約 95% を使います。fully correlated best/worst-case scenario を明示する場合を除き、`sum(optimistic)` と `sum(pessimistic)` を通常の aggregate range として提示しないでください。
 
 ## Range Synthesis
 

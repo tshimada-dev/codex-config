@@ -1,11 +1,13 @@
 ---
 name: codex-plan-slices
-description: Break broad engineering work into safe vertical slices, TODOs, and optional subagent assignments. Use when work is multi-file, multi-phase, delegated, parallelizable, risky, or when the user asks for a plan, task breakdown, worker agents, subagents, implementation strategy, or large refactor coordination.
+description: Plan engineering work that needs explicit dependency ordering, ownership boundaries, or risk-controlled slices, or when the user requests a plan or task breakdown.
 ---
 
 # Codex Plan Slices
 
 Use this skill to convert broad work into ordered, verifiable slices. Prefer vertical slices that deliver observable behavior over horizontal layer-only tasks.
+
+A change touching several files does not by itself need this skill. Handle small, coherent edits directly unless the user asks for a plan or dependency/risk decisions require explicit decomposition.
 
 ## Shared Development Contract
 
@@ -43,7 +45,7 @@ Use when the work is broad enough to need explicit slices, usually after `codex-
 
 ## Subagent Rules
 
-Prefer subagents when available for broad, multi-file, unfamiliar, risky, or parallelizable work so the parent context stays small and decision-focused.
+Use subagents when authorized and a bounded assignment can run independently alongside useful parent work. File count alone is not a reason to delegate.
 
 Skip subagents for tiny edits, single-file linear changes, urgent blocking work, unavailable tooling, or when the user asks not to use them.
 

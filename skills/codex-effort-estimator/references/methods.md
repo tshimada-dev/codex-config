@@ -45,7 +45,7 @@ total_standard_deviation = sqrt(sum(variance))
 confidence_interval = total_expected +/- z * total_standard_deviation
 ```
 
-Use `z = 1.282` for about 80% confidence, `z = 1.645` for about 90%, and `z = 1.960` for about 95%. Do not present `sum(optimistic)` and `sum(pessimistic)` as the normal aggregate range unless you explicitly mean a fully correlated best/worst-case scenario.
+Use `z = 1.645` as the default 90% stakeholder confidence range. Use `z = 1.282` for about 80% confidence or `z = 1.960` for about 95% when requested. Do not present `sum(optimistic)` and `sum(pessimistic)` as the normal aggregate range unless you explicitly mean a fully correlated best/worst-case scenario.
 
 ## Range Synthesis
 

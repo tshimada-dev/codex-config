@@ -32,12 +32,12 @@ Use this structure for concise estimate deliverables.
 
 ## Required Explanation
 
-Always include:
+Always include the selected tier and its required evidence. For `full`, also include every applicable coverage-gate result. Do not claim an optional method was skipped merely because a lower tier did not require it.
 
 - Pass coverage: which method passes were run, skipped, or not applicable, with reasons
-- Independent component unit anchor when countable scope exists, or the reason it could not be run
-- WBS vs component-anchor agreement/disagreement and what caused any material gap
-- Independent parametric, function point, use case point, top-down three-point, constraint capacity, and risk model results when applicable, or explicit skip reasons
+- Results and explicit tier/coverage status for each selected total-estimate method
+- WBS vs component-anchor agreement/disagreement when both ran
+- For `full`, independent parametric, function point, use case point, top-down three-point, constraint capacity, and risk model results when applicable, or explicit gate skip reasons
 - Cross-method disagreement: which assumptions, counts, coefficients, productivity baselines, constraints, or risk drivers explain the gap
 - Method-dependence decision ledger with one numeric vote per cluster, median
   representative center, neutral center, independent-anchor disposition, and

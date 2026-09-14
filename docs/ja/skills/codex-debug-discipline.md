@@ -1,6 +1,6 @@
 ---
 source: skills/codex-debug-discipline/SKILL.md
-source_blob: 705d0d7b483b11bfba6287955882fd56fb97f732
+source_blob: 46ce2a9159728b3859bdc7aa307d2251782c2a5a
 canonical: false
 ---
 
@@ -19,6 +19,8 @@ bug、failing tests、flaky behavior、performance regression、wrong output、c
 ## Debug Loop
 
 - 原因が明らかで影響範囲が小さい trivial defect では、症状または code path を確認して regression shape を記録し、恒久修正前に `codex-implementation` へ切り替える。
+- 原因が不明な場合は、競合する仮説とそれらを区別する probe を用意する。証拠で原因が分かっている場合に、個数を満たすための仮説を追加しない。
+- 小さな修正の報告は原因・修正・regression evidence に集中し、省略した手順の説明を要求しない。
 - まず症状を再現または観察する。
 - 失敗している command、route、input、state、expected/actual を切り分ける。
 - static inspection だけで飛びつかず、可能な限り runnable reproduction を作る。

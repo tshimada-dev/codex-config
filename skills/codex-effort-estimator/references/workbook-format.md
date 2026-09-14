@@ -372,7 +372,7 @@ Before delivery, verify:
 - Required sheets exist with exact names and order.
 - Optional sheets keep their fixed names when present.
 - Required columns are present and in order.
-- `18_親統合` includes a pass coverage table for every standard delegate with run/skip reason.
+- `18_親統合` includes a pass coverage table for every pass required by the selected tier; `full` also includes every coverage-gate pass with its run/skip reason.
 - Totals and PERT expected values use formulas.
 - PERT total range uses variance aggregation, not simple endpoint sums.
 - WBS three-point data produces WBS-derived variance aggregation even when independent PERT was skipped.

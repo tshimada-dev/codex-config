@@ -1,6 +1,6 @@
 ---
 name: codex-field-investigation-loop
-description: "Run disciplined Codex-led incident, field, production, network, infrastructure, device, or system troubleshooting using an investigation state bundle as the canonical source of truth. Use when Codex must investigate a fault over multiple observations: clarify the problem, preserve evidence, separate facts from inference, maintain durable CSV/JSONL/Markdown state, optionally render an XLSX workbook for human review, use subagents for independent hypothesis generation or assumption checks, test hypotheses safely, update conclusions, and hand off next actions."
+description: Investigate operational or device faults across repeated observations when evidence and hypotheses need durable state for continued investigation or handoff.
 ---
 
 # Codex Field Investigation Loop
@@ -34,7 +34,7 @@ Use an investigation state bundle as the canonical source of truth. Treat chat a
    - Pick the safest, narrowest probe that distinguishes hypotheses.
    - Test one hypothesis at a time.
    - For cloud, infrastructure, database, deployment, or migration probes, use `codex-cloud-ops-intake` to establish the exact target and approval boundary before commands.
-   - Prefer read-only probes first. Stop for explicit approval before production mutations, restarts, destructive commands, deployments, migrations, or secret handling.
+   - Prefer read-only probes first. Production mutations, restarts, destructive commands, deployments, migrations, and secret handling require explicit authorization. Reuse existing authorization only within its approved bounds, as established by the operational intake; ask for missing or expanded authority before mutation.
 
 6. **Update**
    - Update the investigation state bundle immediately after each meaningful result.

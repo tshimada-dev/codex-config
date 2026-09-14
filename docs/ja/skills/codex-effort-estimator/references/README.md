@@ -12,6 +12,7 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [component-unit-anchor-pass.md](component-unit-anchor-pass.md): component 数と unit anchor による独立 top-down 見積もり
 - [constraint-capacity-pass.md](constraint-capacity-pass.md): deadline、staffing、review gate による capacity/feasibility 見積もり
 - [discovery-pass.md](discovery-pass.md): 要件不確実時の discovery 見積もり
+- [estimate-tiers.md](estimate-tiers.md): quick / standard / full の required method set と escalation
 - [function-point-pass.md](function-point-pass.md): function point による functional-size 見積もり
 - [methods.md](methods.md): 共通見積もり手法とレンジ計算
 - [output-template.md](output-template.md): 見積もり出力テンプレート
@@ -24,6 +25,7 @@ Codex が実行時に読む canonical な定義は、リポジトリ直下の英
 - [risk-model-pass.md](risk-model-pass.md): probability/impact による risk-adjusted 見積もり
 - [sizing-pass.md](sizing-pass.md): 画面・帳票・データ等の規模カウント
 - [spreadsheet-output.md](spreadsheet-output.md): 見積もり workbook 出力方針
+- [synthesis.md](synthesis.md): method result の親統合と調整
 - [three-point-aggregation-golden.md](three-point-aggregation-golden.md): 三点見積もり集計の golden case
 - [top-down-three-point-pass.md](top-down-three-point-pass.md): project 全体を直接見る top-down 三点見積もり
 - [use-case-points-pass.md](use-case-points-pass.md): actor/use case による use case points 見積もり

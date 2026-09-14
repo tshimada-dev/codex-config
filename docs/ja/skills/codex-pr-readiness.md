@@ -1,6 +1,6 @@
 ---
 source: skills/codex-pr-readiness/SKILL.md
-source_blob: 3e85e0e6981ad234fe8f5b94c77811d696e4ef08
+source_blob: d4d6f6caa596eb4f1d98593f1e79cf665da75657
 canonical: false
 ---
 
@@ -27,7 +27,7 @@ readiness report、commit message、PR textなどのworkflow/evidence artifact�
 2. 自分の変更と無関係な user changes を分ける。
 3. diff が一つの coherent story になっているか確認する。そうでない場合は分割を提案する。
 - coherenceのために恒久file correctionが必要ならreadiness内でpatchせず、`codex-implementation`へ戻す。
-4. 可能なら relevant verification を実行する。local verification が CI と異なる場合は、CI contract を満たしたと主張せず、差分を明示する。
+4. 共通契約の再利用条件に従って最終変更と既存 verification を照合し、不足・無効化された check だけ実行する。readiness に移っただけでは再実行しない。local verification が CI と異なる場合は、CI contract を満たしたと主張せず、差分を明示する。
 5. summary を用意する。
    - what changed
    - why it changed

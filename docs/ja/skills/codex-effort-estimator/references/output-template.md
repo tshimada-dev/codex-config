@@ -1,6 +1,6 @@
 ---
 source: skills/codex-effort-estimator/references/output-template.md
-source_blob: 595cbf79efdd907534af13dc2f2ee239d8c22adc
+source_blob: 9da866b90bfa2ff048543cca01309afa2bc267a1
 canonical: false
 ---
 
@@ -37,12 +37,12 @@ canonical: false
 
 ## Required Explanation
 
-必ず含めるもの:
+選択した tier と、その tier が必要とする evidence を必ず含めます。`full` では該当する coverage-gate result もすべて含めます。lower tier が要求しない method を、skip したと表現しません。
 
-- Pass coverage: どの method pass を run / skipped / not applicable にしたかと理由。
-- countable scope がある場合の independent component unit anchor、または実行できなかった理由。
-- WBS と component-anchor の agreement/disagreement、および material gap の原因。
-- applicable な場合の independent parametric、function point、use case point、top-down three-point、constraint capacity、risk model results、または明示的な skip 理由。
+- Pass coverage: tier または coverage gate が選んだ method pass の run / skipped / not applicable と理由。
+- 実行した total-estimate method ごとの result と tier/coverage status。
+- 両方を実行した場合の WBS と component-anchor の agreement/disagreement。
+- `full` では、applicable な independent parametric、function point、use case point、top-down three-point、constraint capacity、risk model result、または明示的な gate skip 理由。
 - cross-method disagreement: assumption、count、coefficient、productivity baseline、constraint、risk driver のどれが gap を説明するか。
 - Assumptions。
 - Exclusions。

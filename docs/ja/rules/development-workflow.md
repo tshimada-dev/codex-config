@@ -1,6 +1,6 @@
 ---
 source: rules/development-workflow.md
-source_blob: e69d7704363bf25346ddb77bd267e7ee5096eb75
+source_blob: e7dc6fb9ee278b1c0097f0ac70b282e370c276fb
 canonical: false
 ---
 
@@ -29,7 +29,7 @@ canonical: false
 2. 期待結果を満たす最小の一貫した変更を実装する。
 3. focused check を再実行し、証拠を失わずに refactor する。
 
-この loop が実務上難しい場合は、恒久変更の前に理由を記録し、characterization test、CLI/HTTP reproduction、fixture、static/policy check、render inspection、browser probe、manual procedure など最小の信頼できる代替 feedback を用意する。flaky、無関係、理由不明の failure は有効な test-first の Red として扱わない。実装中の feedback は final verification の代わりにはならない。
+この loop が実務上難しい場合は、恒久変更の前に理由を記録し、characterization test、CLI/HTTP reproduction、fixture、static/policy check、render inspection、browser probe、manual procedure など最小の信頼できる代替 feedback を用意する。flaky、無関係、理由不明の failure は有効な test-first の Red として扱わない。final verification では統合結果を評価するが、以下の条件を満たす実装中の証拠は再利用できる。
 
 ## ワークフローphase
 
@@ -59,6 +59,8 @@ intake/scoutingは制約とverification候補を発見するが、product behavi
 ## 最終検証と readiness
 
 final verification は実装後の統合結果を評価する。リポジトリの実コマンドを確認し、狭い check から始め、変更した contract に応じて広げる。local substitute と CI-equivalent evidence は区別する。
+
+記録済みの pass が最終的な関連 code/diff、configuration、dependencies、environment、expected outcomes をカバーし、後続変更や未解決 failure で無効化されていない場合は再利用する。command/probe、結果、検証対象の状態を記録し、phase 遷移だけでは再実行しない。不足・無効化された check を実行し、時刻依存・flaky・外部依存の証拠は鮮度や信頼性が重要なら再確認する。repo/user が fresh check を要求している場合は従う。
 
 - `ready`: 必須証拠がすべて pass し、未解決の重要な競合がない。
 - `conditionally-ready`: 必須証拠は pass したが、任意の証拠を skip した、または受容済みの残存リスクがある。
