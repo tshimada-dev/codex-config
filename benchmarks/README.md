@@ -65,6 +65,10 @@ Prepare an isolated seed repository **outside this public checkout**:
 python benchmarks/pilot.py prepare DBG-001 ../codex-bench-runs/DBG-001-baseline-1
 ```
 
+`prepare` records the seed commit in `refs/benchmark/baseline`. Grading compares
+against that ref, including committed, uncommitted, and untracked changes.
+Targets prepared with an older harness must be recreated before grading.
+
 Then run the selected coding agent **from inside the generated directory**. Give it
 only the generated `TASK.md` as the task.
 

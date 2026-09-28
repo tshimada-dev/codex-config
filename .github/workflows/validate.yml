@@ -137,3 +137,17 @@ jobs:
       - name: Validate Japanese metadata update lifecycle
         shell: pwsh
         run: ./scripts/test-ja-source-metadata.ps1
+
+  benchmark:
+    name: Validate benchmark (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Validate harness and public seed tests
+        run: python -B -m unittest discover -s benchmarks -p test_pilot.py -v

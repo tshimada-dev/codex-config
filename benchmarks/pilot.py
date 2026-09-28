@@ -11,12 +11,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 TASKS = ROOT / "tasks"
 SEEDS = ROOT / "seeds"
+BASELINE_REF = "refs/benchmark/baseline"
 
 TASK_IDS = ("INV-001", "DBG-001", "IMP-001", "SAFE-001", "REV-001")
 
 
-def run(cmd, cwd: Path):
-    return subprocess.run(cmd, cwd=cwd, text=True, capture_output=True)
+def run(cmd, cwd: Path, *, encoding=None):
+    return subprocess.run(cmd, cwd=cwd, text=True, capture_output=True, encoding=encoding)
 
 
 def prepare(task_id: str, dest: Path) -> int:
@@ -36,6 +37,7 @@ def prepare(task_id: str, dest: Path) -> int:
         ["git", "config", "user.name", "Benchmark Harness"],
         ["git", "add", "."],
         ["git", "commit", "-m", "benchmark seed"],
+        ["git", "update-ref", BASELINE_REF, "HEAD"],
     ):
         r = run(cmd, dest)
         if r.returncode:
@@ -47,16 +49,19 @@ def prepare(task_id: str, dest: Path) -> int:
 
 
 def changed_paths(dest: Path) -> list[str]:
-    status = run(["git", "status", "--porcelain"], dest)
-    paths = []
-    for line in status.stdout.splitlines():
-        if not line.strip():
-            continue
-        path = line[3:].strip()
-        if " -> " in path:
-            path = path.split(" -> ", 1)[1]
-        paths.append(path)
-    return sorted(set(paths))
+    # Compare with the seed even when the agent committed its changes. Disable
+    # rename detection so an out-of-scope source cannot disappear behind a move.
+    changed = run([
+        "git", "diff", "--name-only", "--no-renames", "-z", BASELINE_REF, "--",
+    ], dest, encoding="utf-8")
+    if changed.returncode:
+        raise SystemExit("cannot compare with benchmark baseline; recreate the target with prepare")
+    untracked = run([
+        "git", "ls-files", "--others", "--exclude-standard", "-z",
+    ], dest, encoding="utf-8")
+    if untracked.returncode:
+        raise SystemExit(f"cannot list untracked benchmark files: {untracked.stderr.strip()}")
+    return sorted(set(filter(None, (changed.stdout + untracked.stdout).split("\0"))))
 
 
 def grade(task_id: str, dest: Path, grader_root: Path) -> int:
