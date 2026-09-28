@@ -11,7 +11,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 TASKS = ROOT / "tasks"
 SEEDS = ROOT / "seeds"
-HIDDEN = ROOT / "hidden"
 
 TASK_IDS = ("INV-001", "DBG-001", "IMP-001", "SAFE-001", "REV-001")
 
@@ -47,18 +46,33 @@ def prepare(task_id: str, dest: Path) -> int:
     return 0
 
 
-def grade(task_id: str, dest: Path) -> int:
+def changed_paths(dest: Path) -> list[str]:
+    status = run(["git", "status", "--porcelain"], dest)
+    paths = []
+    for line in status.stdout.splitlines():
+        if not line.strip():
+            continue
+        path = line[3:].strip()
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1]
+        paths.append(path)
+    return sorted(set(paths))
+
+
+def grade(task_id: str, dest: Path, grader_root: Path) -> int:
     if task_id not in TASK_IDS:
         raise SystemExit(f"unknown task: {task_id}")
     if not (dest / ".git").exists():
         raise SystemExit("grade target must be created by prepare")
 
-    public = run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"], dest)
-    hidden_file = HIDDEN / f"test_{task_id.lower().replace('-', '_')}.py"
-    hidden = run([sys.executable, str(hidden_file), str(dest.resolve())], ROOT.parent)
+    hidden_file = grader_root / f"test_{task_id.lower().replace('-', '_')}.py"
+    if not hidden_file.is_file():
+        raise SystemExit(f"private grader missing: {hidden_file}")
 
-    diff = run(["git", "diff", "--name-only", "HEAD"], dest)
-    changed = [x.strip() for x in diff.stdout.splitlines() if x.strip()]
+    public = run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"], dest)
+    hidden = run([sys.executable, str(hidden_file.resolve()), str(dest.resolve())], grader_root)
+
+    changed = changed_paths(dest)
     allowed = {
         "INV-001": ("src/", "tests/"),
         "DBG-001": ("src/", "tests/"),
@@ -124,6 +138,8 @@ def main() -> int:
     pg = sub.add_parser("grade")
     pg.add_argument("task_id")
     pg.add_argument("dest", type=Path)
+    pg.add_argument("--grader-root", required=True, type=Path,
+                    help="Private directory containing hidden test_*.py files; keep it outside this public repo.")
 
     gt = sub.add_parser("gate")
     gt.add_argument("results", type=Path)
@@ -132,7 +148,7 @@ def main() -> int:
     if a.cmd == "prepare":
         return prepare(a.task_id, a.dest)
     if a.cmd == "grade":
-        return grade(a.task_id, a.dest)
+        return grade(a.task_id, a.dest, a.grader_root)
     return gate(a.results)
 
 
