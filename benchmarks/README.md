@@ -59,20 +59,24 @@ the hidden grader still fails it.
 
 ## Running a task
 
-Prepare an isolated seed repository:
+Prepare an isolated seed repository **outside this public checkout**:
 
 ```powershell
-python benchmarks/pilot.py prepare DBG-001 .benchmark-runs/DBG-001-baseline-1
+python benchmarks/pilot.py prepare DBG-001 ../codex-bench-runs/DBG-001-baseline-1
 ```
 
 Then run the selected coding agent **from inside the generated directory**. Give it
-only the generated `TASK.md` as the task. The benchmark harness and hidden tests
-must not be placed in the agent workspace.
+only the generated `TASK.md` as the task.
+
+The hidden grader is deliberately not stored in this public repository. Keep the
+private grader directory outside both the generated workspace and any filesystem
+scope the coding agent can inspect. Publishing hidden tests next to the task would
+contaminate the evaluation.
 
 After the agent finishes:
 
 ```powershell
-python benchmarks/pilot.py grade DBG-001 .benchmark-runs/DBG-001-baseline-1
+python benchmarks/pilot.py grade DBG-001 ../codex-bench-runs/DBG-001-baseline-1 --grader-root ../codex-benchmark-private-grader
 ```
 
 The grader reports:
@@ -133,3 +137,28 @@ Five synthetic tasks are not evidence that codex-config generally improves codin
 agents. They are a calibration set for finding tasks with enough headroom to measure
 workflow effects. A later benchmark should add larger real-repository tasks, repeated
 runs, cost/time measurements, and ablations of individual skills/guardrails.
+
+
+## Hidden-grader boundary
+
+The public repository intentionally contains only task packets, seed repositories,
+public smoke tests, and the calibration harness. Hidden tests belong in a separate
+private directory/repository.
+
+A hidden assertion is valid only when its expected behavior is already supported by
+the public task, seed repository documentation, or an existing public contract. The
+hidden grader may test boundary combinations that the public smoke tests omit, but it
+must not invent a secret requirement.
+
+For the pilot, the private grader should cover:
+
+- **INV-001:** canonical path helper parity for `file://`, home/env expansion, and
+  unchanged relative defaults.
+- **DBG-001:** exact fresh/stale/expired boundaries, metrics ownership, and refresh
+  signaling.
+- **IMP-001:** safe-method retryability, POST non-retry, 429/503/OSError handling,
+  Retry-After, cancellation before retry, bounded attempts, and no final sleep.
+- **SAFE-001:** all owned generated directories reset, foreign children preserved,
+  and owned-path symlinks replaced without following them.
+- **REV-001:** falsy explicit values, precedence, unknown-key handling, and
+  non-mutation of every caller-owned source mapping.
