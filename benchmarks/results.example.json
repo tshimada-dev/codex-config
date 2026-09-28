@@ -1,0 +1,7 @@
+{
+  "runs": [
+    {"task_id": "INV-001", "variant": "baseline", "run": 1, "passed": false},
+    {"task_id": "INV-001", "variant": "baseline", "run": 2, "passed": true},
+    {"task_id": "INV-001", "variant": "baseline", "run": 3, "passed": false}
+  ]
+}
